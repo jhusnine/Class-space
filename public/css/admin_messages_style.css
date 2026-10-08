@@ -1,0 +1,353 @@
+/* ==========================================================================
+   admin_messages_style.css — page-specific styles only
+   (sidebar, layout, nav, theme variables are handled by global.css)
+   ========================================================================== */
+
+/* MESSAGES WRAPPER */
+.messages-wrapper {
+    flex: 1;
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    gap: 0;
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-card);
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+/* MAIN CONTENT override for messages page (needs flex column) */
+.main-content {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+/* USERS PANEL (LEFT) */
+.users-panel {
+    display: flex;
+    flex-direction: column;
+    border-right: 1px solid var(--border-color);
+    background-color: var(--card-bg);
+}
+
+.search-box {
+    padding: 12px;
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.search-box i {
+    color: var(--text-low);
+    font-size: 13px;
+}
+
+/* Override global search-input for the inline search box */
+.search-box .search-input {
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    padding: 0;
+    width: auto;
+    flex: 1;
+    font-size: 13px;
+}
+
+.search-box .search-input:focus {
+    outline: none;
+    box-shadow: none;
+    border: none;
+    background: transparent;
+}
+
+.users-list {
+    flex: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+}
+
+.user-item {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border-color);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border-left: 3px solid transparent;
+}
+
+.user-item:hover {
+    background-color: var(--bg-nav-hover);
+}
+
+.user-item.active {
+    background-color: var(--bg-nav-hover);
+    border-left-color: var(--brand-accent);
+}
+
+.user-name {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-high);
+    margin-bottom: 4px;
+}
+
+.user-email {
+    font-size: 12px;
+    color: var(--text-low);
+}
+
+.user-unread {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 16px;
+    height: 16px;
+    background-color: #ff6b6b;
+    color: white;
+    border-radius: 50%;
+    font-size: 10px;
+    font-weight: 700;
+    margin-top: 4px;
+}
+
+/* THREAD PANEL (RIGHT) */
+.thread-panel {
+    display: flex;
+    flex-direction: column;
+    background-color: var(--card-bg);
+    overflow: hidden; /* prevents thread-messages from pushing thread-input out */
+}
+
+.thread-header {
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--border-color);
+    flex-shrink: 0;
+}
+
+.thread-header h2 {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-high);
+}
+
+/* THREAD MESSAGES */
+.thread-messages {
+    flex: 1;
+    min-height: 0; /* critical: allows flex child to scroll instead of grow */
+    overflow-y: auto;
+    padding: 20px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    background-color: var(--bg-input);
+}
+
+.empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    height: 100%;
+    color: var(--text-low);
+}
+
+.empty-state i {
+    font-size: 48px;
+    opacity: 0.3;
+}
+
+.message {
+    display: flex;
+    gap: 12px;
+    max-width: 80%;
+    align-items: flex-end;
+}
+
+.message.sent {
+    align-self: flex-end;
+    flex-direction: row-reverse;
+}
+
+.message-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--brand-accent), var(--brand-accent-hover));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--bg-color);
+    flex-shrink: 0;
+}
+
+.message-bubble {
+    background-color: rgba(56, 189, 248, 0.12);
+    border: 1px solid rgba(56, 189, 248, 0.2);
+    border-radius: 12px;
+    padding: 12px 16px;
+    word-wrap: break-word;
+    line-height: 1.5;
+    font-size: 13px;
+    color: var(--text-high);
+}
+
+.message.sent .message-bubble {
+    background-color: var(--brand-accent);
+    border-color: var(--brand-accent);
+    color: var(--bg-color);
+    border-bottom-right-radius: 2px;
+}
+
+.message.received .message-bubble {
+    border-bottom-left-radius: 2px;
+}
+
+.message-time {
+    font-size: 11px;
+    color: var(--text-low);
+    margin-top: 4px;
+}
+
+.message.sent .message-time {
+    text-align: right;
+}
+
+/* THREAD INPUT */
+.thread-input {
+    padding: 16px 24px;
+    border-top: 1px solid var(--border-color);
+    background-color: var(--card-bg);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.reply-textarea {
+    width: 100%;
+    background-color: var(--bg-input);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 12px 16px;
+    color: var(--text-high);
+    font-size: 13px;
+    font-family: inherit;
+    resize: none;
+    min-height: 70px;
+    max-height: 140px;
+    outline: none;
+    transition: border-color 0.2s ease;
+}
+
+.reply-textarea:focus {
+    border-color: var(--brand-accent);
+    box-shadow: none;
+}
+
+.reply-textarea::placeholder {
+    color: var(--text-low);
+    opacity: 0.7;
+}
+
+.input-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.char-count {
+    font-size: 12px;
+    color: var(--text-low);
+}
+
+.send-btn {
+    background-color: var(--brand-accent);
+    color: var(--bg-color);
+    border: none;
+    padding: 10px 20px;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 13px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s ease;
+}
+
+.send-btn:hover {
+    background-color: var(--brand-accent-hover);
+    transform: translateY(-2px);
+}
+
+.send-btn:active {
+    transform: translateY(0);
+}
+
+.send-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* LOADING */
+.loading-spinner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    color: var(--text-low);
+    padding: 40px;
+}
+
+.loading-spinner i {
+    font-size: 28px;
+    opacity: 0.6;
+}
+
+/* RESPONSIVE */
+@media (max-width: 1024px) {
+    .messages-wrapper {
+        grid-template-columns: 200px 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    .messages-wrapper {
+        grid-template-columns: 1fr;
+    }
+
+    .users-panel {
+        display: none;
+    }
+
+    .message {
+        max-width: 90%;
+    }
+}
+/* Thread panel: header + scrollable messages + pinned input */
+.thread-panel {
+    display: flex;
+    flex-direction: column;
+}
+
+/* Only the messages div scrolls — reply box never moves */
+.thread-messages {
+    height: 420px;
+    overflow-y: auto;
+    flex-shrink: 0;
+}
+
+/* Input stays below, never pushed by messages */
+.thread-input {
+    flex-shrink: 0;
+}
+
+/* User list also scrolls independently */
+.users-list {
+    overflow-y: auto;
+    max-height: 500px;
+}

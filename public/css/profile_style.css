@@ -1,0 +1,16 @@
+.avatar {
+    width: 80px;
+    height: 80px;
+    border-radius: 8px;
+    background: linear-gradient(135deg, #38BDF8 0%, #0ea5e9 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 24px;
+    color: white;
+    flex-shrink: 0;
+}
+.card {
+    max-width: 700px;
+}

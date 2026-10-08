@@ -1,0 +1,698 @@
+/* ==========================================================================
+   CSS Custom Property Design Variable Tokens (Defaults to Dark Matrix)
+   ========================================================================== */
+:root {
+    --workspace-bg: #0f172a;
+    --panel-bg: #1e293b;
+    --border-color: #334155;
+    --text-high: #f8fafc;
+    --text-low: #94a3b8;
+    --brand-accent: #38bdf8;
+    --brand-hover: #0ea5e9;
+    --chat-stream-bg: rgba(15, 23, 42, 0.4);
+    --bubble-user: rgba(56, 189, 248, 0.15);
+    --bubble-admin: #334155;
+    --shadow-depth: rgba(0, 0, 0, 0.25);
+}
+
+/* ==========================================================================
+   Light Mode Theme Toggle Variables
+   ========================================================================== */
+body.light-mode {
+    --workspace-bg: #f8fafc;
+    --panel-bg: #ffffff;
+    --border-color: #e2e8f0;
+    --text-high: #1e293b;
+    --text-low: #64748b;
+    --brand-accent: #0284c7;
+    --brand-hover: #0369a1;
+    --chat-stream-bg: #f1f5f9;
+    --bubble-user: rgba(2, 132, 199, 0.12);
+    --bubble-admin: #e2e8f0;
+    --shadow-depth: rgba(148, 163, 184, 0.08);
+}
+
+/* ==========================================================================
+   Split Interface Framework Blocks
+   ========================================================================== */
+.contact-workspace {
+    display: grid;
+    grid-template-columns: 1fr 1.2fr;
+    gap: 24px;
+    margin-top: 24px;
+    align-items: stretch;
+}
+
+.contact-card, .chat-preview-panel {
+    background: var(--panel-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: 0 4px 6px -1px var(--shadow-depth);
+    display: flex;
+    flex-direction: column;
+}
+
+.contact-info-wrapper {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border-color);
+    margin-bottom: 20px;
+}
+
+.contact-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    color: var(--text-low);
+}
+
+.contact-info i {
+    color: var(--brand-accent);
+}
+
+.contact-info a {
+    color: var(--text-low);
+    text-decoration: none;
+}
+
+/* Form Styles */
+.form-group {
+    margin-bottom: 18px;
+}
+
+.form-label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: var(--text-high);
+}
+
+.form-input {
+    width: 100%;
+    padding: 12px;
+    background: var(--workspace-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    color: var(--text-high);
+    font-size: 14px;
+    box-sizing: border-box;
+}
+
+textarea.form-input {
+    min-height: 120px;
+    resize: vertical;
+}
+
+.btn-primary-submit {
+    width: 100%;
+    background: var(--brand-accent);
+    color: #ffffff;
+    border: none;
+    padding: 12px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: background 0.2s;
+}
+
+body:not(.light-mode) .btn-primary-submit {
+    color: #0f172a;
+}
+
+.btn-primary-submit:hover {
+    background: var(--brand-hover);
+}
+
+/* ==========================================================================
+   Chat Stream Workspace Layout Component
+   ========================================================================== */
+.chat-preview-panel {
+    padding: 0;
+    overflow: hidden;
+    height: 480px;
+}
+
+.chat-preview-header {
+    padding: 16px 20px;
+    background: rgba(56, 189, 248, 0.03);
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 600;
+    font-size: 14px;
+    color: var(--text-high);
+}
+
+.status-dot {
+    width: 8px;
+    height: 8px;
+    background: #10b981;
+    border-radius: 50%;
+}
+
+.chat-preview-body {
+    flex: 1;
+    padding: 20px;
+    background: var(--chat-stream-bg);
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.chat-bubble {
+    max-width: 80%;
+    padding: 12px 16px;
+    border-radius: 12px;
+    font-size: 14px;
+    line-height: 1.5;
+    word-break: break-word;
+}
+
+.chat-bubble.user-msg {
+    background: var(--bubble-user);
+    border: 1px solid var(--brand-accent);
+    color: var(--text-high);
+    align-self: flex-end;
+    border-bottom-right-radius: 2px;
+}
+
+.chat-bubble.admin-msg {
+    background: var(--bubble-admin);
+    border: 1px solid var(--border-color);
+    color: var(--text-high);
+    align-self: flex-start;
+    border-bottom-left-radius: 2px;
+}
+
+.chat-system-notice {
+    text-align: center;
+    color: var(--text-low);
+    font-size: 13px;
+    margin: auto 0;
+    padding: 0 20px;
+}
+
+.chat-preview-footer {
+    padding: 14px;
+    border-top: 1px solid var(--border-color);
+    display: flex;
+    gap: 10px;
+}
+
+.chat-preview-footer .form-input {
+    flex: 1;
+}
+
+.btn-chat-send {
+    background: var(--brand-accent);
+    color: #ffffff;
+    border: none;
+    width: 42px;
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s;
+}
+
+body:not(.light-mode) .btn-chat-send {
+    color: #0f172a;
+}
+
+.btn-chat-send:hover {
+    background: var(--brand-hover);
+}
+
+/* Response Media Adapters */
+@media (max-width: 992px) {
+    .contact-workspace {
+        grid-template-columns: 1fr;
+    }
+    .chat-preview-panel {
+        height: 400px;
+    }
+}
+
+/* ==========================================================================
+   1. CORE THEME EMULATION & VARIABLE DESIGN ENGINE (DEFAULT DARK MODE)
+   ========================================================================== */
+:root {
+    /* Eksaktong kulay mula sa iyong default base style code */
+    --bg-color: #030816;
+    --sidebar-bg: #050c1e;
+    --card-bg: #050c1e;
+    --border-color: #1a365d;
+    --text-high: #ffffff;
+    --text-low: #a0aec0;
+    
+    /* Dedicated Chat Color Palette Blocks */
+    --chat-container-bg: #050c1e;
+    --chat-sidebar-bg: #050c1e;
+    --chat-window-bg: #050c1e;
+    --chat-search-bg: transparent;
+    --chat-active-row: #0d1b3a;
+    
+    /* Bubble & Accent System States */
+    --bubble-incoming: transparent;
+    --bubble-outgoing: #0d1b3a;
+    --bubble-outgoing-border: #00d2ff;
+    --brand-accent: #00d2ff;
+    --brand-accent-hover: #7dd3fc;
+    --shadow-depth: rgba(0, 0, 0, 0.4);
+}
+
+/* ==========================================================================
+   DYNAMICAL LIGHT MODE THEME OVERRIDES (AUTOMATIC ADJUSTMENTS)
+   ========================================================================== */
+body.light-mode {
+    --bg-color: #f8fafc;
+    --sidebar-bg: #f1f5f9;
+    --card-bg: #ffffff;
+    --border-color: #cbd5e1;
+    --text-high: #0f172a;
+    --text-low: #475569;
+    
+    --chat-container-bg: #ffffff;
+    --chat-sidebar-bg: #f8fafc;
+    --chat-window-bg: #ffffff;
+    --chat-search-bg: #f1f5f9;
+    --chat-active-row: #e2e8f0;
+    
+    --bubble-incoming: #f1f5f9;
+    --bubble-outgoing: #e2e8f0;
+    --bubble-outgoing-border: #0284c7;
+    --brand-accent: #0284c7;
+    --brand-accent-hover: #0369a1;
+    --shadow-depth: rgba(15, 23, 42, 0.05);
+}
+
+/* ==========================================================================
+   2. DUAL-PANEL WORKSPACE BLUEPRINT (SPLIT COLUMN ARCHITECTURE)
+   ========================================================================== */
+.split-workspace {
+    display: grid;
+    grid-template-columns: 380px 1fr;
+    gap: 30px;
+    align-items: stretch; /* both columns grow to the same height */
+    margin-top: 10px;
+}
+
+.contact-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    box-shadow: 0 4px 12px var(--shadow-depth);
+    margin-bottom: 0;
+}
+
+.contact-info-wrapper {
+    display: flex;
+    gap: 24px;
+    margin-bottom: 25px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.contact-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13.5px;
+    color: var(--text-high);
+}
+
+.contact-info i { 
+    color: var(--brand-accent); 
+}
+
+.contact-link { 
+    color: var(--text-high); 
+    text-decoration: none; 
+}
+
+.contact-link:hover { 
+    text-decoration: underline; 
+    color: var(--brand-accent); 
+}
+
+.form-group label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.8px;
+    color: var(--text-low);
+    margin-bottom: 6px;
+    text-transform: uppercase;
+}
+
+.submit-full {
+    width: 100%;
+    background: var(--brand-accent) !important;
+    border: none !important;
+    color: #ffffff !important;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.1s;
+}
+
+body:not(.light-mode) .submit-full {
+    color: #030816 !important; /* Rich contrast contrast balance for pure dark theme views */
+}
+
+.submit-full:hover {
+    background: var(--brand-accent-hover) !important;
+}
+
+/* ==========================================================================
+   3. PLATFORM COMMUNICATION HUB (MOCKUP SYNCHRONIZATION)
+   ========================================================================== */
+.message-dashboard {
+    display: flex;
+    flex-direction: column;
+}
+
+.dashboard-title {
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    color: var(--text-low);
+    margin-bottom: 10px;
+    text-transform: uppercase;
+}
+
+.dashboard-container-box {
+    display: grid;
+    grid-template-columns: 1fr;
+    background: var(--chat-container-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    height: 520px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px var(--shadow-depth);
+}
+
+/* CHAT DIRECTORY SIDEPANEL */
+.chat-sidebar {
+    background: var(--chat-sidebar-bg);
+    border-right: 1px solid var(--border-color);
+    display: flex;
+    flex-direction: column;
+}
+
+.search-container {
+    position: relative;
+    padding: 12px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.chat-search {
+    width: 100%;
+    padding: 8px 12px 8px 34px;
+    background: var(--chat-search-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 20px;
+    color: var(--text-high);
+    font-size: 13px;
+    outline: none;
+}
+
+.search-container .search-icon {
+    position: absolute;
+    left: 22px;
+    top: 21px;
+    color: var(--text-low);
+    font-size: 13px;
+    opacity: 0.6;
+}
+
+.user-list {
+    flex: 1;
+    overflow-y: auto;
+}
+
+.user-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border-color);
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.user-item:hover {
+    background: rgba(56, 189, 248, 0.03);
+}
+
+.user-item.active {
+    background: var(--chat-active-row);
+    border-left: 3px solid var(--brand-accent);
+}
+
+.avatar-circle {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--border-color);
+    flex-shrink: 0;
+}
+
+.user-name {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-high);
+}
+
+/* INTERACTION CANVAS WINDOW */
+.chat-main-window {
+    display: flex;
+    flex-direction: column;
+    background: var(--chat-window-bg);
+    width: 100%;
+    overflow: hidden; /* prevents children from pushing footer out */
+}
+
+.chat-header-user {
+    padding: 14px 20px;
+    background: var(--chat-sidebar-bg);
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-high);
+    flex-shrink: 0; /* never compressed */
+}
+
+.chat-body-stream {
+    flex: 1;
+    min-height: 0; /* critical: allows flex child to scroll instead of grow */
+    padding: 20px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    background-color: rgba(0, 0, 0, 0.15);
+}
+
+body.light-mode .chat-body-stream {
+    background-color: rgba(0, 0, 0, 0.02);
+}
+
+/* STREAM TALK BUBBLES SCHEME */
+.chat-row {
+    display: flex;
+    gap: 10px;
+    max-width: 85%;
+    align-items: flex-end;
+}
+
+.chat-row.incoming {
+    align-self: flex-start;
+}
+
+.chat-row.outgoing {
+    align-self: flex-end;
+}
+
+.msg-avatar {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: var(--border-color);
+    flex-shrink: 0;
+}
+
+.msg-box {
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 13px;
+    line-height: 1.5;
+    word-break: break-word;
+    border: 1px solid var(--border-color);
+}
+
+.incoming .msg-box {
+    background: var(--bubble-incoming);
+    color: var(--text-high);
+    border-bottom-left-radius: 2px;
+}
+
+.outgoing .msg-box {
+    background: var(--bubble-outgoing);
+    border-color: var(--bubble-outgoing-border);
+    color: var(--text-high);
+    border-bottom-right-radius: 2px;
+}
+
+/* FOOTER ACTION CONTROL STRIP */
+.chat-footer-bar {
+    padding: 14px 20px;
+    background: var(--chat-sidebar-bg);
+    border-top: 1px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.action-icons {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    color: var(--text-low);
+    font-size: 16px;
+}
+
+.action-icons i {
+    cursor: pointer;
+    transition: color 0.2s;
+    opacity: 0.7;
+}
+
+.action-icons i:hover {
+    color: var(--brand-accent);
+    opacity: 1;
+}
+
+.gif-lbl {
+    font-size: 9px;
+    font-weight: 800;
+    border: 1.5px solid var(--text-low);
+    padding: 0px 3px;
+    border-radius: 4px;
+    cursor: pointer;
+    opacity: 0.7;
+    line-height: 1.2;
+}
+
+.gif-lbl:hover {
+    color: var(--brand-accent);
+    border-color: var(--brand-accent);
+    opacity: 1;
+}
+
+.input-wrapper {
+    flex: 1;
+    background: transparent;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    padding: 8px 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.input-wrapper input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    outline: none;
+    color: var(--text-high);
+    font-size: 13px;
+}
+
+.send-btn-icon {
+    color: var(--brand-accent);
+    cursor: pointer;
+    font-size: 14px;
+    transition: transform 0.1s ease;
+}
+
+.send-btn-icon:hover {
+    transform: scale(1.1);
+}
+
+/* ==========================================================================
+   4. WEB RESPONSE BREAKPOINT ADAPTERS
+   ========================================================================== */
+@media (max-width: 1100px) {
+    .split-workspace {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* ==========================================================================
+   5. CHAT MESSAGES - alignment & spacing cleanup
+   Layout / spacing / typography only. Colors and bubble themes untouched.
+   Placed last so it overrides the earlier .chat-row / .msg-box rules.
+   ========================================================================== */
+.chat-body-stream {
+    padding: 20px 24px;
+    gap: 14px;
+}
+
+/* One row = avatar + (bubble over time). Avatar lines up with the bubble top. */
+.chat-row {
+    align-items: flex-start;
+    gap: 10px;
+    max-width: 75%;
+}
+
+/* The column holding the bubble and its timestamp */
+.chat-row > :has(> .msg-box) {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+}
+.chat-row.incoming > :has(> .msg-box) { align-items: flex-start; }
+.chat-row.outgoing > :has(> .msg-box) { align-items: flex-end; }
+
+/* Timestamp: small, muted, tucked under the bubble on the same side */
+.chat-row > :has(> .msg-box) > :not(.msg-box) {
+    margin: 0;
+    padding: 0 2px;
+    font-size: 11px;
+    line-height: 1.2;
+    color: var(--text-low);
+    opacity: 0.8;
+}
+
+/* Bubble: roomier radius, consistent padding, no stray inner margins */
+.msg-box {
+    max-width: 100%;
+    padding: 10px 14px;
+    border-radius: 14px;
+    font-size: 13.5px;
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+}
+.msg-box > * { margin: 0; }
+.incoming .msg-box { border-bottom-left-radius: 4px; }
+.outgoing .msg-box { border-bottom-right-radius: 4px; }
+
+@media (max-width: 600px) {
+    .chat-row { max-width: 88%; }
+}
