@@ -1,0 +1,52 @@
+# ==============================================================================
+# ClassSpace .gitignore
+# ==============================================================================
+
+# Operating System Files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+[Dd]esktop.ini
+
+# IDE & Text Editors
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+*.swp
+*.swo
+*~
+.project
+.settings/
+
+# Web Server & Runtime Logs
+*.log
+error_log
+access_log
+
+# Composer & Node Dependencies
+vendor/
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment & Local Overrides
+.env
+.env.local
+.env.*.local
+
+# Test Artifacts & Temporary Scratch Files
+scratch/
+*_tmp.php
+_run_*.php
+_temp_*.js
+
+# AI Assistant Workspace & Generated Audit Artifacts
+.ai/
+.agents/
+**/CLAUDE.md

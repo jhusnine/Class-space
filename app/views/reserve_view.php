@@ -5,9 +5,23 @@ if (!isset($_SESSION["id"])) {
     exit;
 }
 
-$preHallId = intval($_GET["hall_id"] ?? 0);
-$preRoomId = intval($_GET["room_id"] ?? 0);
-$fname    = htmlspecialchars($_SESSION["fname"] ?? "User");
+$preHallId   = intval($_GET["hall_id"] ?? 0);
+$preHallName = htmlspecialchars($_GET["hall_name"] ?? "");
+$preRoomId   = intval($_GET["room_id"] ?? 0);
+$preRoomName = htmlspecialchars($_GET["room_name"] ?? "");
+$preDate     = htmlspecialchars($_GET["date"] ?? "");
+$preDow      = htmlspecialchars($_GET["dow"] ?? "");
+$preType     = htmlspecialchars($_GET["type"] ?? "one-time");
+$preStart    = htmlspecialchars($_GET["start"] ?? "");
+$preEnd      = htmlspecialchars($_GET["end"] ?? "");
+$autoCheck   = !empty($_GET["auto_check"]) ? 1 : 0;
+$reschedulePendingId = intval($_GET["reschedule_pending_id"] ?? 0);
+
+if ($preType === 'weekly' || (!empty($preDow) && empty($preDate))) {
+    $preType = 'weekly';
+}
+
+$fname     = htmlspecialchars($_SESSION["fname"] ?? "User");
 $lname    = htmlspecialchars($_SESSION["lname"] ?? "");
 $initials = strtoupper(substr($fname, 0, 1) . substr($lname, 0, 1));
 $themeClass = (isset($_COOKIE['theme']) && $_COOKIE['theme'] === 'light') ? 'light-mode' : '';
@@ -90,6 +104,18 @@ $themeClass = (isset($_COOKIE['theme']) && $_COOKIE['theme'] === 'light') ? 'lig
                 </p>
             </div>
 
+            <?php if ($reschedulePendingId > 0): ?>
+                <div class="reschedule-banner" style="background: rgba(14, 165, 233, 0.12); border: 1px solid rgba(56, 189, 248, 0.4); border-radius: 8px; padding: 12px 16px; margin: 16px 0; display: flex; align-items: center; gap: 12px; color: var(--text-high);">
+                    <i class="fas fa-arrows-rotate" style="color: #38bdf8; font-size: 20px;"></i>
+                    <div>
+                        <strong style="color: #38bdf8;">Rescheduling Pending Reservation #<?= $reschedulePendingId ?></strong>
+                        <div style="font-size: 12px; color: var(--text-low); margin-top: 2px;">
+                            Applying an alternative room or time will update this reservation and resolve your calendar conflict.
+                        </div>
+                    </div>
+                </div>
+            <?php endif; ?>
+
             <div class="form-section-heading" id="location-heading">
                 <span class="form-section-kicker">01</span>
                 <div>
@@ -126,50 +152,61 @@ $themeClass = (isset($_COOKIE['theme']) && $_COOKIE['theme'] === 'light') ? 'lig
                 <span class="field-label">Reservation Type</span>
                 <div class="radio-group">
                     <label class="radio-item">
-                        <input type="radio" name="res-type" value="one-time" checked>
+                        <input type="radio" name="res-type" value="one-time" <?= ($preType === 'weekly') ? '' : 'checked' ?>>
                         One-time
                     </label>
 
                     <label class="radio-item">
-                        <input type="radio" name="res-type" value="weekly">
+                        <input type="radio" name="res-type" value="weekly" <?= ($preType === 'weekly') ? 'checked' : '' ?>>
                         Weekly (recurring)
                     </label>
                 </div>
             </div>
 
-            <div id="field-date" class="form-group">
+            <div id="field-date" class="form-group" style="<?= ($preType === 'weekly') ? 'display:none;' : '' ?>">
                 <label for="schedule-date">Date</label>
-                <input type="date" id="schedule-date" min="<?php echo date('Y-m-d'); ?>">
+                <input type="date" id="schedule-date" min="<?php echo date('Y-m-d'); ?>" value="<?= $preDate ?>">
             </div>
 
-            <div id="field-dow" class="form-group">
+            <div id="field-dow" class="form-group" style="<?= ($preType === 'weekly') ? 'display:block;' : 'display:none;' ?>">
                 <label for="schedule-dow">Day of Week</label>
                 <select id="schedule-dow">
                     <option value="">— Select a day —</option>
-                    <option value="Monday">Monday</option>
-                    <option value="Tuesday">Tuesday</option>
-                    <option value="Wednesday">Wednesday</option>
-                    <option value="Thursday">Thursday</option>
-                    <option value="Friday">Friday</option>
-                    <option value="Saturday">Saturday</option>
-                    <option value="Sunday">Sunday</option>
+                    <?php foreach (['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'] as $d): ?>
+                        <option value="<?= $d ?>" <?= (strcasecmp($preDow, $d) === 0) ? 'selected' : '' ?>><?= $d ?></option>
+                    <?php endforeach; ?>
                 </select>
             </div>
 
             <div class="time-grid">
                 <div class="form-group">
                     <label for="schedule-start">Start Time</label>
-                    <input type="time" id="schedule-start">
+                    <input type="time" id="schedule-start" value="<?= $preStart ?>">
                 </div>
 
                 <div class="form-group">
                     <label for="schedule-end">End Time</label>
-                    <input type="time" id="schedule-end">
+                    <input type="time" id="schedule-end" value="<?= $preEnd ?>">
                 </div>
             </div>
 
             <div id="conflict-warning" class="conflict-warning" role="alert" aria-live="polite">
                 <i class="fas fa-triangle-exclamation" aria-hidden="true"></i> <span id="conflict-msg"></span>
+            </div>
+
+            <!-- ClassSpace AI / Constraint Satisfaction Engine Recommendations -->
+            <div id="ai-suggestions-container" class="ai-suggestions-container" style="display: none;" aria-live="polite">
+                <div class="ai-header">
+                    <div class="ai-title-row">
+                        <div class="ai-title">
+                            <i class="fas fa-wand-magic-sparkles ai-sparkle-icon" aria-hidden="true"></i>
+                            <span>ClassSpace AI Assistant</span>
+                        </div>
+                        <span class="ai-badge-chip">CSP Engine</span>
+                    </div>
+                    <p id="ai-summary-text" class="ai-summary-text">Analyzing campus rooms and open slots...</p>
+                </div>
+                <div id="ai-cards-list" class="ai-cards-list"></div>
             </div>
 
             <div class="form-section-heading action-heading" id="action-heading">
@@ -181,13 +218,22 @@ $themeClass = (isset($_COOKIE['theme']) && $_COOKIE['theme'] === 'light') ? 'lig
             </div>
 
             <button class="btn-primary submit-btn" id="submit-btn">
-                <i class="fas fa-paper-plane"></i> Submit Reservation
+                <i class="fas fa-paper-plane"></i> <?= ($reschedulePendingId > 0) ? 'Update & Resolve Reservation' : 'Submit Reservation' ?>
             </button>
         </div>
     </main>
 </div>
 <input type="hidden" id="preHallId" value="<?= $preHallId ?>">
+<input type="hidden" id="preHallName" value="<?= $preHallName ?>">
 <input type="hidden" id="preRoomId" value="<?= $preRoomId ?>">
+<input type="hidden" id="preRoomName" value="<?= $preRoomName ?>">
+<input type="hidden" id="preDate" value="<?= $preDate ?>">
+<input type="hidden" id="preDow" value="<?= $preDow ?>">
+<input type="hidden" id="preType" value="<?= $preType ?>">
+<input type="hidden" id="preStart" value="<?= $preStart ?>">
+<input type="hidden" id="preEnd" value="<?= $preEnd ?>">
+<input type="hidden" id="autoCheck" value="<?= $autoCheck ?>">
+<input type="hidden" id="reschedulePendingId" value="<?= $reschedulePendingId ?>">
 <script src="../../public/js/toast.js?v=<?php echo time(); ?>"></script>
 <script src="../../public/js/reserve_script.js?v=<?php echo time(); ?>"></script>
 </body>

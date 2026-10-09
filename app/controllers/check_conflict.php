@@ -2,7 +2,9 @@
 
 declare(strict_types=1);
 
-session_start();
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 header('Content-Type: application/json; charset=utf-8');
 
 function respond(array $payload, int $status = 200): never
@@ -28,7 +30,10 @@ if (!isset($_SESSION['id'])) {
     ], 401);
 }
 
-require '../../includes/database_include.php';
+require_once __DIR__ . '/../../includes/database_include.php';
+
+date_default_timezone_set('Asia/Manila');
+$todayDate = date('Y-m-d');
 
 $roomId = filter_var($_GET['room_id'] ?? null, FILTER_VALIDATE_INT);
 $start  = is_string($_GET['start'] ?? null) ? trim($_GET['start']) : '';
@@ -49,8 +54,13 @@ $allowedDays = [
 
 function validTime(string $time): bool
 {
-    $parsed = DateTime::createFromFormat('!H:i', $time);
-    return $parsed !== false && $parsed->format('H:i') === $time;
+    $parts = explode(':', $time);
+    if (count($parts) >= 2) {
+        $h = (int)$parts[0];
+        $m = (int)$parts[1];
+        return $h >= 0 && $h <= 23 && $m >= 0 && $m <= 59;
+    }
+    return false;
 }
 
 function validDate(string $date): bool
@@ -65,6 +75,13 @@ function formatTime(string $time): string
         ?: DateTime::createFromFormat('!H:i', $time);
 
     return $parsed ? $parsed->format('g:i A') : $time;
+}
+
+if (validTime($start) && validTime($end)) {
+    $sParts = explode(':', $start);
+    $eParts = explode(':', $end);
+    $start = sprintf('%02d:%02d', (int)$sParts[0], (int)$sParts[1]);
+    $end   = sprintf('%02d:%02d', (int)$eParts[0], (int)$eParts[1]);
 }
 
 if (!$roomId || !validTime($start) || !validTime($end) || $start >= $end) {
@@ -146,17 +163,26 @@ try {
             $start
         ]);
     } else {
-        /* Preserve the existing overlap logic for weekly reservations. */
+        /* Check both recurring weekly schedules AND upcoming one-time reservations on this weekday */
         $stmt = $pdo->prepare(
             'SELECT schedule_start, schedule_end FROM schedule
              WHERE room_id = ?
-               AND schedule_day IS NULL
-               AND LOWER(schedule_day_of_week) = ?
-               AND schedule_start < ?
-               AND schedule_end > ?
+               AND (
+                    (schedule_day IS NULL
+                     AND LOWER(schedule_day_of_week) = ?
+                     AND schedule_start < ?
+                     AND schedule_end > ?)
+                    OR
+                    (schedule_day IS NOT NULL
+                     AND schedule_day >= ?
+                     AND LOWER(DAYNAME(schedule_day)) = ?
+                     AND schedule_start < ?
+                     AND schedule_end > ?)
+               )
+             ORDER BY schedule_start ASC
              LIMIT 1'
         );
-        $stmt->execute([$roomId, $dow, $end, $start]);
+        $stmt->execute([$roomId, $dow, $end, $start, $todayDate, $dow, $end, $start]);
     }
 
     $conflict = $stmt->fetch();
@@ -165,6 +191,7 @@ try {
         respond([
             'conflict' => true,
             'available' => false,
+            'has_suggestions' => true,
             'error' => 'conflict',
             'message' => 'This room is already booked from ' .
                 formatTime((string) $conflict['schedule_start']) .
@@ -177,6 +204,7 @@ try {
     respond([
         'conflict' => false,
         'available' => true,
+        'has_suggestions' => false,
         'message' => 'The room is available for the selected time.'
     ]);
 } catch (PDOException $exception) {

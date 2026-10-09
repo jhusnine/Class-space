@@ -129,12 +129,76 @@ $themeClass = (isset($_COOKIE['theme']) && $_COOKIE['theme'] === 'light') ? 'lig
                     <span class="legend-dot" id="pending"></span> Pending (yours)
                 </span>
 
+                <span class="legend-item">
+                    <span class="legend-dot" id="legend-conflict"></span> Double-Booked / Conflict
+                </span>
+
                 <span class="legend-note">
                     All approved reservations are visible to everyone.
                 </span>
             </div>
         </div>
     </main>
+</div>
+
+<!-- AI Slot Inspector & Double-Booking Resolution Modal -->
+<div id="cal-inspector-modal" class="cal-modal-backdrop" style="display:none;" onclick="handleModalBackdropClick(event)">
+    <div class="cal-modal-card" role="dialog" aria-modal="true" aria-labelledby="modal-event-title">
+        <div class="cal-modal-header">
+            <div class="modal-title-wrap">
+                <h3 id="modal-event-title"><i class="fas fa-calendar-check"></i> Reservation Inspector</h3>
+                <span id="modal-conflict-pill" class="modal-conflict-pill" style="display:none;">
+                    <i class="fas fa-exclamation-triangle"></i> Conflict Detected
+                </span>
+            </div>
+            <button class="cal-modal-close" onclick="closeInspectorModal()" aria-label="Close modal">&times;</button>
+        </div>
+        <div class="cal-modal-body">
+            <div class="modal-info-grid">
+                <div class="modal-info-item">
+                    <span class="modal-label">Room / Building</span>
+                    <span class="modal-value" id="modal-room-hall">-</span>
+                </div>
+                <div class="modal-info-item">
+                    <span class="modal-label">Date & Time</span>
+                    <span class="modal-value" id="modal-date-time">-</span>
+                </div>
+                <div class="modal-info-item">
+                    <span class="modal-label">Status</span>
+                    <span class="modal-value" id="modal-status">-</span>
+                </div>
+                <div class="modal-info-item">
+                    <span class="modal-label">Organizer / Purpose</span>
+                    <span class="modal-value" id="modal-purpose">-</span>
+                </div>
+            </div>
+            <div id="modal-conflict-box" class="modal-conflict-box" style="display:none;">
+                <div class="conflict-box-title">
+                    <i class="fas fa-triangle-exclamation"></i> Overlapping Reservation Detected
+                </div>
+                <p id="modal-conflict-details" class="conflict-box-desc"></p>
+                <div class="conflict-box-hint">
+                    <i class="fas fa-robot"></i> Use ClassSpace's CSP engine to find optimal non-conflicting slots or alternative rooms.
+                </div>
+                <div id="modal-ai-recommendations" class="modal-ai-recommendations" style="display:none;">
+                    <div class="ai-rec-header">
+                        <span><i class="fas fa-wand-magic-sparkles"></i> <strong>AI Recommended Alternative Rooms</strong></span>
+                        <span class="ai-rec-subtitle">Click to immediately switch your reservation and resolve the calendar conflict.</span>
+                    </div>
+                    <div id="modal-ai-cards" class="modal-ai-cards"></div>
+                </div>
+            </div>
+        </div>
+        <div class="cal-modal-footer">
+            <button type="button" class="btn-modal-secondary" onclick="closeInspectorModal()">Close</button>
+            <button type="button" id="modal-btn-cancel-req" class="btn-modal-danger" style="display:none;" onclick="cancelPendingFromModal()">
+                <i class="fas fa-trash-can"></i> Withdraw Request
+            </button>
+            <a id="modal-btn-ai-resolve" href="#" class="btn-modal-primary" style="display:none;">
+                <i class="fas fa-pen-to-square"></i> Open Reservation Form
+            </a>
+        </div>
+    </div>
 </div>
 
 <script src="../../public/js/toast.js?v=<?php echo time(); ?>"></script>
