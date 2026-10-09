@@ -17,8 +17,8 @@ try {
     // Remove one-time pending schedules that have passed too
     $pdo->prepare("
         DELETE FROM pendingschedule 
-        WHERE schedule_day IS NOT NULL 
-          AND schedule_day < ?
+        WHERE pending_schedule_day IS NOT NULL 
+          AND pending_schedule_day < ?
     ")->execute([$today]);
 
 } catch (PDOException $e) {
