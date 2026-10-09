@@ -36,8 +36,13 @@ $dow    = is_string($_GET['dow'] ?? null) ? strtolower(trim($_GET['dow'])) : '';
 
 function validTime(string $time): bool
 {
-    $parsed = DateTime::createFromFormat('!H:i', $time);
-    return $parsed !== false && $parsed->format('H:i') === $time;
+    $parts = explode(':', $time);
+    if (count($parts) >= 2) {
+        $h = (int)$parts[0];
+        $m = (int)$parts[1];
+        return $h >= 0 && $h <= 23 && $m >= 0 && $m <= 59;
+    }
+    return false;
 }
 
 function validDate(string $date): bool
@@ -64,6 +69,13 @@ function formatTime(string $time): string
     $parsed = DateTime::createFromFormat('!H:i:s', $time)
         ?: DateTime::createFromFormat('!H:i', $time);
     return $parsed ? $parsed->format('g:i A') : $time;
+}
+
+if (validTime($start) && validTime($end)) {
+    $sParts = explode(':', $start);
+    $eParts = explode(':', $end);
+    $start = sprintf('%02d:%02d', (int)$sParts[0], (int)$sParts[1]);
+    $end   = sprintf('%02d:%02d', (int)$eParts[0], (int)$eParts[1]);
 }
 
 if (!$roomId || !validTime($start) || !validTime($end) || $start >= $end) {

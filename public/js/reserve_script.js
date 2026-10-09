@@ -45,32 +45,72 @@ fetch("../controllers/room_controller.php?action=get_halls")
             sel.appendChild(opt);
         });
 
-        const preHallId = document.getElementById("preHallId")?.value;
-        const preRoomId = document.getElementById("preRoomId")?.value;
-        const preDate   = document.getElementById("preDate")?.value;
-        const preStart  = document.getElementById("preStart")?.value;
-        const preEnd    = document.getElementById("preEnd")?.value;
+        const preHallId   = parseInt(document.getElementById("preHallId")?.value, 10) || 0;
+        const preHallName = (document.getElementById("preHallName")?.value || '').trim().toLowerCase();
+        const preRoomId   = parseInt(document.getElementById("preRoomId")?.value, 10) || 0;
+        const preRoomName = (document.getElementById("preRoomName")?.value || '').trim().toLowerCase();
+        const preDate     = document.getElementById("preDate")?.value;
+        const preDow      = document.getElementById("preDow")?.value;
+        const preType     = document.getElementById("preType")?.value;
+        const preStart    = document.getElementById("preStart")?.value;
+        const preEnd      = document.getElementById("preEnd")?.value;
+        const autoCheck   = document.getElementById("autoCheck")?.value === "1";
 
-        if (preDate) {
-            const dateInput = document.getElementById("schedule-date");
-            if (dateInput) dateInput.value = preDate;
+        if (preType === 'weekly' || preDow) {
+            const weeklyRadio = document.querySelector('input[name="res-type"][value="weekly"]');
+            if (weeklyRadio) {
+                weeklyRadio.checked = true;
+                toggleType();
+            }
+            if (preDow) {
+                const dowSel = document.getElementById("schedule-dow");
+                if (dowSel) {
+                    for (let opt of dowSel.options) {
+                        if (opt.value.toLowerCase() === preDow.toLowerCase()) {
+                            dowSel.value = opt.value;
+                            break;
+                        }
+                    }
+                }
+            }
+        } else {
+            if (preDate) {
+                const dateInput = document.getElementById("schedule-date");
+                if (dateInput && !dateInput.value) dateInput.value = preDate;
+            }
         }
+
         if (preStart) {
             const startInput = document.getElementById("schedule-start");
-            if (startInput) startInput.value = preStart;
+            if (startInput && !startInput.value) startInput.value = preStart;
         }
         if (preEnd) {
             const endInput = document.getElementById("schedule-end");
-            if (endInput) endInput.value = preEnd;
+            if (endInput && !endInput.value) endInput.value = preEnd;
         }
 
-        if (preHallId) {
-            document.getElementById("hall-select").value = preHallId;
-            loadRooms(preRoomId);
+        // Match hall by ID or Name
+        let hallMatched = false;
+        if (preHallId > 0) {
+            sel.value = preHallId;
+            if (sel.value == preHallId) hallMatched = true;
+        }
+        if (!hallMatched && preHallName) {
+            for (let opt of sel.options) {
+                if (opt.textContent.trim().toLowerCase() === preHallName) {
+                    sel.value = opt.value;
+                    hallMatched = true;
+                    break;
+                }
+            }
+        }
+
+        if (hallMatched && sel.value) {
+            loadRooms(preRoomId, preRoomName, autoCheck);
         }
     });
 
-function loadRooms(preselectRoomId = 0) {
+function loadRooms(preselectRoomId = 0, preselectRoomName = '', autoCheck = false) {
     const hallId  = document.getElementById("hall-select").value;
     const roomSel = document.getElementById("room-select");
     roomSel.innerHTML = `<option value="">— Loading... —</option>`;
@@ -103,9 +143,27 @@ function loadRooms(preselectRoomId = 0) {
             roomSel.disabled  = false;
             roomSel.addEventListener("change", showRoomPreview);
 
-            if (preselectRoomId) {
+            let roomMatched = false;
+            if (preselectRoomId && preselectRoomId > 0) {
                 roomSel.value = preselectRoomId;
+                if (roomSel.value == preselectRoomId) roomMatched = true;
+            }
+            if (!roomMatched && preselectRoomName) {
+                for (let i = 0; i < roomSel.options.length; i++) {
+                    const opt = roomSel.options[i];
+                    if (opt.textContent.trim().toLowerCase() === preselectRoomName.toLowerCase()) {
+                        roomSel.selectedIndex = i;
+                        roomMatched = true;
+                        break;
+                    }
+                }
+            }
+
+            if (roomMatched && roomSel.value) {
                 showRoomPreview();
+                if (autoCheck) {
+                    checkConflicts(true);
+                }
             }
         });
 }
@@ -158,7 +216,7 @@ function escapeHtml(str) {
         .replace(/'/g, '&#039;');
 }
 
-function checkConflicts() {
+function checkConflicts(forceAiFetch = false) {
     const roomId      = document.getElementById("room-select").value;
     const type        = document.querySelector('input[name="res-type"]:checked').value;
     const start       = document.getElementById("schedule-start").value;
@@ -176,7 +234,7 @@ function checkConflicts() {
     }
 
     warning.style.display = "none";
-    if (aiContainer) aiContainer.style.display = "none";
+    if (aiContainer && !forceAiFetch) aiContainer.style.display = "none";
 
     if (!roomId || !start || !end) return;
     if (type === "one-time" && !date) return;
@@ -189,6 +247,10 @@ function checkConflicts() {
     conflictAbortController = new AbortController();
     const reqId = ++lastConflictReqId;
 
+    if (forceAiFetch) {
+        fetchAiSuggestions(params);
+    }
+
     fetch(`../controllers/check_conflict.php?${params}`, { signal: conflictAbortController.signal })
         .then(r => r.json())
         .then(res => {
@@ -196,9 +258,11 @@ function checkConflicts() {
             if (res.conflict) {
                 document.getElementById("conflict-msg").textContent = res.message;
                 warning.style.display = "block";
-                if (res.has_suggestions) {
+                if (res.has_suggestions || forceAiFetch) {
                     fetchAiSuggestions(params);
                 }
+            } else if (!forceAiFetch && aiContainer) {
+                aiContainer.style.display = "none";
             }
         })
         .catch(err => {

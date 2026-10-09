@@ -360,13 +360,43 @@ function openInspectorModal(ev) {
 
         if (aiBtn) {
             aiBtn.style.display = 'inline-flex';
-            const targetDate = ev.calendarDate || ev.schedule_day || '';
-            const start = ev.schedule_start ? ev.schedule_start.slice(0, 5) : '';
-            const end   = ev.schedule_end ? ev.schedule_end.slice(0, 5) : '';
-            const hallId = ev.hall_id || (ev.hall_name ? hallMap.get(ev.hall_name.toLowerCase()) : '') || '';
-            const roomId = ev.room_id || '';
 
-            aiBtn.href = `reserve_view.php?date=${encodeURIComponent(targetDate)}&hall_id=${encodeURIComponent(hallId)}&room_id=${encodeURIComponent(roomId)}&start=${encodeURIComponent(start)}&end=${encodeURIComponent(end)}`;
+            const toH_i = (t) => {
+                if (!t) return '';
+                const parts = t.split(':');
+                return parts.length >= 2 ? `${parts[0].padStart(2, '0')}:${parts[1].padStart(2, '0')}` : t;
+            };
+
+            const start = toH_i(ev.schedule_start);
+            const end   = toH_i(ev.schedule_end);
+            const hallId = ev.hall_id || (ev.hall_name ? (hallMap.get(ev.hall_name.toLowerCase()) || '') : '') || '';
+            const hallName = ev.hall_name || '';
+            const roomId = ev.room_id || '';
+            const roomName = ev.room_name || '';
+
+            const isWeekly = !ev.schedule_day && !!ev.schedule_day_of_week;
+            const resType = isWeekly ? 'weekly' : 'one-time';
+            const dow = ev.schedule_day_of_week || '';
+            const targetDate = ev.schedule_day || ev.calendarDate || '';
+
+            const q = new URLSearchParams({
+                auto_check: '1',
+                type: resType,
+                hall_id: String(hallId),
+                hall_name: hallName,
+                room_id: String(roomId),
+                room_name: roomName,
+                start: start,
+                end: end
+            });
+
+            if (isWeekly) {
+                q.append('dow', dow);
+            } else {
+                q.append('date', targetDate);
+            }
+
+            aiBtn.href = `reserve_view.php?${q.toString()}`;
         }
     } else {
         if (conflictPill) conflictPill.style.display = 'none';
