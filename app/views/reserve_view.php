@@ -172,6 +172,21 @@ $themeClass = (isset($_COOKIE['theme']) && $_COOKIE['theme'] === 'light') ? 'lig
                 <i class="fas fa-triangle-exclamation" aria-hidden="true"></i> <span id="conflict-msg"></span>
             </div>
 
+            <!-- ClassSpace AI / Constraint Satisfaction Engine Recommendations -->
+            <div id="ai-suggestions-container" class="ai-suggestions-container" style="display: none;" aria-live="polite">
+                <div class="ai-header">
+                    <div class="ai-title-row">
+                        <div class="ai-title">
+                            <i class="fas fa-wand-magic-sparkles ai-sparkle-icon" aria-hidden="true"></i>
+                            <span>ClassSpace AI Assistant</span>
+                        </div>
+                        <span class="ai-badge-chip">CSP Engine</span>
+                    </div>
+                    <p id="ai-summary-text" class="ai-summary-text">Analyzing campus rooms and open slots...</p>
+                </div>
+                <div id="ai-cards-list" class="ai-cards-list"></div>
+            </div>
+
             <div class="form-section-heading action-heading" id="action-heading">
                 <span class="form-section-kicker">03</span>
                 <div>

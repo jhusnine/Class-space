@@ -2,7 +2,9 @@
 
 declare(strict_types=1);
 
-session_start();
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 header('Content-Type: application/json; charset=utf-8');
 
 function respond(array $payload, int $status = 200): never
@@ -28,7 +30,7 @@ if (!isset($_SESSION['id'])) {
     ], 401);
 }
 
-require '../../includes/database_include.php';
+require_once __DIR__ . '/../../includes/database_include.php';
 
 date_default_timezone_set('Asia/Manila');
 $todayDate = date('Y-m-d');
