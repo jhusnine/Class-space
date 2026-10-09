@@ -30,6 +30,9 @@ if (!isset($_SESSION['id'])) {
 
 require '../../includes/database_include.php';
 
+date_default_timezone_set('Asia/Manila');
+$todayDate = date('Y-m-d');
+
 $roomId = filter_var($_GET['room_id'] ?? null, FILTER_VALIDATE_INT);
 $start  = is_string($_GET['start'] ?? null) ? trim($_GET['start']) : '';
 $end    = is_string($_GET['end'] ?? null) ? trim($_GET['end']) : '';
@@ -157,7 +160,7 @@ try {
                      AND schedule_end > ?)
                     OR
                     (schedule_day IS NOT NULL
-                     AND schedule_day >= CURDATE()
+                     AND schedule_day >= ?
                      AND LOWER(DAYNAME(schedule_day)) = ?
                      AND schedule_start < ?
                      AND schedule_end > ?)
@@ -165,7 +168,7 @@ try {
              ORDER BY schedule_start ASC
              LIMIT 1'
         );
-        $stmt->execute([$roomId, $dow, $end, $start, $dow, $end, $start]);
+        $stmt->execute([$roomId, $dow, $end, $start, $todayDate, $dow, $end, $start]);
     }
 
     $conflict = $stmt->fetch();

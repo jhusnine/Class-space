@@ -24,6 +24,9 @@ if (!isset($_SESSION['id'])) {
 
 require_once __DIR__ . '/../../includes/database_include.php';
 
+date_default_timezone_set('Asia/Manila');
+$todayDate = date('Y-m-d');
+
 $roomId = filter_var($_GET['room_id'] ?? null, FILTER_VALIDATE_INT);
 $start  = is_string($_GET['start'] ?? null) ? trim($_GET['start']) : '';
 $end    = is_string($_GET['end'] ?? null) ? trim($_GET['end']) : '';
@@ -152,18 +155,18 @@ try {
             SELECT schedule_start, schedule_end FROM schedule
             WHERE room_id = ? AND (
                 (schedule_day IS NULL AND LOWER(schedule_day_of_week) = ?)
-                OR (schedule_day IS NOT NULL AND schedule_day >= CURDATE() AND LOWER(DAYNAME(schedule_day)) = ?)
+                OR (schedule_day IS NOT NULL AND schedule_day >= ? AND LOWER(DAYNAME(schedule_day)) = ?)
             )
             UNION
             SELECT pending_schedule_start AS schedule_start, pending_schedule_end AS schedule_end
             FROM pendingschedule
             WHERE room_id = ? AND pending_schedule_status = "pending" AND (
                 (pending_schedule_day IS NULL AND LOWER(pending_schedule_day_of_week) = ?)
-                OR (pending_schedule_day IS NOT NULL AND pending_schedule_day >= CURDATE() AND LOWER(DAYNAME(pending_schedule_day)) = ?)
+                OR (pending_schedule_day IS NOT NULL AND pending_schedule_day >= ? AND LOWER(DAYNAME(pending_schedule_day)) = ?)
             )
             ORDER BY schedule_start ASC
         ');
-        $stmtBookings->execute([$roomId, $targetDow, $targetDow, $roomId, $targetDow, $targetDow]);
+        $stmtBookings->execute([$roomId, $targetDow, $todayDate, $targetDow, $roomId, $targetDow, $todayDate, $targetDow]);
     }
 
     $bookings = $stmtBookings->fetchAll();
@@ -251,23 +254,39 @@ try {
     }
 
     // PHASE 2: Find Alternative Rooms for the EXACT Requested Time (Constraint Relaxation)
-    $stmtPeerRooms = $pdo->prepare('
+    // Step 2A: Query all available rooms in the SAME hall that meet or exceed capacity
+    $stmtSameHall = $pdo->prepare('
         SELECT r.room_id, r.room_name, r.room_capacity, r.room_type, r.room_has_ac, r.room_status,
                h.hall_id, h.hall_name
         FROM room r
         JOIN hall h ON r.hall_id = h.hall_id
         WHERE r.room_status = "available"
           AND r.room_id != ?
+          AND r.hall_id = ?
           AND r.room_capacity >= ?
-        ORDER BY (r.hall_id = ?) DESC, r.room_capacity ASC
-        LIMIT 15
+        ORDER BY r.room_capacity ASC
     ');
-    // Accept rooms within 80% of capacity threshold
-    $minCapThreshold = max(10, (int)($targetCap * 0.8));
-    $stmtPeerRooms->execute([$roomId, $minCapThreshold, $targetHall]);
-    $peerRooms = $stmtPeerRooms->fetchAll();
+    $stmtSameHall->execute([$roomId, $targetHall, $targetCap]);
+    $sameHallRooms = $stmtSameHall->fetchAll();
 
-    foreach ($peerRooms as $peer) {
+    // Step 2B: Query available rooms in OTHER halls as fallback
+    $stmtOtherHalls = $pdo->prepare('
+        SELECT r.room_id, r.room_name, r.room_capacity, r.room_type, r.room_has_ac, r.room_status,
+               h.hall_id, h.hall_name
+        FROM room r
+        JOIN hall h ON r.hall_id = h.hall_id
+        WHERE r.room_status = "available"
+          AND r.room_id != ?
+          AND r.hall_id != ?
+          AND r.room_capacity >= ?
+        ORDER BY r.room_capacity ASC
+    ');
+    $stmtOtherHalls->execute([$roomId, $targetHall, $targetCap]);
+    $otherHallRooms = $stmtOtherHalls->fetchAll();
+
+    $allPeerRooms = array_merge($sameHallRooms, $otherHallRooms);
+
+    foreach ($allPeerRooms as $peer) {
         $peerId = (int)$peer['room_id'];
 
         // Verify if peer room has conflicts during [reqStart, reqEnd]
@@ -295,19 +314,19 @@ try {
                 SELECT schedule_id FROM schedule
                 WHERE room_id = ? AND (
                     (schedule_day IS NULL AND LOWER(schedule_day_of_week) = ? AND schedule_start < ? AND schedule_end > ?)
-                    OR (schedule_day IS NOT NULL AND schedule_day >= CURDATE() AND LOWER(DAYNAME(schedule_day)) = ? AND schedule_start < ? AND schedule_end > ?)
+                    OR (schedule_day IS NOT NULL AND schedule_day >= ? AND LOWER(DAYNAME(schedule_day)) = ? AND schedule_start < ? AND schedule_end > ?)
                 )
                 UNION
                 SELECT pending_id AS schedule_id FROM pendingschedule
                 WHERE room_id = ? AND pending_schedule_status = "pending" AND (
                     (pending_schedule_day IS NULL AND LOWER(pending_schedule_day_of_week) = ? AND pending_schedule_start < ? AND pending_schedule_end > ?)
-                    OR (pending_schedule_day IS NOT NULL AND pending_schedule_day >= CURDATE() AND LOWER(DAYNAME(pending_schedule_day)) = ? AND pending_schedule_start < ? AND pending_schedule_end > ?)
+                    OR (pending_schedule_day IS NOT NULL AND pending_schedule_day >= ? AND LOWER(DAYNAME(pending_schedule_day)) = ? AND pending_schedule_start < ? AND pending_schedule_end > ?)
                 )
                 LIMIT 1
             ');
             $stmtPeerConflict->execute([
-                $peerId, $targetDow, $end, $start, $targetDow, $end, $start,
-                $peerId, $targetDow, $end, $start, $targetDow, $end, $start
+                $peerId, $targetDow, $end, $start, $todayDate, $targetDow, $end, $start,
+                $peerId, $targetDow, $end, $start, $todayDate, $targetDow, $end, $start
             ]);
         }
 
