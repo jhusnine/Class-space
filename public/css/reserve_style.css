@@ -835,3 +835,25 @@ body.light-mode .ai-reason-text {
         filter: drop-shadow(0 0 6px rgba(201, 154, 27, 0.7));
     }
 }
+
+@media (max-width: 480px) {
+    .ai-suggestions-container {
+        padding: 14px 12px;
+    }
+
+    .ai-card-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 6px;
+    }
+
+    .ai-type-pill {
+        align-self: flex-start;
+    }
+
+    .btn-apply-suggestion {
+        width: 100%;
+        justify-content: center;
+        padding: 9px 14px;
+    }
+}

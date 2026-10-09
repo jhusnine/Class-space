@@ -127,6 +127,10 @@ function toggleType() {
 }
 
 let currentSuggestions = [];
+let conflictAbortController = null;
+let aiAbortController = null;
+let lastConflictReqId = 0;
+let lastAiReqId = 0;
 
 function escapeHtml(str) {
     if (!str) return '';
@@ -148,6 +152,13 @@ function checkConflicts() {
     const warning     = document.getElementById("conflict-warning");
     const aiContainer = document.getElementById("ai-suggestions-container");
 
+    if (conflictAbortController) {
+        conflictAbortController.abort();
+    }
+    if (aiAbortController) {
+        aiAbortController.abort();
+    }
+
     warning.style.display = "none";
     if (aiContainer) aiContainer.style.display = "none";
 
@@ -159,15 +170,24 @@ function checkConflicts() {
     if (type === "one-time") params.append("date", date);
     else                     params.append("dow",  dow);
 
-    fetch(`../controllers/check_conflict.php?${params}`)
+    conflictAbortController = new AbortController();
+    const reqId = ++lastConflictReqId;
+
+    fetch(`../controllers/check_conflict.php?${params}`, { signal: conflictAbortController.signal })
         .then(r => r.json())
         .then(res => {
+            if (reqId !== lastConflictReqId) return; // Discard stale response
             if (res.conflict) {
                 document.getElementById("conflict-msg").textContent = res.message;
                 warning.style.display = "block";
                 if (res.has_suggestions) {
                     fetchAiSuggestions(params);
                 }
+            }
+        })
+        .catch(err => {
+            if (err.name !== 'AbortError') {
+                console.error("Conflict check error:", err);
             }
         });
 }
@@ -178,13 +198,20 @@ function fetchAiSuggestions(params) {
     const summaryText = document.getElementById("ai-summary-text");
     if (!aiContainer || !cardsList) return;
 
+    if (aiAbortController) {
+        aiAbortController.abort();
+    }
+    aiAbortController = new AbortController();
+    const aiReqId = ++lastAiReqId;
+
     aiContainer.style.display = "block";
     summaryText.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Analyzing campus facilities & open intervals via CSP engine...';
     cardsList.innerHTML = '';
 
-    fetch(`../controllers/ai_suggest_controller.php?${params}`)
+    fetch(`../controllers/ai_suggest_controller.php?${params}`, { signal: aiAbortController.signal })
         .then(r => r.json())
         .then(res => {
+            if (aiReqId !== lastAiReqId) return; // Discard stale response
             if (!res.success || !res.suggestions || res.suggestions.length === 0) {
                 summaryText.textContent = res.ai_summary || "No immediate alternative slots found for this date. Please consider adjusting the day or time window.";
                 return;
@@ -222,8 +249,10 @@ function fetchAiSuggestions(params) {
                 </div>
             `).join('');
         })
-        .catch(() => {
-            summaryText.textContent = "Could not fetch automated suggestions right now.";
+        .catch(err => {
+            if (err.name !== 'AbortError') {
+                summaryText.textContent = "Could not fetch automated suggestions right now.";
+            }
         });
 }
 
