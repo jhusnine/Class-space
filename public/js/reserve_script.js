@@ -45,8 +45,24 @@ fetch("../controllers/room_controller.php?action=get_halls")
             sel.appendChild(opt);
         });
 
-        const preHallId = document.getElementById("preHallId").value;
-        const preRoomId = document.getElementById("preRoomId").value;
+        const preHallId = document.getElementById("preHallId")?.value;
+        const preRoomId = document.getElementById("preRoomId")?.value;
+        const preDate   = document.getElementById("preDate")?.value;
+        const preStart  = document.getElementById("preStart")?.value;
+        const preEnd    = document.getElementById("preEnd")?.value;
+
+        if (preDate) {
+            const dateInput = document.getElementById("schedule-date");
+            if (dateInput) dateInput.value = preDate;
+        }
+        if (preStart) {
+            const startInput = document.getElementById("schedule-start");
+            if (startInput) startInput.value = preStart;
+        }
+        if (preEnd) {
+            const endInput = document.getElementById("schedule-end");
+            if (endInput) endInput.value = preEnd;
+        }
 
         if (preHallId) {
             document.getElementById("hall-select").value = preHallId;

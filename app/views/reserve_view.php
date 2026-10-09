@@ -7,7 +7,10 @@ if (!isset($_SESSION["id"])) {
 
 $preHallId = intval($_GET["hall_id"] ?? 0);
 $preRoomId = intval($_GET["room_id"] ?? 0);
-$fname    = htmlspecialchars($_SESSION["fname"] ?? "User");
+$preDate   = htmlspecialchars($_GET["date"] ?? "");
+$preStart  = htmlspecialchars($_GET["start"] ?? "");
+$preEnd    = htmlspecialchars($_GET["end"] ?? "");
+$fname     = htmlspecialchars($_SESSION["fname"] ?? "User");
 $lname    = htmlspecialchars($_SESSION["lname"] ?? "");
 $initials = strtoupper(substr($fname, 0, 1) . substr($lname, 0, 1));
 $themeClass = (isset($_COOKIE['theme']) && $_COOKIE['theme'] === 'light') ? 'light-mode' : '';
@@ -203,6 +206,9 @@ $themeClass = (isset($_COOKIE['theme']) && $_COOKIE['theme'] === 'light') ? 'lig
 </div>
 <input type="hidden" id="preHallId" value="<?= $preHallId ?>">
 <input type="hidden" id="preRoomId" value="<?= $preRoomId ?>">
+<input type="hidden" id="preDate" value="<?= $preDate ?>">
+<input type="hidden" id="preStart" value="<?= $preStart ?>">
+<input type="hidden" id="preEnd" value="<?= $preEnd ?>">
 <script src="../../public/js/toast.js?v=<?php echo time(); ?>"></script>
 <script src="../../public/js/reserve_script.js?v=<?php echo time(); ?>"></script>
 </body>

@@ -20,8 +20,10 @@ try {
             sched.schedule_end,
             sched.schedule_day,
             sched.account_id,
+            r.room_id,
             r.room_name,
             r.room_type,
+            h.hall_id,
             h.hall_name,
             acc.account_fname,
             acc.account_lname
