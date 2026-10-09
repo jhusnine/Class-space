@@ -49,15 +49,15 @@
 - Consumes: `$_GET['room_id']`, `$_GET['start']`, `$_GET['end']`, `$_GET['type']`, `$_GET['date']`, `$_GET['dow']`.
 - Produces: JSON `{ "conflict": bool, "available": bool, "has_suggestions": bool, "message": string }`.
 
-- [ ] **Step 1: Write automated failing test script**
+- [x] **Step 1: Write automated failing test script**
   Create `tests/test_check_conflict_weekly_fix.php` to simulate checking a weekly booking on a day with an existing one-time reservation in the database.
-- [ ] **Step 2: Run test to confirm failure**
+- [x] **Step 2: Run test to confirm failure**
   Execute `php tests/test_check_conflict_weekly_fix.php` and verify it fails (as weekly query currently ignores `schedule_day`).
-- [ ] **Step 3: Modify `app/controllers/check_conflict.php`**
+- [x] **Step 3: Modify `app/controllers/check_conflict.php`**
   Update the weekly check query to also detect overlapping future one-time reservations (`schedule_day >= CURDATE() AND LOWER(DAYNAME(schedule_day)) = ?`). Add `'has_suggestions' => true` to conflict response payloads.
-- [ ] **Step 4: Run test to verify success**
+- [x] **Step 4: Run test to verify success**
   Re-run `php tests/test_check_conflict_weekly_fix.php` and confirm exit code 0.
-- [ ] **Step 5: Git commit**
+- [x] **Step 5: Git commit**
   Commit message: `fix(reservations): bidirectional weekly conflict check and suggestion signal (#8)`
 
 ---
@@ -72,20 +72,20 @@
 - Consumes: `$_GET['room_id']`, `$_GET['date']`, `$_GET['dow']`, `$_GET['start']`, `$_GET['end']`, `$_GET['type']`, `$_GET['capacity']`.
 - Produces: JSON `{ "success": true, "conflict_detected": true, "ai_summary": string, "suggestions": array }`.
 
-- [ ] **Step 1: Write automated test for CSP suggestions**
+- [x] **Step 1: Write automated test for CSP suggestions**
   Create `tests/test_ai_suggest_controller.php` asserting that when room 14 is conflicted, the controller returns a 200 JSON payload with `suggestions` array containing valid alternative times or rooms.
-- [ ] **Step 2: Run test to verify failure**
+- [x] **Step 2: Run test to verify failure**
   Execute `php tests/test_ai_suggest_controller.php` and verify failure (file does not yet exist).
-- [ ] **Step 3: Implement `app/controllers/ai_suggest_controller.php`**
+- [x] **Step 3: Implement `app/controllers/ai_suggest_controller.php`**
   - Implement operating hour discretization (`07:00` to `21:00`, 30-min steps).
   - Implement Phase 1: Free gap interval detection for the conflicting room.
   - Implement Phase 2: Candidate room search within the same hall with $\text{capacity} \ge \text{target}$ and $\text{status} = \text{'available'}$.
   - Implement Phase 3: Heuristic penalty scoring function:
     $$\text{Penalty} = (\Delta_{\text{time}} \times 1.0) + (\text{DiffHall} \times 60) + (\Delta_{\text{cap}} \times 0.5) + (\text{Mismatch} \times 40)$$
   - Implement Phase 4: AI narrative generator producing contextual reasoning for each suggestion.
-- [ ] **Step 4: Run test to verify passing**
+- [x] **Step 4: Run test to verify passing**
   Execute `php tests/test_ai_suggest_controller.php` and verify exit code 0 and valid suggestions output.
-- [ ] **Step 5: Git commit**
+- [x] **Step 5: Git commit**
   Commit message: `feat(ai): implement CSP slot and room recommendation controller`
 
 ---
@@ -101,18 +101,18 @@
 - Consumes: JSON response from `ai_suggest_controller.php`.
 - Produces: Dynamic DOM cards `#ai-suggestions-container` with click handler `applySuggestion(index)`.
 
-- [ ] **Step 1: Add HTML skeleton markup**
+- [x] **Step 1: Add HTML skeleton markup**
   Add `<div id="ai-suggestions-container" class="ai-suggestions-container" style="display:none;"></div>` in `app/views/reserve_view.php` beneath `#conflict-warning`.
-- [ ] **Step 2: Add styles in `public/css/reserve_style.css`**
+- [x] **Step 2: Add styles in `public/css/reserve_style.css`**
   Add CSS tokens for `.ai-suggestions-container`, `.ai-card`, `.ai-badge`, `.btn-apply-suggestion`, with smooth entrance transitions and light/dark theme variables.
-- [ ] **Step 3: Update `public/js/reserve_script.js`**
+- [x] **Step 3: Update `public/js/reserve_script.js`**
   - Modify `checkConflicts()`: When `res.conflict` is true, trigger `fetch('../controllers/ai_suggest_controller.php?' + params)`.
   - Render suggestion cards inside `#ai-suggestions-container`.
   - Implement `applySuggestion(suggestion)`: Automatically update `#hall-select`, `#room-select`, `#schedule-start`, `#schedule-end`, display toast alert, and trigger `checkConflicts()`.
   - When `res.conflict` is false, hide `#ai-suggestions-container`.
-- [ ] **Step 4: Manual browser validation**
+- [x] **Step 4: Manual browser validation**
   Open reservation form, select an occupied slot, verify AI recommendation cards appear, click "Apply Suggestion", and verify inputs update cleanly.
-- [ ] **Step 5: Git commit**
+- [x] **Step 5: Git commit**
   Commit message: `feat(reservations): interactive AI suggestion cards and 1-click apply`
 
 ---
@@ -128,17 +128,17 @@
 - Consumes: `allSchedules` and `myPending` arrays in `calendar_script.js`.
 - Produces: Visual `.conflict-tag` badges on calendar cells and `#cal-inspector-modal`.
 
-- [ ] **Step 1: Add inspector modal markup to `app/views/calendar_view.php`**
+- [x] **Step 1: Add inspector modal markup to `app/views/calendar_view.php`**
   Insert modal dialog markup with title, event details, and "Find Alternative with AI" button.
-- [ ] **Step 2: Add CSS in `public/css/calendar_style.css`**
+- [x] **Step 2: Add CSS in `public/css/calendar_style.css`**
   Add styling for `.cal-event.has-conflict`, `.conflict-badge-pill`, and modal styling.
-- [ ] **Step 3: Update `public/js/calendar_script.js`**
+- [x] **Step 3: Update `public/js/calendar_script.js`**
   - In `renderWeek()`: Detect when multiple events share the exact same `room_name` with overlapping time ranges, attaching `.has-conflict` class and a warning indicator.
   - Add click listener on events to open the inspector modal with pre-configured parameters.
   - Add "Find Alternative with AI" action that redirects to `reserve_view.php` with pre-filled room and date query params.
-- [ ] **Step 4: Manual browser validation**
+- [x] **Step 4: Manual browser validation**
   Navigate to `calendar_view.php`, inspect overlapping bookings, and test the AI alternative redirection.
-- [ ] **Step 5: Git commit**
+- [x] **Step 5: Git commit**
   Commit message: `feat(calendar): visual double-booking conflict badges and AI inspector modal`
 
 ---
@@ -150,11 +150,11 @@
 - Modify: `.ai/docs/components/reservations.md`
 - Modify: `.ai/docs/decisions.md`
 
-- [ ] **Step 1: Execute all unit and regression tests**
+- [x] **Step 1: Execute all unit and regression tests**
   Run `php tests/test_check_conflict_weekly_fix.php` and `php tests/test_ai_suggest_controller.php`.
-- [ ] **Step 2: Update DeepInit Documentation**
+- [x] **Step 2: Update DeepInit Documentation**
   Mark Issue #8 as RESOLVED in `.ai/docs/issues.md` and add Architectural Decision Record `ADR-006: Heuristic Constraint Satisfaction Problem Engine for Conflict Resolution` in `.ai/docs/decisions.md`.
-- [ ] **Step 3: Run citation verification**
+- [x] **Step 3: Run citation verification**
   Run `python .ai/verify_citations.py` to ensure 100% citation resolution across documentation layers.
-- [ ] **Step 4: Git commit & push**
+- [x] **Step 4: Git commit & push**
   Commit message: `chore(docs): mark issue 8 resolved and document CSP architecture`
