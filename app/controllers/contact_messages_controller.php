@@ -25,20 +25,17 @@ if (!isset($_SESSION["id"]) || !is_numeric($_SESSION["id"])) {
 }
 
 // Database configuration
-$host = 'localhost';
-$db = 'classspace';
-$user = 'root';
-$pass = '';
+require "../../includes/database_include.php";
 $charset = 'utf8mb4';
 
 try {
-    $dsn = "mysql:host=$host;dbname=$db;charset=$charset";
+    $dsn = "mysql:host=$host;dbname=$dbname;charset=$charset";
     $options = [
         PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
         PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
         PDO::ATTR_EMULATE_PREPARES => false,
     ];
-    $pdo = new PDO($dsn, $user, $pass, $options);
+    $pdo = new PDO($dsn, $db_user, $db_pass, $options);
 } catch (PDOException $e) {
     http_response_code(500);
     echo json_encode(['success' => false, 'message' => 'Database connection failed']);

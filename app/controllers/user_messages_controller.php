@@ -13,13 +13,10 @@ if (!isset($_SESSION["id"])) {
     exit;
 }
 
-$host = 'localhost';
-$db = 'classspace';
-$user = 'root';
-$pass = '';
+require "../../includes/database_include.php";
 
 try {
-    $pdo = new PDO("mysql:host=$host;dbname=$db;charset=utf8mb4", $user, $pass);
+    $pdo = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8mb4", $db_user, $db_pass);
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 } catch (PDOException $e) {
     http_response_code(500);
