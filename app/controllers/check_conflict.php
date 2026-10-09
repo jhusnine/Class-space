@@ -146,17 +146,26 @@ try {
             $start
         ]);
     } else {
-        /* Preserve the existing overlap logic for weekly reservations. */
+        /* Check both recurring weekly schedules AND upcoming one-time reservations on this weekday */
         $stmt = $pdo->prepare(
             'SELECT schedule_start, schedule_end FROM schedule
              WHERE room_id = ?
-               AND schedule_day IS NULL
-               AND LOWER(schedule_day_of_week) = ?
-               AND schedule_start < ?
-               AND schedule_end > ?
+               AND (
+                    (schedule_day IS NULL
+                     AND LOWER(schedule_day_of_week) = ?
+                     AND schedule_start < ?
+                     AND schedule_end > ?)
+                    OR
+                    (schedule_day IS NOT NULL
+                     AND schedule_day >= CURDATE()
+                     AND LOWER(DAYNAME(schedule_day)) = ?
+                     AND schedule_start < ?
+                     AND schedule_end > ?)
+               )
+             ORDER BY schedule_start ASC
              LIMIT 1'
         );
-        $stmt->execute([$roomId, $dow, $end, $start]);
+        $stmt->execute([$roomId, $dow, $end, $start, $dow, $end, $start]);
     }
 
     $conflict = $stmt->fetch();
@@ -165,6 +174,7 @@ try {
         respond([
             'conflict' => true,
             'available' => false,
+            'has_suggestions' => true,
             'error' => 'conflict',
             'message' => 'This room is already booked from ' .
                 formatTime((string) $conflict['schedule_start']) .
@@ -177,6 +187,7 @@ try {
     respond([
         'conflict' => false,
         'available' => true,
+        'has_suggestions' => false,
         'message' => 'The room is available for the selected time.'
     ]);
 } catch (PDOException $exception) {
