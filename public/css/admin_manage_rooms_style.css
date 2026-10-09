@@ -1,0 +1,343 @@
+/* ==========================================================================
+   1. THEME VARIABLES (DARK MODE DEFAULT / LIGHT MODE OVERRIDES)
+   ========================================================================== */
+:root {
+    --background-slate: #060d1e;
+    --surface-slate: #0f172a;
+    --text-high: #f8fafc;
+    --text-low: #94a3b8;
+    --border-slate: #1e293b;
+    --accent-sky: #38bdf8;
+    --modal-bg: #0d1220;
+    --dropdown-bg: #0d1829;
+}
+
+body.light-mode {
+    --background-slate: #f8fafc;
+    --surface-slate: #ffffff;
+    --text-high: #0f172a;
+    --text-low: #64748b;
+    --border-slate: #e2e8f0;
+    --modal-bg: #ffffff;
+    --dropdown-bg: #f1f5f9;
+}
+
+/* ── Page Header ─────────────────────────────── */
+.page-header { margin-bottom: 32px; }
+.page-title { font-size: 30px; font-weight: 700; margin-bottom: 4px; color: var(--text-high); }
+.highlight { color: var(--accent-sky); }
+.page-subtitle { color: var(--text-low); font-size: 14px; }
+
+/* ── Table wrapper ───────────────────────────── */
+.table-card {
+    background: var(--surface-slate);
+    border: 1px solid var(--border-slate);
+    border-radius: 16px;
+    overflow: hidden;
+}
+
+.table-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 24px 16px;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+/* ── Inline stats inside table header ────────── */
+.table-stats { display: flex; gap: 10px; flex-wrap: wrap; }
+
+.tstat {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    border: 1px solid;
+}
+
+.tstat-total { background: rgba(56,189,248,0.08); border-color: rgba(56,189,248,0.25); color: var(--accent-sky); }
+.tstat-avail { background: rgba(74,222,128,0.08); border-color: rgba(74,222,128,0.25); color: #4ade80; }
+.tstat-unavail { background: rgba(255,107,107,0.08); border-color: rgba(255,107,107,0.25); color: #ff6b6b; }
+.tstat-maint { background: rgba(250,204,21,0.08); border-color: rgba(250,204,21,0.25); color: #facc15; }
+
+.tstat .dot { width: 7px; height: 7px; border-radius: 50%; }
+.tstat-total .dot { background: var(--accent-sky); }
+.tstat-avail .dot { background: #4ade80; }
+.tstat-unavail .dot { background: #ff6b6b; }
+.tstat-maint .dot { background: #facc15; }
+
+/* Stat badges - WALANG GALAW O HOVER TRANSITION EFFECT */
+.tstat-avail, .tstat-unavail, .tstat-maint { cursor: pointer; opacity: 1; }
+.tstat-avail:hover { background: rgba(74,222,128,0.15); }
+.tstat-unavail:hover { background: rgba(255,107,107,0.15); }
+.tstat-maint:hover { background: rgba(250,204,21,0.15); }
+
+/* Active / selected state */
+.tstat-avail.tstat-active { background: rgba(74,222,128,0.22); border-color: rgba(74,222,128,0.6); }
+.tstat-unavail.tstat-active { background: rgba(255,107,107,0.22); border-color: rgba(255,107,107,0.6); }
+.tstat-maint.tstat-active { background: rgba(250,204,21,0.22); border-color: rgba(250,204,21,0.6); }
+
+/* Dim unselected badges when one is active */
+.tstat-active ~ .tstat:not(.tstat-active),
+.tstat:has(~ .tstat-active) { opacity: 0.45; }
+
+/* ── Search bar in toolbar ───────────────────── */
+.toolbar-search { display: flex; align-items: center; gap: 8px; position: relative; }
+.toolbar-search .search-input { width: 220px; }
+.toolbar-search .search-results { right: 0; min-width: 260px; }
+
+/* ── Table itself ────────────────────────────── */
+.rooms-table { width: 100%; border-collapse: collapse; margin-top: 0; }
+.rooms-table thead { background: rgba(56,189,248,0.05); border-bottom: 1px solid var(--border-slate); }
+.rooms-table th { padding: 14px 16px; text-align: left; font-size: 11px; font-weight: 700; color: var(--text-low); text-transform: uppercase; letter-spacing: 0.6px; }
+.rooms-table td { padding: 12px 16px; border-bottom: 1px solid var(--border-slate); font-size: 13px; color: var(--text-high); vertical-align: middle; }
+.rooms-table tr:last-child td { border-bottom: none; }
+.rooms-table tbody tr:hover { background: rgba(56,189,248,0.02); }
+
+.th-id { width: 48px; }
+.th-room_capacity { width: 120px; }
+.th-action { width: 260px; }
+
+.td-empty { text-align: center; color: var(--text-low); padding: 40px; }
+.td-index { color: var(--text-low); }
+.td-muted { color: var(--text-low); }
+.td-actions { display: flex; align-items: center; gap: 8px; }
+.cell-primary { font-weight: 600; font-size: 13px; }
+.cell-secondary { font-size: 11px; color: var(--text-low); }
+
+/* ── Loading State ───────────────────────────── */
+.loading-cell { text-align: center; color: var(--text-low); padding: 40px; }
+.spinner-center { margin: 0 auto; }
+
+/* ── Custom Status Dropdown (NO NATIVE SLIDE ANIMATION) ── */
+.custom-status-wrap {
+    position: relative;
+    display: inline-block;
+}
+
+.custom-status-btn {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 6px 12px;
+    border-radius: 7px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    border: 1px solid transparent;
+    width: 140px;
+    background: none;
+}
+
+.custom-status-btn .csd-arrow {
+    margin-left: auto;
+    font-size: 10px;
+    opacity: 0.7;
+}
+
+.custom-status-btn .csd-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+/* Button color states */
+.custom-status-btn.s-available  { background-color: rgba(74,222,128,0.12); color: #4ade80; border-color: rgba(74,222,128,0.2); }
+.custom-status-btn.s-unavailable{ background-color: rgba(255,107,107,0.12); color: #ff6b6b; border-color: rgba(255,107,107,0.2); }
+.custom-status-btn.s-maintenance{ background-color: rgba(250,204,21,0.12); color: #facc15; border-color: rgba(250,204,21,0.2); }
+.custom-status-btn.s-available  .csd-dot { background: #4ade80; }
+.custom-status-btn.s-unavailable .csd-dot { background: #ff6b6b; }
+.custom-status-btn.s-maintenance .csd-dot { background: #facc15; }
+
+.custom-status-btn:hover { filter: brightness(1.1); }
+
+/* Dropdown menu — hidden by default, shown when .open */
+.custom-status-menu {
+    display: none;
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    min-width: 140px;
+    background: var(--dropdown-bg);
+    border: 1px solid var(--border-slate);
+    border-radius: 9px;
+    overflow: hidden;
+    z-index: 9999;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.35);
+}
+
+.custom-status-wrap.open .custom-status-menu { display: block; }
+
+.csm-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 9px 14px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.csm-item .csd-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+.csm-available   { color: #4ade80; } .csm-available   .csd-dot { background: #4ade80; }
+.csm-unavailable { color: #ff6b6b; } .csm-unavailable .csd-dot { background: #ff6b6b; }
+.csm-maintenance { color: #facc15; } .csm-maintenance .csd-dot { background: #facc15; }
+.csm-item:hover  { background: rgba(255,255,255,0.05); }
+
+/* Proteksyon laban sa layout system components extension */
+.markdown-loading>:not(ol):not(ul):not(pre):last-child:after,
+.markdown-loading>ol:last-child li:last-child:after,
+.markdown-loading>ul:last-child li:last-child:after,
+.li-TurODF {
+    display: none !important;
+    content: none !important;
+}
+
+/* ── View Reservations button (WALANG ANIMATION AT GALAW) ── */
+.btn-view-res {
+    padding: 6px 12px;
+    background: rgba(56,189,248,0.12);
+    color: var(--accent-sky);
+    border: 1px solid rgba(56,189,248,0.25);
+    border-radius: 7px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+}
+.btn-view-res:hover { background: rgba(56,189,248,0.22); }
+.btn-icon { margin-right: 5px; }
+
+/* ── Pagination footer ───────────────────────── */
+.table-footer { display: flex; align-items: center; justify-content: space-between; padding: 16px 24px; border-top: 1px solid var(--border-slate); flex-wrap: wrap; gap: 12px; }
+.showing-label { color: var(--text-low); font-size: 13px; }
+.showing-label strong { color: var(--text-high); }
+.pagination-right { display: flex; align-items: center; gap: 12px; }
+.per-page-wrap { display: flex; align-items: center; gap: 8px; color: var(--text-low); font-size: 13px; }
+
+.per-page-select {
+    width: auto !important;
+    padding: 5px 10px !important;
+    font-size: 12px !important;
+    background-color: rgba(56,189,248,0.07) !important;
+    border: 1px solid var(--border-slate) !important;
+    color: var(--text-high) !important;
+    cursor: pointer;
+    border-radius: 6px;
+}
+
+.pag-btns { display: flex; gap: 4px; }
+.pag-icon { font-size: 11px; }
+
+.pag-btn {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 7px;
+    background: rgba(56,189,248,0.06);
+    border: 1px solid var(--border-slate);
+    color: var(--text-low);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+}
+.pag-btn:hover { background: rgba(56,189,248,0.15); color: var(--accent-sky); border-color: var(--accent-sky); }
+.pag-btn.active { background: rgba(56,189,248,0.22); color: var(--accent-sky); border-color: var(--accent-sky); }
+.pag-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+
+/* ── Modal overlay ───────────────────────────── */
+.modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.65); z-index: 10000; align-items: center; justify-content: center; padding: 20px; }
+.modal-overlay.open { display: flex; }
+
+.modal-box {
+    background: var(--modal-bg);
+    border: 1px solid var(--border-slate);
+    border-radius: 16px;
+    width: 100%;
+    max-width: 720px;
+    max-height: 80vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    color: var(--text-high);
+}
+
+.modal-header { display: flex; align-items: center; justify-content: space-between; padding: 22px 26px 16px; border-bottom: 1px solid var(--border-slate); flex-shrink: 0; }
+.modal-title { font-size: 17px; font-weight: 700; }
+.modal-title span { color: var(--accent-sky); }
+.modal-hall-label { color: var(--text-low); font-size: 13px; font-weight: 400; }
+
+.modal-close {
+    width: 32px;
+    height: 32px;
+    background: rgba(255,255,255,0.06);
+    border: none;
+    border-radius: 8px;
+    color: var(--text-low);
+    font-size: 18px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.modal-close:hover { background: rgba(255,107,107,0.15); color: #ff6b6b; }
+
+.modal-body { overflow-y: auto; padding: 20px 26px; flex: 1; }
+.modal-empty { color: var(--text-low); font-size: 14px; text-align: center; padding: 40px 0; }
+.modal-empty-icon { font-size: 28px; margin-bottom: 12px; display: block; opacity: 0.4; }
+
+/* ── Reservations list inside modal ──────────── */
+.res-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 16px;
+    border-radius: 10px;
+    background: rgba(56,189,248,0.03);
+    border: 1px solid var(--border-slate);
+    margin-bottom: 10px;
+    gap: 12px;
+}
+.res-item:last-child { margin-bottom: 0; }
+.res-info { flex: 1; min-width: 0; }
+.res-info .res-name { font-size: 13px; font-weight: 600; margin-bottom: 3px; }
+.res-info .res-meta { font-size: 11px; color: var(--text-low); }
+.res-username { color: var(--text-low); font-weight: 400; font-size: 11px; }
+
+.res-type-badge { font-size: 10px; padding: 2px 8px; border-radius: 4px; font-weight: 600; flex-shrink: 0; }
+.res-type-badge.weekly { background: rgba(56,189,248,0.12); color: var(--accent-sky); }
+.res-type-badge.onetime { background: rgba(74,222,128,0.12); color: #4ade80; }
+
+.btn-del-res {
+    padding: 5px 12px;
+    background: rgba(255,107,107,0.1);
+    color: #ff6b6b;
+    border: 1px solid rgba(255,107,107,0.25);
+    border-radius: 7px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+.btn-del-res:hover { background: rgba(255,107,107,0.22); }
+
+/* ── Loading spinner inside modal ────────────── */
+.modal-loading { display: flex; align-items: center; justify-content: center; gap: 10px; padding: 40px 0; color: var(--text-low); font-size: 14px; }
+
+.spinner {
+    width: 20px;
+    height: 20px;
+    border: 2px solid rgba(56,189,248,0.2);
+    border-top-color: var(--accent-sky);
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }

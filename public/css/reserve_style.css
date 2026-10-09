@@ -1,0 +1,591 @@
+/* ClassSpace Reserve page — focused UI/layout overrides.
+   Preserves existing IDs, classes, fields, JavaScript hooks, and reservation logic. */
+
+/* Keep the page aligned with the shared ClassSpace shell. */
+.main-content {
+    width: 100%;
+    min-width: 0;
+    padding: 36px 24px 48px;
+}
+
+/* Center the heading and reservation card as one readable content column. */
+.main-content > .page-header,
+.main-content > .reservation-card {
+    width: min(100%, 900px);
+    margin-inline: auto;
+}
+
+.main-content > .page-header {
+    margin-bottom: 24px;
+}
+
+.main-content > .page-header h1 {
+    line-height: 1.2;
+}
+
+.main-content > .page-header p {
+    max-width: 54ch;
+    line-height: 1.55;
+}
+
+.reservation-card {
+    width: 100%;
+    max-width: 900px;
+    margin-inline: auto;
+    padding: 28px;
+    background: var(--card, #111A2E);
+    border: 1px solid var(--border-card, #26354D);
+    border-radius: 14px;
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.22);
+}
+
+.card-header {
+    margin-bottom: 24px;
+}
+
+.card-header h3 {
+    color: var(--text-high, #E7ECF2);
+    font-size: 20px;
+    line-height: 1.3;
+    margin-bottom: 7px;
+}
+
+.card-subtext {
+    color: var(--text-low, #98A6B8);
+    font-size: 13px;
+    line-height: 1.55;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group > label {
+    display: block;
+    margin-bottom: 8px;
+    color: var(--text-high, #E7ECF2);
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.form-group select,
+.form-group input[type="date"],
+.form-group input[type="time"] {
+    width: 100%;
+    min-height: 44px;
+}
+
+select:focus-visible,
+input:focus-visible,
+button:focus-visible {
+    outline: 2px solid var(--brand-accent, #2F8585);
+    outline-offset: 2px;
+}
+
+.room-preview {
+    display: none;
+    margin: -4px 0 20px;
+    padding: 14px 16px;
+    background: var(--bg-input, #17233A);
+    border: 1px solid var(--border-card, #26354D);
+    border-radius: 10px;
+    color: var(--text-low, #98A6B8);
+    font-size: 13px;
+    line-height: 1.8;
+}
+
+.preview-name {
+    color: var(--text-high, #E7ECF2);
+}
+
+.radio-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px 20px;
+    margin-top: 4px;
+}
+
+.radio-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 40px;
+    color: var(--text-high, #E7ECF2);
+    font-size: 13px;
+    cursor: pointer;
+}
+
+.radio-item input {
+    width: 17px;
+    height: 17px;
+    margin: 0;
+    accent-color: var(--brand-accent, #2F8585);
+}
+
+.time-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+}
+
+.conflict-warning {
+    display: none;
+    margin: 0 0 20px;
+    padding: 12px 16px;
+    background: rgba(201, 154, 27, 0.10);
+    border: 1px solid rgba(201, 154, 27, 0.38);
+    border-radius: 10px;
+    color: #E5C66A;
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+.submit-btn {
+    width: 100%;
+    min-height: 46px;
+    justify-content: center;
+    margin-top: 4px;
+    background: var(--brand-accent, #2F8585);
+    color: var(--on-primary, #F7FAFC);
+}
+
+.submit-btn:hover:not(:disabled) {
+    background: var(--brand-accent-hover, #3A9191);
+}
+
+#field-dow {
+    display: none;
+}
+
+.preview-status-available {
+    color: #65C18C;
+    font-weight: 600;
+}
+
+.preview-status-unavailable {
+    color: #E58A8A;
+    font-weight: 600;
+}
+
+.preview-status-maintenance {
+    color: #E5C66A;
+    font-weight: 600;
+}
+
+.preview-status-unknown {
+    color: var(--text-low, #98A6B8);
+    font-weight: 600;
+}
+
+@media (max-width: 700px) {
+    .main-content {
+        padding: 24px 16px 36px;
+    }
+
+    .main-content > .page-header,
+    .main-content > .reservation-card {
+        width: 100%;
+    }
+
+    .reservation-card {
+        padding: 22px 18px;
+        border-radius: 12px;
+    }
+}
+
+@media (max-width: 480px) {
+    .time-grid {
+        grid-template-columns: 1fr;
+        gap: 0;
+    }
+
+    .radio-group {
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .radio-item {
+        min-height: 44px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        transition-duration: 0.01ms !important;
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+    }
+}
+
+
+/* Keep Reserve View aligned with the shared shell on mobile. */
+@media (max-width: 768px) {
+    .reservation-card {
+        width: 100%;
+        max-width: 900px;
+    }
+}
+
+/* Shared mobile drawer must override any page-level sidebar rules. */
+@media (max-width: 768px) {
+    .mobile-menu-toggle {
+        position: fixed;
+        top: 14px;
+        left: 16px;
+        z-index: 301;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 44px;
+        height: 44px;
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-button);
+        background: var(--surface-elevated);
+        color: var(--text-high);
+        cursor: pointer;
+    }
+
+    .sidebar {
+        display: flex;
+        position: fixed;
+        inset: 0 auto 0 0;
+        z-index: 302;
+        width: min(280px, 86vw);
+        height: 100dvh;
+        max-height: none;
+        transform: translateX(-105%);
+        transition: transform var(--transition-normal);
+        overflow-x: hidden;
+        overflow-y: auto;
+    }
+
+    body.mobile-menu-open .sidebar {
+        transform: translateX(0);
+    }
+
+    .mobile-menu-backdrop {
+        position: fixed;
+        inset: 0;
+        z-index: 301;
+        display: block;
+        background: rgba(0, 0, 0, 0.48);
+    }
+
+    .mobile-menu-backdrop[hidden] {
+        display: none;
+    }
+
+    .main-content {
+        width: 100%;
+        min-width: 0;
+        min-height: 100dvh;
+        padding: 82px 16px 32px;
+        overflow: visible;
+    }
+}
+
+
+/* Canonical desktop ClassSpace shell — identical on User View and Reserve View. */
+@media (min-width: 769px) {
+    .sidebar {
+        width: 220px;
+        min-height: 100dvh;
+        height: auto;
+        padding: 20px;
+        background: var(--sidebar-bg);
+        border-right: 1px solid var(--border-color);
+    }
+
+    .logo {
+        gap: 10px;
+        margin-bottom: 30px;
+        padding: 0;
+        color: var(--brand-accent);
+        font-size: 16px;
+    }
+
+    .logo img {
+        width: 36px;
+        height: 36px;
+    }
+
+    .nav-menu {
+        display: block;
+        padding: 0;
+    }
+
+    .nav-item {
+        margin-bottom: 2px;
+    }
+
+    .nav-link {
+        gap: 12px;
+        padding: 12px 16px;
+        border-radius: 8px;
+        border-left: 3px solid transparent;
+        font-size: 14px;
+    }
+
+    .nav-link i {
+        width: 20px;
+        font-size: 16px;
+    }
+
+    .sidebar-footer {
+        margin-top: 30px;
+        padding-top: 20px;
+    }
+
+    .main-content {
+        padding: 40px;
+    }
+}
+
+
+/* Reservation form hierarchy: group existing fields without adding new data. */
+.form-section-heading {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    margin: 24px 0 16px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border-card, #26354D);
+}
+
+.card-header + .form-section-heading {
+    margin-top: 0;
+    padding-top: 0;
+    border-top: 0;
+}
+
+.form-section-kicker {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 26px;
+    flex: 0 0 26px;
+    border-radius: 50%;
+    background: rgba(47, 133, 133, 0.14);
+    color: var(--brand-accent, #2F8585);
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.form-section-heading h4 {
+    color: var(--text-high, #E7ECF2);
+    font-size: 15px;
+    line-height: 1.3;
+    margin: 0 0 3px;
+}
+
+.form-section-heading p {
+    color: var(--text-low, #98A6B8);
+    font-size: 12px;
+    line-height: 1.45;
+    margin: 0;
+}
+
+.action-heading {
+    margin-top: 8px;
+}
+
+.field-label {
+    display: block;
+    margin-bottom: 8px;
+    color: var(--text-high, #E7ECF2);
+    font-size: 13px;
+    font-weight: 600;
+}
+
+@media (max-width: 480px) {
+    .form-section-heading {
+        margin-top: 20px;
+        padding-top: 16px;
+    }
+}
+
+
+/* Final shared authenticated-user sidebar contract. */
+.sidebar {
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+    min-width: 0;
+}
+
+.sidebar .nav-menu {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-x: hidden;
+    overflow-y: auto;
+    scrollbar-width: thin;
+}
+
+.sidebar .sidebar-footer {
+    flex: 0 0 auto;
+    margin-top: auto;
+    background: var(--sidebar-bg);
+}
+
+.sidebar .footer-link {
+    display: block;
+    min-height: 36px;
+    padding: 7px 0;
+}
+
+@media (min-width: 769px) {
+    .sidebar {
+        position: sticky;
+        top: 0;
+        height: 100dvh;
+        max-height: 100dvh;
+        overflow: hidden;
+    }
+
+    .main-content {
+        min-width: 0;
+        min-height: 100dvh;
+        overflow-x: hidden;
+        overflow-y: auto;
+    }
+}
+
+@media (max-width: 768px) {
+    body.mobile-menu-open {
+        overflow: hidden;
+    }
+
+    .mobile-menu-toggle {
+        position: fixed !important;
+        top: 14px !important;
+        left: 16px !important;
+        z-index: 301 !important;
+        width: 44px !important;
+        height: 44px !important;
+        transform: none !important;
+    }
+
+    .sidebar {
+        display: flex !important;
+        position: fixed !important;
+        inset: 0 auto 0 0 !important;
+        z-index: 302 !important;
+        width: min(280px, 86vw) !important;
+        height: 100dvh !important;
+        max-height: 100dvh !important;
+        padding: 20px !important;
+        transform: translate3d(-105%, 0, 0) !important;
+        transition: transform var(--transition-normal) !important;
+        overflow: hidden !important;
+    }
+
+    body.mobile-menu-open .sidebar {
+        transform: translate3d(0, 0, 0) !important;
+    }
+
+    .sidebar .nav-menu {
+        display: flex !important;
+        flex: 1 1 auto !important;
+        flex-direction: column !important;
+        min-height: 0 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        overflow-x: hidden !important;
+        overflow-y: auto !important;
+    }
+
+    .sidebar .sidebar-footer {
+        display: flex !important;
+        flex: 0 0 auto !important;
+        margin-top: auto !important;
+        padding: 14px 0 0 !important;
+        border-top: 1px solid var(--border-footer) !important;
+        background: var(--sidebar-bg) !important;
+    }
+
+    .sidebar .footer-link {
+        min-height: 40px;
+        padding: 8px 0;
+    }
+
+    .main-content {
+        width: 100% !important;
+        min-width: 0 !important;
+        min-height: 100dvh !important;
+        overflow-x: hidden !important;
+        overflow-y: visible !important;
+    }
+
+    .mobile-menu-backdrop {
+        display: block;
+        z-index: 300;
+    }
+
+    .mobile-menu-backdrop[hidden] {
+        display: none !important;
+    }
+}
+
+
+/* Final shell geometry: desktop sidebar is stable; only main content scrolls. */
+@media (min-width: 769px) {
+    html,
+    body {
+        height: 100%;
+        overflow: hidden;
+    }
+
+    .container {
+        height: 100dvh;
+        min-height: 0;
+        overflow: hidden;
+        align-items: stretch;
+    }
+
+    .sidebar {
+        position: relative;
+        top: auto;
+        height: 100dvh;
+        min-height: 0;
+        max-height: none;
+        overflow: hidden;
+    }
+
+    .main-content {
+        height: 100dvh;
+        min-height: 0;
+        overflow-x: hidden;
+        overflow-y: auto;
+        overscroll-behavior: contain;
+    }
+}
+
+@media (max-width: 768px) {
+    html,
+    body {
+        height: auto;
+        min-height: 100%;
+        overflow-x: hidden;
+    }
+
+    body.mobile-menu-open {
+        overflow: hidden;
+    }
+
+    .container {
+        display: block;
+        height: auto;
+        min-height: 100dvh;
+        overflow: visible;
+    }
+
+    .main-content {
+        height: auto;
+        min-height: 100dvh;
+        overflow-x: hidden;
+        overflow-y: visible;
+    }
+}

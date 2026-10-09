@@ -1,0 +1,62 @@
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: var(--bg-color); /* Binago mula #0a0e27 */
+    color: var(--text-high);     /* Binago mula #ffffff */
+    line-height: 1.6;
+    transition: background 0.3s ease, color 0.3s ease; /* Idinagdag para smooth transition */
+}
+
+.sidebar {
+    width: 220px;
+    background: var(--sidebar-bg); /* Binago mula #0d1220 */
+    border-right: 1px solid var(--border-color); /* Binago */
+    padding: 20px;
+    overflow-y: auto;
+    flex-shrink: 0;
+    transition: background 0.3s ease;
+}
+
+.setting-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 24px;
+    background: var(--card-bg); /* Binago mula rgba(56, 189, 248, 0.04) */
+    border: 1px solid var(--border-color); /* Binago */
+    border-radius: 10px;
+    margin-bottom: 12px;
+    transition: border-color 0.2s ease, background 0.3s ease;
+}
+
+.setting-label {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-high); /* Binago mula #FFFFFF o #e2e8f0 */
+}
+
+.lang-select {
+    background: var(--card-bg); /* Binago mula rgba(56, 189, 248, 0.05) */
+    border: 1px solid var(--border-color); /* Binago */
+    border-radius: 8px;
+    padding: 8px 14px;
+    color: var(--text-high); /* Binago mula #FFFFFF */
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    outline: none;
+    min-width: 140px;
+    transition: border-color 0.2s ease;
+}
+
+.lang-select option {
+    background: var(--sidebar-bg); /* Binago mula #0f1829 */
+    color: var(--text-high); /* Binago mula #FFFFFF */
+}
+
+.nav-link, .footer-link {
+    color: var(--text-low); /* Binago para sumabay sa light mode text shifting */
+}
+
+.page-header h1 {
+    color: var(--text-high); /* Tiyaking puti sa dark, itim sa light */
+}

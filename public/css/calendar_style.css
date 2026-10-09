@@ -1,0 +1,467 @@
+.page-header {
+    margin-bottom: 25px;
+}
+
+.page-header h1 {
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--text-high);
+}
+
+.page-header p {
+    margin-top: 8px;
+    color: var(--text-low);
+    font-size: 14px;
+}
+
+.highlight {
+    color: var(--brand-accent);
+}
+
+.cal-wrapper {
+    background: rgba(56, 189, 248, 0.03);
+    border: 1px solid rgba(56, 189, 248, 0.15);
+    border-radius: 14px;
+    overflow: hidden;
+}
+
+.cal-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 18px 24px;
+    border-bottom: 1px solid rgba(56, 189, 248, 0.12);
+    flex-wrap: wrap;
+}
+
+.cal-toolbar h1 {
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    color: var(--text-high);
+    flex: 1;
+}
+
+.cal-toolbar select {
+    padding: 8px 32px 8px 12px;
+    background: rgba(56, 189, 248, 0.08);
+    border: 1px solid rgba(56, 189, 248, 0.25);
+    border-radius: 8px;
+    color: var(--text-high);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2338BDF8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    background-size: 16px;
+    font-family: inherit;
+    transition: border-color 0.2s;
+}
+
+.cal-toolbar select:focus {
+    outline: none;
+    border-color: var(--brand-accent);
+}
+
+.week-nav {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.week-nav button {
+    width: 32px;
+    height: 32px;
+    background: rgba(56, 189, 248, 0.1);
+    border: 1px solid rgba(56, 189, 248, 0.25);
+    border-radius: 6px;
+    color: var(--brand-accent);
+    cursor: pointer;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s;
+}
+
+.week-nav button:hover {
+    background: rgba(56, 189, 248, 0.22);
+}
+
+.week-nav span {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-low);
+    min-width: 120px;
+    text-align: center;
+}
+
+.btn-primary {
+    padding: 8px 16px;
+    font-size: 12px;
+    background: var(--primary);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: background 0.2s;
+}
+
+.btn-primary:hover {
+    background: var(--primary-hover);
+}
+
+.cal-scroll {
+    overflow-x: auto;
+    overflow-y: auto;
+}
+
+.cal-grid {
+    display: grid;
+    grid-template-columns: 60px repeat(7, minmax(120px, 1fr));
+    min-width: 900px;
+    position: relative;
+}
+
+.cal-corner {
+    background: var(--bg-thead);
+    border-bottom: 1px solid rgba(56, 189, 248, 0.15);
+    border-right: 1px solid rgba(56, 189, 248, 0.08);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.cal-day-header {
+    background: var(--bg-thead);
+    border-bottom: 1px solid rgba(56, 189, 248, 0.15);
+    border-right: 1px solid rgba(56, 189, 248, 0.08);
+    padding: 12px 8px;
+    text-align: center;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.cal-day-header .day-name {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-low);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.cal-day-header .day-date {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--text-high);
+    line-height: 1.2;
+    margin-top: 2px;
+}
+
+.cal-day-header .day-full-date {
+    font-size: 10px;
+    color: var(--text-low);
+    margin-top: 2px;
+}
+
+.cal-day-header.today .day-date,
+.cal-day-header.today .day-name {
+    color: var(--brand-accent);
+}
+
+.time-label {
+    background: var(--bg-color);
+    border-right: 1px solid rgba(56, 189, 248, 0.08);
+    border-bottom: 1px solid rgba(56, 189, 248, 0.05);
+    padding: 0 8px;
+    display: flex;
+    align-items: flex-start;
+    padding-top: 6px;
+    height: 60px;
+}
+
+.time-label span {
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--text-low);
+    white-space: nowrap;
+}
+
+.cal-cell {
+    background: var(--bg-color);
+    border-right: 1px solid rgba(56, 189, 248, 0.05);
+    border-bottom: 1px solid rgba(56, 189, 248, 0.05);
+    height: 60px;
+    position: relative;
+    transition: background 0.15s;
+}
+
+.cal-cell:hover {
+    background: rgba(56, 189, 248, 0.04);
+}
+
+.cal-event {
+    position: absolute;
+    left: 3px;
+    right: 3px;
+    border-radius: 6px;
+    padding: 5px 8px;
+    font-size: 11px;
+    line-height: 1.3;
+    overflow: hidden;
+    cursor: pointer;
+    z-index: 2;
+    transition: filter 0.2s, transform 0.15s;
+}
+
+.cal-event:hover {
+    filter: brightness(1.15);
+    transform: scale(1.01);
+}
+
+.cal-event.approved {
+    background: rgba(56, 189, 248, 0.18);
+    border-left: 3px solid var(--brand-accent);
+    color: #e0f2fe;
+}
+
+.cal-event.pending {
+    background: rgba(245, 158, 11, 0.12);
+    border-left: 3px solid var(--warning);
+    color: #fef9c3;
+}
+
+.cal-event .ev-room {
+    font-weight: 700;
+    font-size: 11px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.cal-event .ev-hall,
+.cal-event .ev-time,
+.cal-event .ev-subject {
+    font-size: 10px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.cal-event .ev-hall,
+.cal-event .ev-time {
+    opacity: 0.8;
+}
+
+.cal-event .ev-time,
+.cal-event .ev-subject {
+    margin-top: 2px;
+}
+
+.cal-event .ev-subject {
+    font-weight: 600;
+}
+
+.cal-empty {
+    grid-column: 1 / -1;
+    padding: 60px;
+    text-align: center;
+    color: var(--text-low);
+    font-size: 14px;
+}
+
+.cal-legend {
+    display: flex;
+    gap: 16px;
+    padding: 12px 24px;
+    border-top: 1px solid rgba(56, 189, 248, 0.1);
+    font-size: 12px;
+    align-items: center;
+}
+
+.legend-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 3px;
+    display: inline-block;
+    margin-right: 5px;
+}
+
+#approved {
+    background: var(--brand-accent);
+}
+
+#pending {
+    background: var(--warning);
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    color: var(--text-low);
+}
+
+.legend-note {
+    color: var(--text-low);
+    font-size: 11px;
+    margin-left: auto;
+}
+
+.loading-overlay {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 80px;
+    color: var(--text-low);
+    gap: 10px;
+    font-size: 14px;
+}
+
+.spin {
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@media (max-width: 768px) {
+    .page-header h1 {
+        font-size: 24px;
+    }
+
+    .cal-toolbar {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .cal-toolbar h1 {
+        text-align: center;
+    }
+
+    .week-nav {
+        justify-content: center;
+    }
+
+    .btn-primary {
+        width: 100%;
+    }
+}
+.loading-full {
+    grid-column: 1 / -1;
+}
+
+/* ==========================================================================
+   ADDED: Complete Calendar Light Mode Overrides (No Hover Required)
+   ========================================================================== */
+
+/* 1. Page Headers and Text Formatting */
+body.light-mode .page-header h1,
+body.light-mode .cal-toolbar h1 {
+    color: var(--text-high) !important;
+}
+
+body.light-mode .page-header p {
+    color: var(--text-low) !important;
+}
+
+/* 2. Main Wrapper Framework */
+body.light-mode .cal-wrapper {
+    background: var(--card-bg) !important;
+    border: 1px solid var(--border-color) !important;
+}
+
+body.light-mode .cal-toolbar {
+    border-bottom: 1px solid var(--border-color) !important;
+}
+
+/* 3. Dropdowns (Select Elements) and Navigation Buttons */
+body.light-mode .cal-toolbar select {
+    background-color: var(--bg-color) !important;
+    border: 1px solid var(--border-color) !important;
+    color: var(--text-high) !important;
+}
+
+body.light-mode .week-nav button {
+    background: rgba(15, 23, 42, 0.05) !important;
+    border: 1px solid var(--border-color) !important;
+    color: var(--brand-accent) !important;
+}
+
+body.light-mode .week-nav button:hover {
+    background: rgba(15, 23, 42, 0.1) !important;
+}
+
+body.light-mode .week-nav span {
+    color: var(--text-high) !important;
+}
+
+/* 4. Calendar Grid Framework, Days, and Time Columns */
+body.light-mode .cal-corner,
+body.light-mode .cal-day-header {
+    background: var(--bg-thead) !important; /* Light slate header bar */
+    border-bottom: 1px solid var(--border-color) !important;
+    border-right: 1px solid var(--border-color) !important;
+}
+
+body.light-mode .cal-day-header .day-name {
+    color: var(--text-low) !important;
+}
+
+body.light-mode .cal-day-header .day-date {
+    color: var(--text-high) !important;
+}
+
+body.light-mode .cal-day-header .day-full-date {
+    color: var(--text-low) !important;
+}
+
+/* Base Cells and Sidebar Labels */
+body.light-mode .time-label,
+body.light-mode .cal-cell {
+    background: var(--card-bg) !important; /* Pure white slot fields */
+    border-right: 1px solid rgba(15, 23, 42, 0.06) !important;
+    border-bottom: 1px solid rgba(15, 23, 42, 0.06) !important;
+}
+
+body.light-mode .time-label span {
+    color: var(--text-low) !important;
+}
+
+body.light-mode .cal-cell:hover {
+    background: var(--bg-color) !important; /* Banayad na white-blue highlight kapag itinaas ang mouse */
+}
+
+/* 5. In-Grid Events Styling Configuration */
+body.light-mode .cal-event.approved {
+    background: rgba(14, 165, 233, 0.15) !important;
+    border-left: 3px solid var(--brand-accent) !important;
+    color: var(--primary-hover) !important; /* Mas madilim na asul para sa malinaw na pagbasa */
+}
+
+body.light-mode .cal-event.pending {
+    background: rgba(234, 179, 8, 0.15) !important;
+    border-left: 3px solid #ca8a04 !important;
+    color: #854d0e !important; /* Mas madilim na ginto/amber text */
+}
+
+/* 6. Lower Footer Legend Framework */
+body.light-mode .cal-legend {
+    border-top: 1px solid var(--border-color) !important;
+}
+
+body.light-mode .legend-item {
+    color: var(--text-low) !important;
+}
+
+body.light-mode .legend-note,
+body.light-mode .cal-empty,
+body.light-mode .loading-overlay {
+    color: var(--text-low) !important;
+}

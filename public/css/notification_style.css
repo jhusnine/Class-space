@@ -1,0 +1,323 @@
+.notif-page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.notif-title-main {
+    font-size: 28px;
+    font-weight: 700;
+    margin-bottom: 4px;
+    color: var(--text-high);
+    transition: color 0.3s ease;
+}
+
+.notif-subtitle {
+    color: var(--text-low);
+    font-size: 14px;
+    transition: color 0.3s ease;
+}
+
+/* ==================== ACTIONS ==================== */
+
+.notif-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+/* ==================== SEARCH ==================== */
+
+.notif-search {
+    position: relative;
+}
+
+.notif-search-input {
+    background: var(--bg-input);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 9px 36px 9px 14px;
+    color: var(--text-high);
+    font-size: 13px;
+    width: 210px;
+    outline: none;
+    transition: all 0.25s ease;
+    font-family: inherit;
+}
+
+.notif-search-input:focus {
+    border-color: var(--brand-accent);
+    background: var(--bg-input-focus);
+}
+
+.notif-search-input::placeholder {
+    color: var(--text-low);
+    opacity: 0.7;
+}
+
+.notif-search-icon {
+    position: absolute;
+    right: 11px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--brand-accent);
+    font-size: 13px;
+    pointer-events: none;
+}
+
+/* ==================== MARK ALL BUTTON ==================== */
+
+.btn-mark-all {
+    padding: 9px 14px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--brand-accent);
+    background: transparent;
+    border: 1px solid var(--border-card-hover);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+    font-family: inherit;
+}
+
+.btn-mark-all i {
+    margin-right: 5px;
+}
+
+.btn-mark-all:hover {
+    background: var(--bg-nav-hover);
+    border-color: var(--brand-accent);
+}
+
+/* ==================== TABS ==================== */
+
+.notif-tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+.notif-tab {
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    border: 1px solid var(--border-color);
+    background: transparent;
+    color: var(--text-low);
+    transition: all 0.2s ease;
+    font-family: inherit;
+}
+
+.notif-tab:hover {
+    color: var(--text-high);
+    border-color: var(--border-card-hover);
+}
+
+.notif-tab.active {
+    background: var(--bg-nav-hover);
+    color: var(--brand-accent);
+    border-color: var(--brand-accent);
+}
+
+/* ==================== LOADING ==================== */
+
+.notif-loading {
+    color: var(--text-low);
+    font-size: 14px;
+    padding: 20px 0;
+}
+
+.notif-loading i {
+    color: var(--brand-accent);
+    margin-right: 8px;
+}
+
+/* ==================== NOTIFICATION ITEM ==================== */
+
+.notification-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    padding: 18px 20px;
+    border-radius: 10px;
+    margin-bottom: 12px;
+    border: 1px solid transparent;
+    transition: transform 0.2s ease, background 0.3s ease, border-color 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.notification-item:hover {
+    transform: translateX(4px);
+}
+
+.notification-item::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+    border-radius: 10px 0 0 10px;
+}
+
+/* ==================== STATES ==================== */
+
+.notification-item.approved {
+    background: rgba(16, 185, 129, 0.08);
+    border-color: rgba(16, 185, 129, 0.25);
+}
+
+body.light-mode .notification-item.approved {
+    background: rgba(16, 185, 129, 0.06);
+    border-color: rgba(16, 185, 129, 0.2);
+}
+
+.notification-item.approved::before {
+    background: #10b981;
+}
+
+.notification-item.pending {
+    background: rgba(245, 158, 11, 0.08);
+    border-color: rgba(245, 158, 11, 0.25);
+}
+
+body.light-mode .notification-item.pending {
+    background: rgba(245, 158, 11, 0.06);
+    border-color: rgba(245, 158, 11, 0.2);
+}
+
+.notification-item.pending::before {
+    background: #f59e0b;
+}
+
+.notification-item.declined {
+    background: rgba(239, 68, 68, 0.08);
+    border-color: rgba(239, 68, 68, 0.25);
+}
+
+body.light-mode .notification-item.declined {
+    background: rgba(239, 68, 68, 0.06);
+    border-color: rgba(239, 68, 68, 0.2);
+}
+
+.notification-item.declined::before {
+    background: #ef4444;
+}
+
+.notification-item.read {
+    opacity: 0.65;
+}
+
+/* ==================== ICON ==================== */
+
+.notif-icon {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 15px;
+    flex-shrink: 0;
+}
+
+.approved .notif-icon {
+    background: rgba(16, 185, 129, 0.2);
+    color: #10b981;
+}
+
+.pending .notif-icon {
+    background: rgba(245, 158, 11, 0.2);
+    color: #f59e0b;
+}
+
+.declined .notif-icon {
+    background: rgba(239, 68, 68, 0.2);
+    color: #ef4444;
+}
+
+/* ==================== BODY ==================== */
+
+.notif-body {
+    flex: 1;
+    min-width: 0;
+}
+
+.notif-title {
+    font-weight: 700;
+    font-size: 14px;
+    color: var(--text-high);
+    margin-bottom: 4px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: color 0.3s ease;
+}
+
+.notif-unread-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--brand-accent);
+    display: inline-block;
+    margin-right: 6px;
+}
+
+.notif-desc {
+    font-size: 13px;
+    color: var(--text-low);
+    line-height: 1.5;
+    transition: color 0.3s ease;
+}
+
+body.light-mode .notif-desc {
+    /* Slightly darkened variation for light mode readability requirements */
+    color: #334155; 
+}
+
+.notif-time {
+    font-size: 11px;
+    color: var(--text-low);
+    opacity: 0.8;
+    margin-top: 5px;
+}
+
+/* ==================== EMPTY STATE ==================== */
+
+.notif-empty {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--text-low);
+}
+
+.notif-empty-icon {
+    font-size: 40px;
+    margin-bottom: 12px;
+    color: var(--brand-accent);
+    opacity: 0.4;
+    display: block;
+}
+
+.notif-empty-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text-high);
+    margin-bottom: 6px;
+}
+
+.notif-empty-text {
+    font-size: 13px;
+}
+
+.notif-error .notif-empty-title {
+    color: #ef4444;
+}
