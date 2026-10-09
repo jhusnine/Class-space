@@ -180,12 +180,22 @@ $themeClass = (isset($_COOKIE['theme']) && $_COOKIE['theme'] === 'light') ? 'lig
                 <div class="conflict-box-hint">
                     <i class="fas fa-robot"></i> Use ClassSpace's CSP engine to find optimal non-conflicting slots or alternative rooms.
                 </div>
+                <div id="modal-ai-recommendations" class="modal-ai-recommendations" style="display:none;">
+                    <div class="ai-rec-header">
+                        <span><i class="fas fa-wand-magic-sparkles"></i> <strong>AI Recommended Alternative Rooms</strong></span>
+                        <span class="ai-rec-subtitle">Click to immediately switch your reservation and resolve the calendar conflict.</span>
+                    </div>
+                    <div id="modal-ai-cards" class="modal-ai-cards"></div>
+                </div>
             </div>
         </div>
         <div class="cal-modal-footer">
             <button type="button" class="btn-modal-secondary" onclick="closeInspectorModal()">Close</button>
+            <button type="button" id="modal-btn-cancel-req" class="btn-modal-danger" style="display:none;" onclick="cancelPendingFromModal()">
+                <i class="fas fa-trash-can"></i> Withdraw Request
+            </button>
             <a id="modal-btn-ai-resolve" href="#" class="btn-modal-primary" style="display:none;">
-                <i class="fas fa-wand-magic-sparkles"></i> Find Alternative with AI
+                <i class="fas fa-pen-to-square"></i> Open Reservation Form
             </a>
         </div>
     </div>

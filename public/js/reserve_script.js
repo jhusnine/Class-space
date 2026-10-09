@@ -300,6 +300,8 @@ function fetchAiSuggestions(params) {
             currentSuggestions = res.suggestions;
             summaryText.textContent = res.ai_summary;
 
+            const reschedulePendingId = parseInt(document.getElementById("reschedulePendingId")?.value, 10) || 0;
+
             cardsList.innerHTML = res.suggestions.map((sug, idx) => `
                 <div class="ai-suggestion-card ${sug.type === 'alternative_room' ? 'alt-room' : 'alt-slot'}">
                     <div class="ai-card-header">
@@ -321,10 +323,15 @@ function fetchAiSuggestions(params) {
                         </div>
                         <p class="ai-reason-text"><i class="fas fa-lightbulb"></i> ${escapeHtml(sug.reason)}</p>
                     </div>
-                    <div class="ai-card-actions">
+                    <div class="ai-card-actions" style="display:flex; gap:8px; flex-wrap:wrap;">
                         <button type="button" class="btn-apply-suggestion" onclick="applySuggestion(${idx})">
                             <i class="fas fa-check-circle"></i> Use This ${sug.type === 'alternative_room' ? 'Room' : 'Time'}
                         </button>
+                        ${reschedulePendingId > 0 ? `
+                            <button type="button" class="btn-apply-suggestion btn-apply-instant" onclick="applyAndSaveSuggestion(${idx})" style="background: linear-gradient(135deg, #059669, #10b981); border:1px solid #34d399; color:#fff;">
+                                <i class="fas fa-bolt"></i> Instant Resolve #${reschedulePendingId}
+                            </button>
+                        ` : ''}
                     </div>
                 </div>
             `).join('');
@@ -339,6 +346,8 @@ function fetchAiSuggestions(params) {
 function applySuggestion(index) {
     const sug = currentSuggestions[index];
     if (!sug) return;
+
+    const reschedulePendingId = parseInt(document.getElementById("reschedulePendingId")?.value, 10) || 0;
 
     if (sug.type === 'alternative_room') {
         const hallSelect = document.getElementById("hall-select");
@@ -364,7 +373,10 @@ function applySuggestion(index) {
                         roomSelect.value = sug.room_id;
                         showRoomPreview();
                         checkConflicts();
-                        toast.show(`Switched to recommended room: ${sug.room_name} (${sug.formatted_time})`, "success", 3000);
+                        const msg = reschedulePendingId > 0
+                            ? `Selected ${sug.room_name}! Click "Update & Resolve" below to save.`
+                            : `Switched to recommended room: ${sug.room_name} (${sug.formatted_time})`;
+                        toast.show(msg, "success", 3500);
                     }
                 });
             return;
@@ -377,8 +389,16 @@ function applySuggestion(index) {
         document.getElementById("schedule-end").value   = sug.end;
     }
 
-    toast.show(`Applied recommendation: ${sug.room_name} (${sug.formatted_time})`, "success", 3000);
+    const msg = reschedulePendingId > 0
+        ? `Selected slot! Click "Update & Resolve" below to save.`
+        : `Applied recommendation: ${sug.room_name} (${sug.formatted_time})`;
+    toast.show(msg, "success", 3500);
     checkConflicts();
+}
+
+function applyAndSaveSuggestion(index) {
+    applySuggestion(index);
+    setTimeout(() => submitReservation(), 350);
 }
 
 document.getElementById("schedule-start").addEventListener("change", checkConflicts);
@@ -393,6 +413,7 @@ function submitReservation() {
     const end    = document.getElementById("schedule-end").value;
     const date   = document.getElementById("schedule-date").value;
     const dow    = document.getElementById("schedule-dow").value;
+    const reschedulePendingId = parseInt(document.getElementById("reschedulePendingId")?.value, 10) || 0;
 
     if (!roomId)                    return toast.show("Please select a room.", "error", 2500);
     if (!start || !end)             return toast.show("Please set start and end time.", "error", 2500);
@@ -404,32 +425,54 @@ function submitReservation() {
 
     const btn     = document.getElementById("submit-btn");
     btn.disabled  = true;
-    btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Submitting...`;
+    btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> ${reschedulePendingId > 0 ? 'Updating...' : 'Submitting...'}`;
+
+    const payload = {
+        room_id: roomId,
+        type:    type,
+        start:   start,
+        end:     end,
+        date:    type === "one-time" ? date : null,
+        dow:     type === "weekly"   ? dow  : null
+    };
+
+    if (reschedulePendingId > 0) {
+        payload.pending_id = reschedulePendingId;
+    }
 
     fetch("../controllers/reserve_controller.php", {
         method:  "POST",
         headers: { "Content-Type": "application/json" },
-        body:    JSON.stringify({
-            room_id: roomId,
-            type:    type,
-            start:   start,
-            end:     end,
-            date:    type === "one-time" ? date : null,
-            dow:     type === "weekly"   ? dow  : null
-        })
+        body:    JSON.stringify(payload)
     })
     .then(r => r.json())
     .then(res => {
         if (res.success) {
-            toast.show("Reservation submitted! Waiting for admin approval.", "success", 3000);
-            setTimeout(() => window.location.href = "user_homepage_view.php?submitted=1", 1500);
+            if (res.action === 'updated' || reschedulePendingId > 0) {
+                toast.show(res.message || "Reservation updated! Redirecting to calendar...", "success", 2500);
+                setTimeout(() => window.location.href = "calendar_view.php?rescheduled=1", 1200);
+            } else {
+                toast.show("Reservation submitted! Waiting for admin approval.", "success", 3000);
+                setTimeout(() => window.location.href = "user_homepage_view.php?submitted=1", 1500);
+            }
         } else {
             toast.show(res.message ?? "Something went wrong.", "error", 3000);
             btn.disabled  = false;
-            btn.innerHTML = `<i class="fas fa-paper-plane"></i> Submit Reservation`;
+            btn.innerHTML = reschedulePendingId > 0
+                ? `<i class="fas fa-check-circle"></i> Update & Resolve Reservation`
+                : `<i class="fas fa-paper-plane"></i> Submit Reservation`;
         }
+    })
+    .catch(() => {
+        toast.show("Network error. Please try again.", "error", 3000);
+        btn.disabled = false;
+        btn.innerHTML = reschedulePendingId > 0
+            ? `<i class="fas fa-check-circle"></i> Update & Resolve Reservation`
+            : `<i class="fas fa-paper-plane"></i> Submit Reservation`;
     });
 }
+window.applySuggestion = applySuggestion;
+window.applyAndSaveSuggestion = applyAndSaveSuggestion;
 initSharedMobileMenu();
 
 

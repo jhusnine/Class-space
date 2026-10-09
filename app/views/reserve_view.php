@@ -15,6 +15,7 @@ $preType     = htmlspecialchars($_GET["type"] ?? "one-time");
 $preStart    = htmlspecialchars($_GET["start"] ?? "");
 $preEnd      = htmlspecialchars($_GET["end"] ?? "");
 $autoCheck   = !empty($_GET["auto_check"]) ? 1 : 0;
+$reschedulePendingId = intval($_GET["reschedule_pending_id"] ?? 0);
 
 if ($preType === 'weekly' || (!empty($preDow) && empty($preDate))) {
     $preType = 'weekly';
@@ -102,6 +103,18 @@ $themeClass = (isset($_COOKIE['theme']) && $_COOKIE['theme'] === 'light') ? 'lig
                     All fields are required. Your request will be reviewed by the admin.
                 </p>
             </div>
+
+            <?php if ($reschedulePendingId > 0): ?>
+                <div class="reschedule-banner" style="background: rgba(14, 165, 233, 0.12); border: 1px solid rgba(56, 189, 248, 0.4); border-radius: 8px; padding: 12px 16px; margin: 16px 0; display: flex; align-items: center; gap: 12px; color: var(--text-high);">
+                    <i class="fas fa-arrows-rotate" style="color: #38bdf8; font-size: 20px;"></i>
+                    <div>
+                        <strong style="color: #38bdf8;">Rescheduling Pending Reservation #<?= $reschedulePendingId ?></strong>
+                        <div style="font-size: 12px; color: var(--text-low); margin-top: 2px;">
+                            Applying an alternative room or time will update this reservation and resolve your calendar conflict.
+                        </div>
+                    </div>
+                </div>
+            <?php endif; ?>
 
             <div class="form-section-heading" id="location-heading">
                 <span class="form-section-kicker">01</span>
@@ -205,7 +218,7 @@ $themeClass = (isset($_COOKIE['theme']) && $_COOKIE['theme'] === 'light') ? 'lig
             </div>
 
             <button class="btn-primary submit-btn" id="submit-btn">
-                <i class="fas fa-paper-plane"></i> Submit Reservation
+                <i class="fas fa-paper-plane"></i> <?= ($reschedulePendingId > 0) ? 'Update & Resolve Reservation' : 'Submit Reservation' ?>
             </button>
         </div>
     </main>
@@ -220,6 +233,7 @@ $themeClass = (isset($_COOKIE['theme']) && $_COOKIE['theme'] === 'light') ? 'lig
 <input type="hidden" id="preStart" value="<?= $preStart ?>">
 <input type="hidden" id="preEnd" value="<?= $preEnd ?>">
 <input type="hidden" id="autoCheck" value="<?= $autoCheck ?>">
+<input type="hidden" id="reschedulePendingId" value="<?= $reschedulePendingId ?>">
 <script src="../../public/js/toast.js?v=<?php echo time(); ?>"></script>
 <script src="../../public/js/reserve_script.js?v=<?php echo time(); ?>"></script>
 </body>

@@ -25,6 +25,9 @@ if (!isset($_SESSION['id'])) {
 require '../../includes/database_include.php';
 
 $rawBody = file_get_contents('php://input');
+if (empty($rawBody) && php_sapi_name() === 'cli') {
+    $rawBody = file_get_contents('php://stdin');
+}
 $body = json_decode($rawBody, true);
 
 if (!is_array($body)) {
@@ -32,6 +35,36 @@ if (!is_array($body)) {
         'success' => false,
         'message' => 'Invalid request data.'
     ]);
+}
+
+$action    = is_string($body['action'] ?? null) ? trim($body['action']) : '';
+$pendingId = filter_var($body['pending_id'] ?? null, FILTER_VALIDATE_INT);
+
+// Handle cancellation of pending reservation
+if ($action === 'cancel') {
+    if (!$pendingId) {
+        respond(['success' => false, 'message' => 'Invalid reservation ID to cancel.']);
+    }
+
+    try {
+        $pdo = new PDO("mysql:host={$host};dbname={$dbname};charset=utf8mb4", $db_user, $db_pass, [
+            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+            PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC
+        ]);
+
+        $stmtDel = $pdo->prepare('DELETE FROM pendingschedule WHERE pending_id = ? AND account_id = ? AND pending_schedule_status = "pending"');
+        $stmtDel->execute([$pendingId, $_SESSION['id']]);
+
+        if ($stmtDel->rowCount() > 0) {
+            $stmtNotif = $pdo->prepare('INSERT INTO notification (account_id, notif_type, notif_title, notif_message) VALUES (?, "cancelled", "Reservation Withdrawn", ?)');
+            $stmtNotif->execute([$_SESSION['id'], "You have withdrawn your pending reservation request #{$pendingId}."]);
+            respond(['success' => true, 'action' => 'cancelled', 'message' => 'Pending reservation request withdrawn.']);
+        } else {
+            respond(['success' => false, 'message' => 'Reservation not found or already processed.']);
+        }
+    } catch (PDOException $e) {
+        respond(['success' => false, 'message' => 'Failed to cancel reservation.']);
+    }
 }
 
 $roomId = filter_var($body['room_id'] ?? null, FILTER_VALIDATE_INT);
@@ -53,8 +86,13 @@ $allowedDays = [
 
 function validTime(string $time): bool
 {
-    $parsed = DateTime::createFromFormat('!H:i', $time);
-    return $parsed !== false && $parsed->format('H:i') === $time;
+    $parts = explode(':', $time);
+    if (count($parts) >= 2) {
+        $h = (int)$parts[0];
+        $m = (int)$parts[1];
+        return $h >= 0 && $h <= 23 && $m >= 0 && $m <= 59;
+    }
+    return false;
 }
 
 function validDate(?string $date): bool
@@ -90,6 +128,13 @@ if (!in_array($type, ['one-time', 'weekly'], true)) {
         'success' => false,
         'message' => 'Invalid reservation type.'
     ]);
+}
+
+if (validTime($start) && validTime($end)) {
+    $sParts = explode(':', $start);
+    $eParts = explode(':', $end);
+    $start = sprintf('%02d:%02d', (int)$sParts[0], (int)$sParts[1]);
+    $end   = sprintf('%02d:%02d', (int)$eParts[0], (int)$eParts[1]);
 }
 
 if (!validTime($start) || !validTime($end) || $start >= $end) {
@@ -239,34 +284,84 @@ try {
 
     $pdo->beginTransaction();
 
-    $stmtPending = $pdo->prepare(
-        'INSERT INTO pendingschedule
-            (room_id, account_id, pending_schedule_day_of_week,
-             pending_schedule_start, pending_schedule_end,
-             pending_schedule_day, pending_schedule_status)
-         VALUES (?, ?, ?, ?, ?, ?, \'pending\')'
-    );
-    $stmtPending->execute([
-        $roomId,
-        $accountId,
-        $type === 'weekly' ? $dow : null,
-        $start,
-        $end,
-        $type === 'one-time' ? $date : null
-    ]);
+    if ($pendingId) {
+        $stmtCheck = $pdo->prepare(
+            'SELECT pending_id FROM pendingschedule WHERE pending_id = ? AND account_id = ? AND pending_schedule_status = "pending" LIMIT 1'
+        );
+        $stmtCheck->execute([$pendingId, $accountId]);
+        if (!$stmtCheck->fetch()) {
+            $pdo->rollBack();
+            respond([
+                'success' => false,
+                'message' => 'Pending reservation not found or cannot be modified.'
+            ]);
+        }
 
-    $stmtNotification = $pdo->prepare(
-        'INSERT INTO notification
-            (account_id, notif_type, notif_title, notif_message)
-         VALUES (?, \'pending\', \'Reservation Submitted\', ?)'
-    );
-    $stmtNotification->execute([
-        $accountId,
-        "Your reservation request for {$roomHall} on {$dayLabel} ({$timeRange}) has been submitted and is awaiting admin approval."
-    ]);
+        $stmtUpdate = $pdo->prepare(
+            'UPDATE pendingschedule
+             SET room_id = ?,
+                 pending_schedule_day_of_week = ?,
+                 pending_schedule_start = ?,
+                 pending_schedule_end = ?,
+                 pending_schedule_day = ?
+             WHERE pending_id = ? AND account_id = ?'
+        );
+        $stmtUpdate->execute([
+            $roomId,
+            $type === 'weekly' ? $dow : null,
+            $start,
+            $end,
+            $type === 'one-time' ? $date : null,
+            $pendingId,
+            $accountId
+        ]);
 
-    $pdo->commit();
-    respond(['success' => true]);
+        $stmtNotification = $pdo->prepare(
+            'INSERT INTO notification
+                (account_id, notif_type, notif_title, notif_message)
+             VALUES (?, \'pending\', \'Reservation Updated\', ?)'
+        );
+        $stmtNotification->execute([
+            $accountId,
+            "Your reservation request #{$pendingId} has been moved to {$roomHall} on {$dayLabel} ({$timeRange}) and is awaiting admin approval."
+        ]);
+
+        $pdo->commit();
+        respond([
+            'success' => true,
+            'action' => 'updated',
+            'message' => "Reservation #{$pendingId} moved to {$roomHall}!"
+        ]);
+    } else {
+        $stmtPending = $pdo->prepare(
+            'INSERT INTO pendingschedule
+                (room_id, account_id, pending_schedule_day_of_week,
+                 pending_schedule_start, pending_schedule_end,
+                 pending_schedule_day, pending_schedule_status)
+             VALUES (?, ?, ?, ?, ?, ?, \'pending\')'
+        );
+        $stmtPending->execute([
+            $roomId,
+            $accountId,
+            $type === 'weekly' ? $dow : null,
+            $start,
+            $end,
+            $type === 'one-time' ? $date : null
+        ]);
+
+        $stmtNotification = $pdo->prepare(
+            'INSERT INTO notification
+                (account_id, notif_type, notif_title, notif_message)
+             VALUES (?, \'pending\', \'Reservation Submitted\', ?)'
+        );
+        $stmtNotification->execute([
+            $accountId,
+            "Your reservation request for {$roomHall} on {$dayLabel} ({$timeRange}) has been submitted and is awaiting admin approval."
+        ]);
+
+        $pdo->commit();
+        respond(['success' => true, 'action' => 'inserted']);
+    }
 } catch (PDOException $exception) {
     if (isset($pdo) && $pdo->inTransaction()) {
         $pdo->rollBack();

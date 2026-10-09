@@ -358,54 +358,185 @@ function openInspectorModal(ev) {
             conflictDesc.innerHTML = `<ul style="margin: 4px 0; padding-left: 18px;">${confListHtml}</ul>`;
         }
 
+        const cancelBtn = document.getElementById('modal-btn-cancel-req');
+        const recBox    = document.getElementById('modal-ai-recommendations');
+        const recCards  = document.getElementById('modal-ai-cards');
+
+        // Check if current event is user's pending reservation, or if one of the conflicting events is
+        const targetPendingEv = (ev.cssClass === 'pending' && ev.pending_id)
+            ? ev
+            : (ev.conflictsWith ? ev.conflictsWith.find(o => o.cssClass === 'pending' && o.pending_id) : null);
+
+        if (cancelBtn) {
+            if (targetPendingEv) {
+                cancelBtn.style.display = 'inline-flex';
+                cancelBtn.onclick = () => cancelPendingFromModal(targetPendingEv.pending_id);
+            } else {
+                cancelBtn.style.display = 'none';
+            }
+        }
+
+        const toH_i = (t) => {
+            if (!t) return '';
+            const parts = t.split(':');
+            return parts.length >= 2 ? `${parts[0].padStart(2, '0')}:${parts[1].padStart(2, '0')}` : t;
+        };
+
+        const start = toH_i(ev.schedule_start);
+        const end   = toH_i(ev.schedule_end);
+        const hallId = ev.hall_id || (ev.hall_name ? (hallMap.get(ev.hall_name.toLowerCase()) || '') : '') || '';
+        const hallName = ev.hall_name || '';
+        const roomId = ev.room_id || '';
+        const roomName = ev.room_name || '';
+
+        const isWeekly = !ev.schedule_day && !!ev.schedule_day_of_week;
+        const resType = isWeekly ? 'weekly' : 'one-time';
+        const dow = ev.schedule_day_of_week || '';
+        const targetDate = ev.schedule_day || ev.calendarDate || '';
+
+        const q = new URLSearchParams({
+            auto_check: '1',
+            type: resType,
+            hall_id: String(hallId),
+            hall_name: hallName,
+            room_id: String(roomId),
+            room_name: roomName,
+            start: start,
+            end: end
+        });
+
+        if (isWeekly) {
+            q.append('dow', dow);
+        } else {
+            q.append('date', targetDate);
+        }
+
+        if (targetPendingEv) {
+            q.append('reschedule_pending_id', String(targetPendingEv.pending_id));
+        }
+
         if (aiBtn) {
             aiBtn.style.display = 'inline-flex';
-
-            const toH_i = (t) => {
-                if (!t) return '';
-                const parts = t.split(':');
-                return parts.length >= 2 ? `${parts[0].padStart(2, '0')}:${parts[1].padStart(2, '0')}` : t;
-            };
-
-            const start = toH_i(ev.schedule_start);
-            const end   = toH_i(ev.schedule_end);
-            const hallId = ev.hall_id || (ev.hall_name ? (hallMap.get(ev.hall_name.toLowerCase()) || '') : '') || '';
-            const hallName = ev.hall_name || '';
-            const roomId = ev.room_id || '';
-            const roomName = ev.room_name || '';
-
-            const isWeekly = !ev.schedule_day && !!ev.schedule_day_of_week;
-            const resType = isWeekly ? 'weekly' : 'one-time';
-            const dow = ev.schedule_day_of_week || '';
-            const targetDate = ev.schedule_day || ev.calendarDate || '';
-
-            const q = new URLSearchParams({
-                auto_check: '1',
-                type: resType,
-                hall_id: String(hallId),
-                hall_name: hallName,
-                room_id: String(roomId),
-                room_name: roomName,
-                start: start,
-                end: end
-            });
-
-            if (isWeekly) {
-                q.append('dow', dow);
-            } else {
-                q.append('date', targetDate);
-            }
-
             aiBtn.href = `reserve_view.php?${q.toString()}`;
+        }
+
+        // Auto-fetch top AI alternatives inside the modal for 1-click conflict resolution
+        if (recBox && recCards && targetPendingEv) {
+            recBox.style.display = 'block';
+            recCards.innerHTML = '<div style="font-size:12px; color:var(--text-low); padding:6px 0;"><i class="fas fa-spinner fa-spin"></i> Finding optimal alternative rooms via CSP engine...</div>';
+
+            fetch(`../controllers/ai_suggest_controller.php?${q.toString()}`)
+                .then(r => r.json())
+                .then(data => {
+                    if (!data.success || !data.suggestions || !data.suggestions.length) {
+                        recCards.innerHTML = '<div style="font-size:11px; color:var(--text-low);">No immediate open rooms found for this exact slot. Click "Open Reservation Form" to adjust your schedule.</div>';
+                        return;
+                    }
+
+                    recCards.innerHTML = data.suggestions.slice(0, 3).map(sug => `
+                        <div class="modal-ai-card">
+                            <div class="modal-ai-card-info">
+                                <div class="modal-ai-card-title">
+                                    <span class="ai-rank-badge" style="font-size:10px; padding:2px 6px; border-radius:4px; background:#0ea5e9; color:#fff;">#${sug.rank}</span>
+                                    <strong>${escapeHtml(sug.room_name)}</strong>
+                                    <span style="font-size:11px; color:var(--text-low);">(${escapeHtml(sug.hall_name)})</span>
+                                </div>
+                                <div class="modal-ai-card-meta">
+                                    <span><i class="fas fa-clock"></i> ${escapeHtml(sug.formatted_time)}</span>
+                                    <span><i class="fas fa-users"></i> ${sug.room_capacity} seats</span>
+                                    ${sug.room_has_ac == 1 ? '<span style="color:#38bdf8;"><i class="fas fa-snowflake"></i> AC</span>' : ''}
+                                </div>
+                            </div>
+                            <button type="button" class="btn-apply-modal-alt" onclick="applyModalAlternative(${targetPendingEv.pending_id}, ${sug.room_id}, '${sug.start}', '${sug.end}', '${resType}', '${dow}', '${targetDate}', '${escapeHtml(sug.room_name)}')">
+                                <i class="fas fa-check-circle"></i> Switch to ${escapeHtml(sug.room_name)}
+                            </button>
+                        </div>
+                    `).join('');
+                })
+                .catch(() => {
+                    recCards.innerHTML = '<div style="font-size:11px; color:var(--text-low);">Could not fetch automated suggestions right now.</div>';
+                });
+        } else if (recBox) {
+            recBox.style.display = 'none';
         }
     } else {
         if (conflictPill) conflictPill.style.display = 'none';
         if (conflictBox) conflictBox.style.display = 'none';
         if (aiBtn) aiBtn.style.display = 'none';
+        const cancelBtn = document.getElementById('modal-btn-cancel-req');
+        if (cancelBtn) cancelBtn.style.display = 'none';
+        const recBox = document.getElementById('modal-ai-recommendations');
+        if (recBox) recBox.style.display = 'none';
     }
 
     modal.style.display = 'flex';
     document.body.style.overflow = 'hidden';
+}
+
+function applyModalAlternative(pendingId, roomId, start, end, type, dow, date, roomName) {
+    const btn = event.currentTarget;
+    if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Applying...';
+    }
+
+    fetch('../controllers/reserve_controller.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            pending_id: pendingId,
+            room_id: roomId,
+            start: start,
+            end: end,
+            type: type,
+            dow: type === 'weekly' ? dow : null,
+            date: type === 'one-time' ? date : null
+        })
+    })
+    .then(r => r.json())
+    .then(res => {
+        if (res.success) {
+            toast.show(`Reservation moved to ${roomName}! Conflict resolved.`, 'success', 3500);
+            closeInspectorModal();
+            loadAll();
+        } else {
+            toast.show(res.message || 'Failed to update reservation.', 'error', 3000);
+            if (btn) {
+                btn.disabled = false;
+                btn.innerHTML = `<i class="fas fa-check-circle"></i> Switch to ${roomName}`;
+            }
+        }
+    })
+    .catch(() => {
+        toast.show('Network error while updating reservation.', 'error', 3000);
+        if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = `<i class="fas fa-check-circle"></i> Switch to ${roomName}`;
+        }
+    });
+}
+
+function cancelPendingFromModal(pendingId) {
+    if (!confirm(`Withdraw pending reservation request #${pendingId}?`)) return;
+
+    fetch('../controllers/reserve_controller.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'cancel', pending_id: pendingId })
+    })
+    .then(r => r.json())
+    .then(res => {
+        if (res.success) {
+            toast.show('Pending reservation withdrawn.', 'success', 3000);
+            closeInspectorModal();
+            loadAll();
+        } else {
+            toast.show(res.message || 'Failed to withdraw reservation.', 'error', 3000);
+        }
+    })
+    .catch(() => {
+        toast.show('Network error while withdrawing reservation.', 'error', 3000);
+    });
 }
 
 function closeInspectorModal() {
@@ -426,6 +557,8 @@ document.addEventListener('keydown', (e) => {
 
 window.closeInspectorModal = closeInspectorModal;
 window.handleModalBackdropClick = handleModalBackdropClick;
+window.applyModalAlternative = applyModalAlternative;
+window.cancelPendingFromModal = cancelPendingFromModal;
 
 function shiftWeek(dir) { weekOffset += dir; renderWeek(); }
 function goToday()      { weekOffset = 0;    renderWeek(); }
