@@ -32,41 +32,6 @@ $pdo->prepare("
 $fixturePendingId = (int)$pdo->lastInsertId();
 
 // 2. Test updating this pending reservation to room 2 (PH102)
-$updateRunner = __DIR__ . '/_run_reschedule_tmp.php';
-file_put_contents($updateRunner, '<?php
-session_start();
-$_SESSION["id"] = ' . $accId . ';
-$_SERVER["REQUEST_METHOD"] = "POST";
-$input = [
-    "pending_id" => ' . $fixturePendingId . ',
-    "room_id" => 2,
-    "type" => "weekly",
-    "dow" => "Monday",
-    "start" => "08:00",
-    "end" => "10:00"
-];
-// Mock php://input
-$stream = fopen("php://temp", "r+");
-fwrite($stream, json_encode($input));
-rewind($stream);
-// Override file_get_contents for php://input by defining standard body
-require __DIR__ . "/../app/controllers/reserve_controller.php";
-');
-
-// Execute via curl or custom runner that mocks php://input
-$ch = curl_init('http://localhost/classspace/app/controllers/reserve_controller.php');
-// Or simpler: run a PHP script that invokes reserve_controller with simulated php://input
-// In PHP CLI, we can test reserve_controller by writing a mock test script:
-$testRunner = __DIR__ . '/_test_reserve_runner.php';
-file_put_contents($testRunner, '<?php
-session_start();
-$_SESSION["id"] = ' . $accId . ';
-$_SERVER["REQUEST_METHOD"] = "POST";
-
-// Use stream wrapper or test via direct PDO verification
-');
-
-// Let\'s test via php -r with stdin pipe:
 $postJson = json_encode([
     'pending_id' => $fixturePendingId,
     'room_id' => 2,
