@@ -7,10 +7,11 @@
     const searchBtn  = document.querySelector(".search-btn");
 
     /* -- State --------------------------------------------------------- */
-    let allRoomsCache = [];
-    let currentFilter = null;
-    let statsData     = {};
-
+    let allRoomsCache   = [];
+    let currentFilter   = null;
+    let currentBuilding = "all";
+    let vacantOnly      = false;
+    let statsData       = {};
 
     const PLACEHOLDER_IMAGE = "../../public/images/example.jpg";
 
@@ -79,12 +80,14 @@
         return `${hour % 12 || 12}:${m} ${hour >= 12 ? "PM" : "AM"}`;
     }
 
-    /* Photo fallback is wired with addEventListener after rendering. */
-    function photoBlock(src, alt, icon, key, placeholder, badgeHtml) {
+    /* Photo block returning modern 16:9 .card-media frame with fallback & location tag */
+    function photoBlock(src, alt, icon, key, placeholder, badgeHtml, locationTag) {
         const focal = FOCAL_POINTS[key] ? ` style="object-position:${FOCAL_POINTS[key]}"` : "";
-        return `<div class="card-photo-wrap">
+        return `<div class="card-media">
                     <div class="photo-fallback" aria-hidden="true"><i class="fas ${icon}"></i></div>
                     <img class="card-photo" src="${src}" alt="${escapeHtml(alt)}" loading="lazy"${focal} data-placeholder="${escapeHtml(placeholder || "")}">
+                    <div class="card-media-scrim"></div>
+                    ${locationTag ? `<span class="building-loc-tag">${escapeHtml(locationTag)}</span>` : ""}
                     ${badgeHtml || ""}
                 </div>`;
     }
@@ -111,9 +114,12 @@
             .then(res => {
                 if (!res.success) return;
                 statsData = res;
-                document.getElementById("stat-active").textContent    = res.active;
-                document.getElementById("stat-pending").textContent   = res.pending;
-                document.getElementById("stat-available").textContent = res.available;
+                const activeEl    = document.getElementById("stat-active");
+                const pendingEl   = document.getElementById("stat-pending");
+                const availableEl = document.getElementById("stat-available");
+                if (activeEl)    activeEl.textContent    = res.active;
+                if (pendingEl)   pendingEl.textContent   = res.pending;
+                if (availableEl) availableEl.textContent = res.available;
             })
             .catch(() => {});
     }
@@ -132,26 +138,102 @@
             .catch(() => {});
     }
 
+    function updateBuildingCounts(rooms) {
+        const list = rooms || allRoomsCache;
+        const total = list.length;
+        const plaridel = list.filter(r => String(r.hall_name || "").toLowerCase().includes("plaridel")).length;
+        const melchora = list.filter(r => String(r.hall_name || "").toLowerCase().includes("melchora")).length;
+        const gym      = list.filter(r => String(r.hall_name || "").toLowerCase().includes("gym")).length;
+        const hotel    = list.filter(r => String(r.hall_name || "").toLowerCase().includes("hotel")).length;
+
+        const elAll      = document.getElementById("count-all");
+        const elPlaridel = document.getElementById("count-plaridel");
+        const elMelchora = document.getElementById("count-melchora");
+        const elGym      = document.getElementById("count-gym");
+        const elHotel    = document.getElementById("count-hotel");
+
+        if (elAll)      elAll.textContent      = total;
+        if (elPlaridel) elPlaridel.textContent = plaridel;
+        if (elMelchora) elMelchora.textContent = melchora;
+        if (elGym)      elGym.textContent      = gym;
+        if (elHotel)    elHotel.textContent    = hotel;
+
+        // Occupancy calculation
+        const occupied = list.filter(r => {
+            const s = (r.computed_status || "").toLowerCase();
+            return s !== "available" && s !== "vacant";
+        }).length;
+        const occupancyRate = total > 0 ? Math.round((occupied / total) * 100) : 0;
+
+        const elOcc  = document.getElementById("stat-occupancy");
+        const elFill = document.getElementById("occupancy-fill");
+        if (elOcc)  elOcc.textContent  = `${occupancyRate}%`;
+        if (elFill) elFill.style.width = `${occupancyRate}%`;
+    }
+
+    /* -- Building Filter Pills ----------------------------------------- */
+    function filterByBuilding(buildingKey) {
+        currentBuilding = buildingKey || "all";
+
+        document.querySelectorAll("#building-filter-pills .pill-tab").forEach(tab => {
+            if (tab.dataset.building === currentBuilding) {
+                tab.classList.add("active");
+            } else {
+                tab.classList.remove("active");
+            }
+        });
+
+        let filtered = allRoomsCache;
+        if (currentBuilding !== "all") {
+            filtered = filtered.filter(r => {
+                const hall = String(r.hall_name || "").toLowerCase();
+                return hall.includes(currentBuilding.toLowerCase());
+            });
+        }
+
+        if (vacantOnly) {
+            filtered = filtered.filter(r => {
+                const s = (r.computed_status || "").toLowerCase();
+                return s === "available" || s === "vacant";
+            });
+        }
+
+        const titleMap = {
+            all:      "Campus Rooms & Spaces",
+            plaridel: "Plaridel Hall Spaces",
+            melchora: "Melchora Hall Spaces",
+            gym:      "Gymnasium & Athletics",
+            hotel:    "Training Hotel Suites"
+        };
+
+        const title = titleMap[currentBuilding] || "Campus Rooms";
+        const label = `Showing ${filtered.length} space(s)`;
+        updateSectionTitle(title, label);
+        showRoomsView();
+        renderRooms(filtered);
+    }
+
     /* -- Stat-card filter ---------------------------------------------- */
     function filterRooms(type) {
         if (currentFilter === type) {
             currentFilter = null;
             clearStatFilter();
-            showHallsView();
+            filterByBuilding(currentBuilding);
             return;
         }
 
         currentFilter = type;
         showRoomsView();
         document.querySelectorAll(".stat-card").forEach(c => c.classList.remove("active-filter"));
-        document.getElementById("card-" + type).classList.add("active-filter");
+        const cardTarget = document.getElementById("card-" + type);
+        if (cardTarget) cardTarget.classList.add("active-filter");
 
         let filtered = [];
         let title    = "";
         let label    = "";
 
         if (type === "available") {
-            filtered = allRoomsCache.filter(r => r.computed_status === "available");
+            filtered = allRoomsCache.filter(r => r.computed_status === "available" || r.computed_status === "vacant");
             title    = "Available Rooms";
             label    = `Showing ${filtered.length} available room(s)`;
         } else if (type === "active") {
@@ -169,9 +251,12 @@
     }
 
     function showRoomsView() {
-        document.getElementById("halls-grid").style.display    = "none";
-        document.getElementById("rooms-grid").style.display    = "grid";
-        document.getElementById("back-to-halls").style.display = "inline-flex";
+        const hallsGrid = document.getElementById("halls-grid");
+        const roomsGrid = document.getElementById("rooms-grid");
+        const backBtn   = document.getElementById("back-to-halls");
+        if (hallsGrid) hallsGrid.style.display = "none";
+        if (roomsGrid) roomsGrid.style.display = "grid";
+        if (backBtn)   backBtn.style.display   = "none";
     }
 
     function clearStatFilter() {
@@ -179,8 +264,10 @@
     }
 
     function updateSectionTitle(title, label) {
-        document.getElementById("rooms-section-title").textContent = title;
-        document.getElementById("filter-label").textContent        = label;
+        const titleEl = document.getElementById("rooms-section-title");
+        const labelEl = document.getElementById("filter-label");
+        if (titleEl) titleEl.textContent = title;
+        if (labelEl) labelEl.textContent = label;
     }
 
     /* -- Room card renderer -------------------------------------------- */
@@ -199,67 +286,99 @@
 
     function renderRoomCard(room, target) {
         const status = (room.computed_status || "unknown").toLowerCase();
-        const statusClass = {
-            available:   "status-available",
-            unavailable: "status-unavailable",
-            maintenance: "status-maintenance"
-        }[status] ?? "status-unknown";
+        const isAvailable = status === "available" || status === "vacant";
         const edgeStatusClass = roomStatusClass(status);
-        const timeRange = status === "unavailable" && room.conflict_start
+        const dataStatus = isAvailable ? "vacant" : "busy";
+        const floor = roomFloor(room) || floorFromRoomName(room.room_name);
+        const hallName = (room.hall_name || "Campus").toUpperCase();
+        const locationTag = floor ? `${hallName} • ${floor}F` : hallName;
+
+        const timeRange = !isAvailable && room.conflict_start
             ? ` (${formatTime(room.conflict_start)} - ${formatTime(room.conflict_end)})`
             : "";
-        const pendingBadge = room.has_pending
-            ? `<span class="badge badge-pending">Pending</span>`
-            : "";
+
+        const statusPill = `<span class="status-pill ${isAvailable ? 'vacant' : 'in-session'}">` +
+            `<i class="fas ${isAvailable ? 'fa-circle-check' : 'fa-clock'}"></i> ` +
+            `${isAvailable ? 'VACANT' : 'IN SESSION'}${escapeHtml(timeRange)}</span>`;
+
         const activeBadge = room.is_my_active
-            ? `<span class="badge badge-active">Your Reservation</span>`
+            ? `<span class="active-user-badge"><i class="fas fa-user-check"></i> Your Active Booking</span>`
             : "";
+        const pendingBadge = room.has_pending
+            ? `<span class="active-user-badge" style="background:#d97706;"><i class="fas fa-hourglass-half"></i> Pending Approval</span>`
+            : "";
+
         const acChip = room.room_has_ac == 1
-            ? `<span class="spec spec-on"><i class="fas fa-snowflake"></i> Air-conditioned</span>`
-            : `<span class="spec spec-off"><i class="fas fa-snowflake"></i> No AC</span>`;
+            ? `<span class="amenity-tag"><i class="fas fa-snowflake"></i> Air-conditioned</span>`
+            : `<span class="amenity-tag"><i class="fas fa-wind"></i> Standard Airflow</span>`;
+
+        const windowLabel = isAvailable ? "Free Until" : "In Session Until";
+        const windowTime  = isAvailable
+            ? (room.next_conflict_start ? formatTime(room.next_conflict_start) : "Open Day")
+            : (room.conflict_end ? formatTime(room.conflict_end) : "Pending Schedule");
+
+        const scheduleHref = `reserve_view.php?hall_id=${encodeURIComponent(room.hall_id)}&room_id=${encodeURIComponent(room.room_id)}`;
+
         const card = document.createElement("div");
-        card.classList.add("room-card", edgeStatusClass);
-        const floor = roomFloor(room) || floorFromRoomName(room.room_name);
+        card.className = `room-card ${edgeStatusClass}${room.is_my_active ? ' user-active-space' : ''}`;
+        card.dataset.status = dataStatus;
         if (floor !== "" && floor !== null) card.dataset.floor = String(floor);
-        const statusBadge = `<span class="card-status ${statusClass}">` +
-            `${escapeHtml(capitalize(status))}${escapeHtml(timeRange)}</span>`;
+
         card.innerHTML = `
-            ${photoBlock(roomPhoto(room), room.room_name, "fa-door-open", "rooms/" + room.room_id, PLACEHOLDER_IMAGE, statusBadge)}
-            <div class="room-info">
-                <h3>${escapeHtml(room.room_name)}${activeBadge}${pendingBadge}</h3>
-                <p class="room-location">
-                    <i class="fas fa-building"></i> ${escapeHtml(room.hall_name)}
-                </p>
-                <div class="room-specs">
-                    <span class="spec"><i class="fas fa-users"></i> ${escapeHtml(room.room_capacity)} seats</span>
-                    ${acChip}
-                    <span class="spec"><i class="fas fa-tag"></i> ${escapeHtml(room.room_type)}</span>
+            <div class="card-media">
+                <div class="photo-fallback" aria-hidden="true"><i class="fas fa-door-open"></i></div>
+                <img class="card-photo" src="${roomPhoto(room)}" alt="${escapeHtml(room.room_name)}" loading="lazy" data-placeholder="${escapeHtml(PLACEHOLDER_IMAGE)}">
+                <div class="card-media-scrim"></div>
+                <span class="building-loc-tag">${escapeHtml(locationTag)}</span>
+                ${activeBadge || pendingBadge}
+                ${statusPill}
+            </div>
+            <div class="card-content">
+                <div class="room-title-row">
+                    <h3 class="room-code">${escapeHtml(room.room_name)}</h3>
+                    <span class="room-capacity"><i class="fas fa-users"></i> ${escapeHtml(room.room_capacity)} seats</span>
                 </div>
-                <button class="btn-reserve" data-hall-id="${escapeHtml(room.hall_id)}" data-room-id="${escapeHtml(room.room_id)}"
-                    ${status !== "available" ? "disabled" : ""}>
-                    Quick Reserve
-                </button>
+                <div class="room-type-name">${escapeHtml(room.room_type || 'Lecture Space')}</div>
+                <div class="amenities-list">
+                    ${acChip}
+                    <span class="amenity-tag"><i class="fas fa-building"></i> ${escapeHtml(room.hall_name)}</span>
+                </div>
+                <div class="schedule-window-bar">
+                    <span class="window-label">${windowLabel}</span>
+                    <span class="window-time">${windowTime}</span>
+                </div>
+                <div class="card-actions-row">
+                    <a href="${scheduleHref}" class="btn-view-schedule" title="Full schedule and multi-room booking">
+                        <i class="far fa-calendar-days"></i> Schedule
+                    </a>
+                    <button type="button" class="btn-card-reserve ${!isAvailable ? 'btn-disabled' : ''}"
+                        data-hall-id="${escapeHtml(room.hall_id)}"
+                        data-room-id="${escapeHtml(room.room_id)}"
+                        ${!isAvailable ? 'disabled' : ''}>
+                        ${isAvailable ? '<i class="fas fa-bolt"></i> Quick Reserve' : 'Occupied'}
+                    </button>
+                </div>
             </div>
         `;
+
         wireImageFallbacks(card);
-        const reserveButton = card.querySelector(".btn-reserve");
-        if (reserveButton && status === "available") {
-            reserveButton.addEventListener("click", () => {
-                const hallId = encodeURIComponent(reserveButton.dataset.hallId);
-                const roomId = encodeURIComponent(reserveButton.dataset.roomId);
-                window.location.href = `reserve_view.php?hall_id=${hallId}&room_id=${roomId}`;
-            });
+
+        const reserveBtn = card.querySelector(".btn-card-reserve");
+        if (reserveBtn && isAvailable) {
+            reserveBtn.addEventListener("click", () => openQuickReserveDrawer(room));
         }
+
         target.appendChild(card);
     }
 
     function renderRooms(rooms) {
         const grid = document.getElementById("rooms-grid");
+        if (!grid) return;
         grid.innerHTML = "";
         grid.classList.remove("rooms-grouped");
 
         if (!rooms || rooms.length === 0) {
-            grid.innerHTML = `<p class="rooms-empty-msg">No rooms found for this filter.</p>`;
+            grid.innerHTML = `<p class="rooms-empty-msg">No rooms found matching your criteria.</p>`;
             return;
         }
 
@@ -277,7 +396,7 @@
         });
 
         const sortedFloors = [...floorGroups.keys()].sort((a, b) => a - b);
-        if (sortedFloors.length === 0) {
+        if (sortedFloors.length <= 1) {
             rooms.forEach(room => renderRoomCard(room, grid));
             return;
         }
@@ -321,7 +440,7 @@
         }
     }
 
-    /* -- Hall tiles ---------------------------------------------------- */
+    /* -- Hall tiles (Preserved for compatibility) ---------------------- */
     function summarizeHalls(rooms) {
         const map = new Map();
         rooms.forEach(room => {
@@ -345,13 +464,13 @@
         const roomsGrid = document.getElementById("rooms-grid");
         const backBtn   = document.getElementById("back-to-halls");
 
-        hallsGrid.style.display = "grid";
-        roomsGrid.style.display = "none";
-        backBtn.style.display   = "none";
+        if (hallsGrid) hallsGrid.style.display = "grid";
+        if (roomsGrid) roomsGrid.style.display = "none";
+        if (backBtn)   backBtn.style.display   = "none";
         updateSectionTitle("Browse by Building", "");
 
         const halls = summarizeHalls(rooms);
-        hallsGrid.innerHTML = "";
+        if (hallsGrid) hallsGrid.innerHTML = "";
 
         halls.forEach(hall => {
             const tile = document.createElement("div");
@@ -380,7 +499,7 @@
                     openHall();
                 }
             });
-            hallsGrid.appendChild(tile);
+            if (hallsGrid) hallsGrid.appendChild(tile);
         });
     }
 
@@ -389,9 +508,9 @@
         const roomsGrid = document.getElementById("rooms-grid");
         const backBtn   = document.getElementById("back-to-halls");
 
-        hallsGrid.style.display = "none";
-        roomsGrid.style.display = "grid";
-        backBtn.style.display   = "inline-flex";
+        if (hallsGrid) hallsGrid.style.display = "none";
+        if (roomsGrid) roomsGrid.style.display = "grid";
+        if (backBtn)   backBtn.style.display   = "inline-flex";
 
         const filtered = allRoomsCache.filter(r => r.hall_id === hallId);
         updateSectionTitle(hallName, `${filtered.length} room(s)`);
@@ -406,6 +525,7 @@
 
     /* -- Search -------------------------------------------------------- */
     function runSearch() {
+        if (!input || !resultsBox) return;
         const query = input.value.trim();
         if (query.length === 0) { resultsBox.innerHTML = ""; return; }
 
@@ -446,14 +566,15 @@
     }
 
     function triggerSearch() {
+        if (!input || !resultsBox) return;
         const query = input.value.trim();
         if (query.length === 0) return;
 
         resultsBox.innerHTML = "";
         showRoomsView();
-        const grid     = document.getElementById("rooms-grid");
-        grid.innerHTML = `<p class="rooms-loading-msg">Loading...</p>`;
-        currentFilter  = null;
+        const grid = document.getElementById("rooms-grid");
+        if (grid) grid.innerHTML = `<p class="rooms-loading-msg">Searching campus rooms...</p>`;
+        currentFilter = null;
         clearStatFilter();
         updateSectionTitle("Search Results", "");
 
@@ -461,8 +582,7 @@
             .then(res => res.json())
             .then(res => {
                 if (!res.success || res.data.length === 0) {
-                    grid.innerHTML = `<p class="rooms-empty-msg">No results found for "${escapeHtml(query)}".</p>`;
-                    allRoomsCache  = [];
+                    if (grid) grid.innerHTML = `<p class="rooms-empty-msg">No results found for "${escapeHtml(query)}".</p>`;
                     return;
                 }
 
@@ -483,18 +603,16 @@
                     });
 
                     if (merged.length === 0) {
-                        grid.innerHTML = `<p class="rooms-empty-msg">No rooms found for "${escapeHtml(query)}".</p>`;
-                        allRoomsCache  = [];
+                        if (grid) grid.innerHTML = `<p class="rooms-empty-msg">No rooms found for "${escapeHtml(query)}".</p>`;
                         return;
                     }
 
-                    allRoomsCache = merged;
-                    updateSectionTitle(`Results for "${query}"`, `${merged.length} room(s) found`);
-                    renderRooms(allRoomsCache);
+                    updateSectionTitle(`Results for "${query}"`, `${merged.length} space(s) found`);
+                    renderRooms(merged);
                 });
             })
             .catch(() => {
-                grid.innerHTML = `<p class="rooms-empty-msg">Search failed. Please try again.</p>`;
+                if (grid) grid.innerHTML = `<p class="rooms-empty-msg">Search failed. Please try again.</p>`;
             });
     }
 
@@ -519,9 +637,9 @@
     /* -- Load rooms for a single chosen building/room ------------------ */
     function loadFeaturedRooms(type, id) {
         showRoomsView();
-        const grid     = document.getElementById("rooms-grid");
-        grid.innerHTML = `<p class="rooms-loading-msg">Loading...</p>`;
-        currentFilter  = null;
+        const grid = document.getElementById("rooms-grid");
+        if (grid) grid.innerHTML = `<p class="rooms-loading-msg">Loading...</p>`;
+        currentFilter = null;
         clearStatFilter();
         updateSectionTitle("Rooms", "");
 
@@ -529,53 +647,191 @@
             .then(res => res.json())
             .then(res => {
                 if (!res.success || res.data.length === 0) {
-                    grid.innerHTML = `<p class="rooms-empty-msg">No rooms found.</p>`;
-                    allRoomsCache  = [];
+                    if (grid) grid.innerHTML = `<p class="rooms-empty-msg">No rooms found.</p>`;
                     return;
                 }
-                allRoomsCache = res.data;
+                const featuredRooms = res.data;
                 updateSectionTitle(
                     `${type === "hall" ? res.data[0].hall_name : res.data[0].room_name} - Rooms`,
                     ""
                 );
-                renderRooms(allRoomsCache);
+                renderRooms(featuredRooms);
             })
             .catch(() => {});
     }
 
+    /* -- Mobile Menu --------------------------------------------------- */
+    function initSharedMobileMenu() {
+        const toggle   = document.getElementById("mobile-menu-toggle");
+        const backdrop = document.getElementById("mobile-menu-backdrop");
+        const sidebar  = document.getElementById("classspace-sidebar");
+        if (!toggle || !backdrop || !sidebar) return;
 
-function initSharedMobileMenu() {
-    const toggle = document.getElementById("mobile-menu-toggle");
-    const backdrop = document.getElementById("mobile-menu-backdrop");
-    const sidebar = document.getElementById("classspace-sidebar");
-    if (!toggle || !backdrop || !sidebar) return;
+        const closeMenu = () => {
+            document.body.classList.remove("mobile-menu-open");
+            document.documentElement.style.overflow = "";
+            toggle.setAttribute("aria-expanded", "false");
+            toggle.setAttribute("aria-label", "Open navigation menu");
+            toggle.innerHTML = '<i class="fas fa-bars" aria-hidden="true"></i>';
+            backdrop.hidden = true;
+        };
+        const openMenu = () => {
+            document.body.classList.add("mobile-menu-open");
+            document.documentElement.style.overflow = "hidden";
+            toggle.setAttribute("aria-expanded", "true");
+            toggle.setAttribute("aria-label", "Close navigation menu");
+            toggle.innerHTML = '<i class="fas fa-xmark" aria-hidden="true"></i>';
+            backdrop.hidden = false;
+        };
+        toggle.addEventListener("click", () => {
+            document.body.classList.contains("mobile-menu-open") ? closeMenu() : openMenu();
+        });
+        backdrop.addEventListener("click", closeMenu);
+        sidebar.querySelectorAll("a").forEach(link => link.addEventListener("click", closeMenu));
+        document.addEventListener("keydown", event => {
+            if (event.key === "Escape") closeMenu();
+        });
+    }
 
-    const closeMenu = () => {
-        document.body.classList.remove("mobile-menu-open");
-        document.documentElement.style.overflow = "";
-        toggle.setAttribute("aria-expanded", "false");
-        toggle.setAttribute("aria-label", "Open navigation menu");
-        toggle.innerHTML = '<i class="fas fa-bars" aria-hidden="true"></i>';
-        backdrop.hidden = true;
-    };
-    const openMenu = () => {
-        document.body.classList.add("mobile-menu-open");
-        document.documentElement.style.overflow = "hidden";
-        toggle.setAttribute("aria-expanded", "true");
-        toggle.setAttribute("aria-label", "Close navigation menu");
-        toggle.innerHTML = '<i class="fas fa-xmark" aria-hidden="true"></i>';
-        backdrop.hidden = false;
-    };
-    toggle.addEventListener("click", () => {
-        document.body.classList.contains("mobile-menu-open") ? closeMenu() : openMenu();
-    });
-    backdrop.addEventListener("click", closeMenu);
-    sidebar.querySelectorAll("a").forEach(link => link.addEventListener("click", closeMenu));
-    document.addEventListener("keydown", event => {
-        if (event.key === "Escape") closeMenu();
-    });
-}
+    /* -- Quick Reserve Drawer Interactions ----------------------------- */
+    function openQuickReserveDrawer(room) {
+        const drawer   = document.getElementById("quick-reserve-drawer");
+        const backdrop = document.getElementById("drawer-backdrop");
+        if (!drawer || !backdrop) return;
 
+        const titleEl    = document.getElementById("drawer-title");
+        const subtitleEl = document.getElementById("drawer-room-subtitle");
+        const roomIdEl   = document.getElementById("drawer-room-id");
+        const hallIdEl   = document.getElementById("drawer-hall-id");
+        const dateEl     = document.getElementById("drawer-date");
+        const advLink    = document.getElementById("drawer-advanced-link");
+
+        if (titleEl)    titleEl.textContent    = `Quick Reserve: ${room.room_name || 'Room'}`;
+        if (subtitleEl) subtitleEl.textContent = `${room.hall_name || 'Campus'} • Capacity: ${room.room_capacity || 0} seats`;
+        if (roomIdEl)   roomIdEl.value         = room.room_id;
+        if (hallIdEl)   hallIdEl.value         = room.hall_id;
+
+        if (dateEl && !dateEl.value) {
+            const today = new Date().toISOString().split("T")[0];
+            dateEl.value = today;
+        }
+
+        if (advLink) {
+            advLink.href = `reserve_view.php?hall_id=${encodeURIComponent(room.hall_id)}&room_id=${encodeURIComponent(room.room_id)}`;
+        }
+
+        drawer.classList.add("drawer-open");
+        drawer.setAttribute("aria-hidden", "false");
+        backdrop.classList.add("active");
+        document.body.style.overflow = "hidden";
+    }
+
+    function closeQuickReserveDrawer() {
+        const drawer   = document.getElementById("quick-reserve-drawer");
+        const backdrop = document.getElementById("drawer-backdrop");
+        if (!drawer || !backdrop) return;
+
+        drawer.classList.remove("drawer-open");
+        drawer.setAttribute("aria-hidden", "true");
+        backdrop.classList.remove("active");
+        document.body.style.overflow = "";
+    }
+
+    function initQuickReserveDrawer() {
+        const closeBtn = document.getElementById("drawer-close-btn");
+        const backdrop = document.getElementById("drawer-backdrop");
+        const form     = document.getElementById("drawer-reserve-form");
+
+        if (closeBtn) closeBtn.addEventListener("click", closeQuickReserveDrawer);
+        if (backdrop) backdrop.addEventListener("click", closeQuickReserveDrawer);
+
+        document.addEventListener("keydown", (e) => {
+            if (e.key === "Escape") {
+                const drawer = document.getElementById("quick-reserve-drawer");
+                if (drawer && drawer.classList.contains("drawer-open")) {
+                    closeQuickReserveDrawer();
+                }
+            }
+        });
+
+        if (form) {
+            form.addEventListener("submit", (e) => {
+                e.preventDefault();
+                const submitBtn = document.getElementById("drawer-submit-btn");
+                const roomId    = document.getElementById("drawer-room-id")?.value;
+                const date      = document.getElementById("drawer-date")?.value;
+                const startTime = document.getElementById("drawer-start-time")?.value;
+                const endTime   = document.getElementById("drawer-end-time")?.value;
+                const purpose   = document.getElementById("drawer-purpose")?.value;
+
+                if (!roomId || !date || !startTime || !endTime) {
+                    if (typeof window.toast !== "undefined") {
+                        window.toast.show("Please fill out all required fields.", "error", 3000);
+                    } else {
+                        alert("Please fill out all required fields.");
+                    }
+                    return;
+                }
+
+                if (submitBtn) {
+                    submitBtn.disabled    = true;
+                    submitBtn.textContent = "Reserving...";
+                }
+
+                fetch("../controllers/reserve_controller.php", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        room_id: parseInt(roomId, 10),
+                        start: startTime,
+                        end: endTime,
+                        type: "single",
+                        date: date,
+                        purpose: purpose
+                    })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (submitBtn) {
+                        submitBtn.disabled    = false;
+                        submitBtn.textContent = "Confirm Quick Booking";
+                    }
+
+                    if (data.success) {
+                        closeQuickReserveDrawer();
+                        form.reset();
+                        if (typeof window.toast !== "undefined") {
+                            window.toast.show(data.message || "Reservation submitted! Waiting for admin approval.", "success", 4000);
+                        } else {
+                            alert(data.message || "Reservation submitted!");
+                        }
+                        loadStats();
+                        loadDefaultRooms();
+                    } else {
+                        const msg = data.message || "Unable to complete reservation due to schedule conflict.";
+                        if (typeof window.toast !== "undefined") {
+                            window.toast.show(msg, "error", 4500);
+                        } else {
+                            alert(msg);
+                        }
+                    }
+                })
+                .catch(() => {
+                    if (submitBtn) {
+                        submitBtn.disabled    = false;
+                        submitBtn.textContent = "Confirm Quick Booking";
+                    }
+                    if (typeof window.toast !== "undefined") {
+                        window.toast.show("Server error during booking. Please try again.", "error", 4000);
+                    } else {
+                        alert("Server error during booking.");
+                    }
+                });
+            });
+        }
+    }
+
+    /* -- Interactions Init --------------------------------------------- */
     function initDashboardInteractions() {
         document.querySelectorAll(".stat-card[data-filter]").forEach(card => {
             const activate = () => filterRooms(card.dataset.filter);
@@ -588,34 +844,55 @@ function initSharedMobileMenu() {
             });
         });
 
+        // Building filter pills
+        document.querySelectorAll("#building-filter-pills .pill-tab").forEach(tab => {
+            tab.addEventListener("click", () => {
+                const building = tab.dataset.building;
+                filterByBuilding(building);
+            });
+        });
+
+        // Vacant only toggle
+        const vacantToggle = document.getElementById("toggle-vacant-only");
+        if (vacantToggle) {
+            vacantToggle.addEventListener("click", () => {
+                vacantOnly = !vacantOnly;
+                vacantToggle.classList.toggle("active", vacantOnly);
+                filterByBuilding(currentBuilding);
+            });
+        }
+
         const backButton = document.getElementById("back-to-halls");
         if (backButton) {
             backButton.addEventListener("click", showHallsView);
         }
     }
 
-    /* -- Init ---------------------------------------------------------- */
+    /* -- Default Rooms Loader (Direct Collegiate Catalog) -------------- */
     function loadDefaultRooms() {
         const grid = document.getElementById("rooms-grid");
-        grid.innerHTML = `<p class="rooms-loading-msg">Loading rooms...</p>`;
+        if (grid) grid.innerHTML = `<p class="rooms-loading-msg">Loading campus rooms...</p>`;
 
         fetch("../controllers/room_controller.php?action=get_all")
             .then(r => r.json())
             .then(res => {
                 if (!res.success || res.data.length === 0) {
-                    grid.innerHTML = `<p class="rooms-empty-msg">No rooms found.</p>`;
+                    if (grid) grid.innerHTML = `<p class="rooms-empty-msg">No rooms found.</p>`;
                     return;
                 }
                 allRoomsCache = res.data;
-                renderHallTiles(allRoomsCache);
+                updateBuildingCounts(allRoomsCache);
+                showRoomsView();
+                renderRooms(allRoomsCache);
             })
             .catch(() => {
-                grid.innerHTML = `<p class="rooms-empty-msg">Failed to load rooms.</p>`;
+                if (grid) grid.innerHTML = `<p class="rooms-empty-msg">Failed to load rooms.</p>`;
             });
     }
 
     initSharedMobileMenu();
     initDashboardInteractions();
+    initQuickReserveDrawer();
     loadStats();
     loadNotifBadge();
     loadDefaultRooms();
@@ -629,6 +906,9 @@ function initSharedMobileMenu() {
     setInterval(loadStats,      60000);
     setInterval(loadNotifBadge, 30000);
 
-    window.filterRooms = filterRooms;
-    window.showHallsView = showHallsView;
+    window.filterRooms              = filterRooms;
+    window.filterByBuilding         = filterByBuilding;
+    window.showHallsView            = showHallsView;
+    window.openQuickReserveDrawer   = openQuickReserveDrawer;
+    window.closeQuickReserveDrawer  = closeQuickReserveDrawer;
 })();

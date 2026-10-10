@@ -54,3 +54,28 @@ foreach ($requiredViewElements as $element) {
 }
 echo "PASS: Task 2 view markup and preserved elements verified.\n";
 
+// --- Section 3: JavaScript Handlers & Direct Catalog Data Binding ---
+$js = file_get_contents(__DIR__ . '/../public/js/homepage_script.js');
+
+$requiredJsSnippets = [
+    'user_stats.php',
+    'notifications_controller.php',
+    'search_controller.php',
+    'room-status-available',
+    'room-status-unavailable',
+    'card-media',
+    'filterByBuilding',
+    'initSharedMobileMenu',
+    'wireImageFallbacks',
+    'loadStats',
+    'loadNotifBadge'
+];
+
+foreach ($requiredJsSnippets as $snippet) {
+    if (!str_contains($js, $snippet)) {
+        throw new RuntimeException("FAIL [JS]: Missing required snippet: " . $snippet);
+    }
+}
+echo "PASS: Task 3 JavaScript handlers and preserved endpoints verified.\n";
+
+
