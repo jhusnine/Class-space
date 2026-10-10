@@ -78,4 +78,20 @@ foreach ($requiredJsSnippets as $snippet) {
 }
 echo "PASS: Task 3 JavaScript handlers and preserved endpoints verified.\n";
 
+// --- Section 4: Quick Reserve Drawer Interactions ---
+$requiredDrawerSnippets = [
+    'openQuickReserveDrawer',
+    'closeQuickReserveDrawer',
+    'quick-reserve-drawer',
+    'drawer-backdrop',
+    'drawer-reserve-form',
+    'drawer-submit-btn',
+    'drawer-advanced-link'
+];
 
+foreach ($requiredDrawerSnippets as $snippet) {
+    if (!str_contains($js, $snippet)) {
+        throw new RuntimeException("FAIL [Drawer]: Missing required snippet: " . $snippet);
+    }
+}
+echo "PASS: Task 4 Quick Reserve Drawer interactions verified.\n";
