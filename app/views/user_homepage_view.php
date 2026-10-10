@@ -26,8 +26,8 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="../../public/css/global.css">
-    <link rel="stylesheet" href="../../public/css/homepage_style.css">
+    <link rel="stylesheet" href="../../public/css/global.css?v=<?php echo filemtime(__DIR__ . '/../../public/css/global.css'); ?>">
+    <link rel="stylesheet" href="../../public/css/homepage_style.css?v=<?php echo filemtime(__DIR__ . '/../../public/css/homepage_style.css'); ?>">
 </head>
 <body class="<?php echo $themeClass; ?>">
 <div class="container">
@@ -89,22 +89,26 @@
             </li>
         </ul>
 
-        <!-- Modern Collegiate Student Profile Strip -->
-        <div class="sidebar-profile-card">
-            <div class="user-avatar-circle"><?php echo $firstInitial; ?></div>
-            <div class="sidebar-profile-meta">
-                <div class="sidebar-profile-name"><?php echo $fname . ($lname ? " " . $lname : ""); ?></div>
-                <div class="sidebar-profile-sub">Student &bull; BSIT</div>
+        <!-- Modern Collegiate Student Profile Strip & Footer -->
+        <div class="sidebar-bottom">
+            <div class="sidebar-profile-card">
+                <div class="user-avatar-circle"><?php echo $firstInitial; ?></div>
+                <div class="sidebar-profile-meta">
+                    <div class="sidebar-profile-name" title="<?php echo $fname . ($lname ? " " . $lname : ""); ?>"><?php echo $fname . ($lname ? " " . $lname : ""); ?></div>
+                    <div class="sidebar-profile-sub">BSIT &bull; Student</div>
+                </div>
+                <a href="logout.php" class="sidebar-profile-logout" id="logout" title="Log out">
+                    <i class="fas fa-arrow-right-from-bracket" aria-hidden="true"></i>
+                </a>
             </div>
-            <a href="logout.php" class="sidebar-profile-logout" id="logout" title="Log out">
-                <i class="fas fa-arrow-right-from-bracket" aria-hidden="true"></i>
-            </a>
-        </div>
 
-        <div class="sidebar-footer">
-            <a href="about_view.php" class="footer-link">About Us</a>
-            <a href="contact_view.php" class="footer-link">Contact Us</a>
-            <a href="logout.php" class="footer-link">Log out</a>
+            <div class="sidebar-footer">
+                <a href="about_view.php" class="footer-link">About Us</a>
+                <span class="footer-dot">&bull;</span>
+                <a href="contact_view.php" class="footer-link">Contact Us</a>
+                <span class="footer-dot">&bull;</span>
+                <a href="logout.php" class="footer-link">Log out</a>
+            </div>
         </div>
     </aside>
 
@@ -127,9 +131,11 @@
                     <span>Reserve a Room</span>
                 </a>
                 <div class="search-bar">
+                    <i class="fas fa-search search-icon-inside" aria-hidden="true"></i>
                     <input type="text" id="search-input" class="search-input"
                            placeholder="Search buildings or rooms (Ctrl+K)" autocomplete="off">
-                    <button type="button" class="search-btn" aria-label="Search">
+                    <span class="search-kbd-badge">Ctrl+K</span>
+                    <button type="button" class="search-btn" aria-label="Search" style="display:none;">
                         <i class="fas fa-search"></i>
                     </button>
                     <div id="search-results" class="search-results"></div>
@@ -137,37 +143,45 @@
             </div>
         </div>
 
-        <!-- Modern Structured KPI Strip -->
+        <!-- Modern Structured KPI Strip (Strict 4-Column Balanced Grid) -->
         <div class="stats-grid">
             <div class="stat-card" id="card-occupancy" tabindex="0" role="region" aria-label="Campus Room Occupancy">
-                <div class="stat-icon"><i class="fas fa-chart-pie"></i></div>
-                <h3>Campus Occupancy</h3>
-                <div class="number" id="stat-occupancy" aria-live="polite">67%</div>
+                <div class="stat-card-header">
+                    <h3>Campus Occupancy</h3>
+                    <div class="stat-icon"><i class="fas fa-chart-pie"></i></div>
+                </div>
+                <div class="number" id="stat-occupancy" aria-live="polite">--%</div>
                 <div class="occupancy-progress-bar" style="height:5px; background:rgba(255,255,255,0.08); border-radius:9999px; overflow:hidden; margin-top:8px;">
-                    <div class="occupancy-progress-fill" id="occupancy-fill" style="width: 67%; height:100%; background:linear-gradient(90deg, #2F8585, #3D9E9E); border-radius:9999px;"></div>
+                    <div class="occupancy-progress-fill" id="occupancy-fill" style="width: 0%; height:100%; background:linear-gradient(90deg, #2F8585, #3D9E9E); border-radius:9999px;"></div>
                 </div>
             </div>
 
             <div class="stat-card" id="card-active" data-filter="active" tabindex="0" role="button"
                  title="Click to see your active reservations">
-                <div class="stat-icon"><i class="fas fa-calendar-check"></i></div>
-                <h3>Your Bookings</h3>
+                <div class="stat-card-header">
+                    <h3>Your Bookings</h3>
+                    <div class="stat-icon"><i class="fas fa-calendar-check"></i></div>
+                </div>
                 <div class="number" id="stat-active" aria-live="polite">-</div>
                 <div class="filter-hint">Click to filter</div>
             </div>
 
             <div class="stat-card" id="card-pending" data-filter="pending" tabindex="0" role="button"
                  title="Click to see rooms with pending requests">
-                <div class="stat-icon"><i class="fas fa-hourglass-half"></i></div>
-                <h3>Pending Review</h3>
+                <div class="stat-card-header">
+                    <h3>Pending Review</h3>
+                    <div class="stat-icon"><i class="fas fa-hourglass-half"></i></div>
+                </div>
                 <div class="number" id="stat-pending" aria-live="polite">-</div>
                 <div class="filter-hint">Click to filter</div>
             </div>
 
             <div class="stat-card" id="card-available" data-filter="available" tabindex="0" role="button"
                  title="Click to see available rooms">
-                <div class="stat-icon"><i class="fas fa-door-open"></i></div>
-                <h3>Rooms Available</h3>
+                <div class="stat-card-header">
+                    <h3>Rooms Available</h3>
+                    <div class="stat-icon"><i class="fas fa-door-open"></i></div>
+                </div>
                 <div class="number highlight" id="stat-available" aria-live="polite">-</div>
                 <div class="filter-hint">Click to filter</div>
             </div>

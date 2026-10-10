@@ -6,15 +6,6 @@ body {
     transition: background 0.3s ease, color 0.3s ease; /* Idinagdag para smooth transition */
 }
 
-.sidebar {
-    width: 220px;
-    background: var(--sidebar-bg); /* Binago mula #0d1220 */
-    border-right: 1px solid var(--border-color); /* Binago */
-    padding: 20px;
-    overflow-y: auto;
-    flex-shrink: 0;
-    transition: background 0.3s ease;
-}
 
 .setting-row {
     display: flex;
