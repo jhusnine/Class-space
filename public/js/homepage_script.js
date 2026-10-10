@@ -19,47 +19,10 @@
         gym: "../../public/images/gym.png",
         hotel: "../../public/images/hotel.jpeg",
         melchora: "../../public/images/melchora.jpg",
-        plaridel: "../../public/images/plaridel.jpeg",
-        balagtas: "../../public/images/balagtas.jpg",
-        ople: "../../public/images/ople.jpg",
-        rizal: "../../public/images/rizal.jpg",
-        conference: "../../public/images/conference.jpg"
+        plaridel: "../../public/images/plaridel.jpeg"
     };
 
-    const ROOM_TYPE_IMAGES = {
-        "computer lab": "../../public/images/computer_lab.jpg",
-        "cisco lab": "../../public/images/computer_lab.jpg",
-        "it department": "../../public/images/computer_lab.jpg",
-        "ai data center": "../../public/images/computer_lab.jpg",
-        "crime lab": "../../public/images/crime_lab.jpg",
-        "forensic room": "../../public/images/crime_lab.jpg",
-        "firing range room": "../../public/images/crime_lab.jpg",
-        "nursing skills": "../../public/images/crime_lab.jpg",
-        "lecture": "../../public/images/lecture_hall.jpg",
-        "psychology testing r": "../../public/images/lecture_hall.jpg",
-        "demo room": "../../public/images/lecture_hall.jpg",
-        "engineering": "../../public/images/lecture_hall.jpg",
-        "broadcasting room": "../../public/images/lecture_hall.jpg",
-        "library": "../../public/images/lecture_hall.jpg",
-        "event": "../../public/images/conference.jpg",
-        "function hall": "../../public/images/conference.jpg",
-        "reception": "../../public/images/hotel.jpeg",
-        "office": "../../public/images/hotel.jpeg"
-    };
-
-    const SPECIALTY_ROOM_TYPES = {
-        "computer lab": "../../public/images/computer_lab.jpg",
-        "cisco lab": "../../public/images/computer_lab.jpg",
-        "it department": "../../public/images/computer_lab.jpg",
-        "ai data center": "../../public/images/computer_lab.jpg",
-        "crime lab": "../../public/images/crime_lab.jpg",
-        "forensic room": "../../public/images/crime_lab.jpg",
-        "firing range room": "../../public/images/crime_lab.jpg",
-        "nursing skills": "../../public/images/crime_lab.jpg",
-        "event": "../../public/images/conference.jpg",
-        "function hall": "../../public/images/conference.jpg",
-        "reception": "../../public/images/hotel.jpeg"
-    };
+    const ROOM_TYPE_IMAGES = {};
 
     function buildingPhoto(hallId) {
         return PLACEHOLDER_IMAGE;
@@ -78,27 +41,17 @@
     function roomPhoto(room) {
         const hallName = String(room?.hall_name ?? "").trim().toLowerCase();
         const roomName = String(room?.room_name ?? "").trim().toLowerCase();
-        const roomType = String(room?.room_type ?? "").trim().toLowerCase();
 
         if (hallName === "gym" || roomName === "gym") {
             return "../../public/images/gym.png";
         }
 
-        // 1. Specialized Room Type image (labs, tech, forensic, event spaces)
-        if (SPECIALTY_ROOM_TYPES[roomType]) {
-            return SPECIALTY_ROOM_TYPES[roomType];
-        }
-
-        // 2. Building / Hall facade image for general lecture rooms
+        // 1. Authentic Building facade if available (Plaridel, Melchora, Hotel)
         if (BUILDING_IMAGES[hallName]) {
             return BUILDING_IMAGES[hallName];
         }
 
-        // 3. Room Type fallback
-        if (ROOM_TYPE_IMAGES[roomType]) {
-            return ROOM_TYPE_IMAGES[roomType];
-        }
-
+        // 2. Default neutral classroom fallback (example.jpg, zero 404s)
         return PLACEHOLDER_IMAGE;
     }
 
