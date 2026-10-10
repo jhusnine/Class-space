@@ -903,7 +903,7 @@
         history.replaceState({}, "", "user_homepage_view.php");
     }
 
-    setInterval(loadStats,      60000);
+    setInterval(loadStats, 60000);
     setInterval(loadNotifBadge, 30000);
 
     window.filterRooms              = filterRooms;
