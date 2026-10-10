@@ -26,3 +26,31 @@ foreach ($requiredCssSnippets as $snippet) {
     }
 }
 echo "PASS: Task 1 CSS tokens and status edges verified.\n";
+
+// --- Section 2: View Markup & Preserved Elements ---
+$view = file_get_contents(__DIR__ . '/../app/views/user_homepage_view.php');
+
+$requiredViewElements = [
+    'session_start()',
+    'cleanup_schedules.php',
+    'id="search-input"',
+    'id="search-results"',
+    'id="stat-active"',
+    'id="stat-pending"',
+    'id="stat-available"',
+    'id="notif-badge"',
+    'id="rooms-grid"',
+    'id="quick-reserve-drawer"',
+    'id="drawer-backdrop"',
+    'class="sidebar-profile-card"',
+    'class="room-status-legend"',
+    'logout.php'
+];
+
+foreach ($requiredViewElements as $element) {
+    if (!str_contains($view, $element)) {
+        throw new RuntimeException("FAIL [View]: Missing required element: " . $element);
+    }
+}
+echo "PASS: Task 2 view markup and preserved elements verified.\n";
+
