@@ -169,25 +169,54 @@ body.light-mode {
 
 ---
 
-## 5. Implementation Plan Outline
+## 5. Exhaustive Functionality Preservation Matrix
+
+The user has explicitly mandated: **"be sure to not remove any existing functionalities."** The following matrix details every existing feature and proves how it is retained in the new architecture:
+
+| Subsystem / Feature | Existing Implementation | Redesign Architecture | Preservation Guarantee |
+| :--- | :--- | :--- | :--- |
+| **Session & Auth Checks** | `session_start()`, check `$_SESSION["id"]`, redirect to `../index.php` | Preserved identically in `user_homepage_view.php` | 100% Unchanged |
+| **Schedule Auto-Cleanup** | `require_once "../controllers/cleanup_schedules.php";` | Preserved on line 2 of `user_homepage_view.php` | 100% Unchanged |
+| **Theme Cookie Detection** | `$_COOKIE["theme"] === "light" ? "light-mode" : ""` | Preserved in PHP on `<body>` element | 100% Unchanged |
+| **Stats Counters** | `loadStats()` polls `../controllers/user_stats.php` every 60s | Polling kept at 60s; updates `Active`, `Pending`, `Available` numbers in the new KPI strip | 100% Preserved |
+| **Notification Badges** | `loadNotifBadge()` polls `../controllers/notifications_controller.php` every 30s | Polling kept at 30s; updates `#notif-badge` with `res.unread` count | 100% Preserved |
+| **Live Search Autocomplete** | `runSearch()` queries `../controllers/search_controller.php?q=...` | Same endpoint and logic; dropdown rendered beneath search pill | 100% Preserved |
+| **Enter/Click Search Execution** | `triggerSearch()` fetches featured rooms via `room_controller.php` | Same query handler, error handling, and results view | 100% Preserved |
+| **Click-Outside Search Dismissal** | Event listener on `document` closes `#search-results` | Preserved identically in `homepage_script.js` | 100% Preserved |
+| **Stat-Card Interactive Filtering** | Clicking `#card-active`, `#card-pending`, `#card-available` filters rooms by `is_my_active`, `has_pending`, `computed_status` | Filter handlers kept; clicking KPI cards triggers real-time filtering in the room catalog | 100% Preserved |
+| **Floor & Group Sorter** | `floorFromRoomName()`, `roomNumber()`, grouping by `1st`, `2nd`, `3rd` floor | Retained in room data processing and floor pill filtering | 100% Preserved |
+| **Conflict Time Ranges** | Appends `(${formatTime(conflict_start)} - ${formatTime(conflict_end)})` to unavailable rooms | Displayed in card availability window: "Occupied until X:XX PM" | 100% Preserved |
+| **Air-Conditioning Chips** | `room_has_ac == 1` shows AC chip; `== 0` shows No AC | Rendered in card amenity cluster with snowflake icon | 100% Preserved |
+| **Pending / Active Badges** | `has_pending` and `is_my_active` conditional badges | Rendered with dedicated highlight badges (`Your Reservation`, `Pending`) | 100% Preserved |
+| **Image Error Fallback** | `wireImageFallbacks()` switches failed images to placeholder | Fallback handler retained for all 16:9 photo elements | 100% Preserved |
+| **Mobile Drawer Navigation** | `#mobile-menu-toggle`, `#mobile-menu-backdrop`, `initSharedMobileMenu()` | Preserved with full ARIA attributes, escape-key handler, and backdrop dismiss | 100% Preserved |
+| **Reservation Toast Alert** | Reads `?submitted=1`, calls `window.toast.show()`, cleans URL via `history.replaceState` | Preserved identically at script boot | 100% Preserved |
+| **All Navigation Routes** | Links to `calendar_view.php`, `notifications_view.php`, `profile_view.php`, `security_view.php`, `settings_view.php`, `about_view.php`, `contact_view.php`, `logout.php` | All 8 navigation destinations preserved in the modern collegiate sidebar | 100% Preserved |
+
+---
+
+## 6. Implementation Plan Outline
 
 1. **Step 1: CSS Token & Shell System**
    - Update [`public/css/homepage_style.css`](file:///c:/xampp/htdocs/classspace/public/css/homepage_style.css) with all new variables, 3-column room grid, 4px status edges, 16:9 media boxes, status legend, and drawer animation rules.
 2. **Step 2: View Markup Updates**
    - Update [`app/views/user_homepage_view.php`](file:///c:/xampp/htdocs/classspace/app/views/user_homepage_view.php) with:
-     - Modernized collegiate sidebar (FCPC logo, active pills, bottom profile card).
-     - New page header with AY badge & search.
-     - 4-metric structured KPI strip.
+     - Modernized collegiate sidebar (FCPC logo, active pills, bottom profile card, all 8 navigation links preserved).
+     - New page header with AY badge & search input (retaining `#search-input`, `#search-results`, `.search-btn`).
+     - 4-metric structured KPI strip (retaining `#card-active`, `#card-pending`, `#card-available`, `#stat-active`, `#stat-pending`, `#stat-available`).
      - Direct room filter bar with building tabs and status legend.
      - Slide-out Quick Reserve Drawer container.
 3. **Step 3: JavaScript Dynamic Data Binding**
    - Update [`public/js/homepage_script.js`](file:///c:/xampp/htdocs/classspace/public/js/homepage_script.js):
+     - Preserve all fetch endpoints, intervals, search handlers, image error fallbacks, and toast alerts.
      - Bind room data directly into the 3-column room card template with `room-status-available` (`#3D9B68`) and `room-status-unavailable` (`#7B8798`).
      - Wire building filter tabs (`All Spaces`, `Plaridel`, `Melchora`, `Gym`, `Hotel`) for real-time filtering without page reloads.
-     - Wire slide-out drawer open/close and quick booking submission.
-     - Retain and ensure image fallback error handlers.
+     - Wire slide-out drawer open/close and quick booking submission while preserving `reserve_view.php` link.
 4. **Step 4: Verification & Smoke Test**
    - Verify page loads with HTTP 200.
    - Verify dark and light mode toggle.
+   - Verify all 8 sidebar navigation links.
    - Verify building filtering and vacancy toggling.
+   - Verify live search input and dropdown suggestions.
+   - Verify stat card filters (`active`, `pending`, `available`).
    - Verify drawer open/close and booking flow.
