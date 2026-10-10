@@ -100,3 +100,43 @@ function loadNotifBadge() {
 }
 
 loadNotifBadge();
+
+function initSharedMobileMenu() {
+    const toggle   = document.getElementById("mobile-menu-toggle");
+    const backdrop = document.getElementById("mobile-menu-backdrop");
+    const sidebar  = document.getElementById("classspace-sidebar");
+    if (!toggle || !backdrop || !sidebar) return;
+    if (toggle.dataset.menuBound === "true") return;
+    toggle.dataset.menuBound = "true";
+
+    const closeMenu = () => {
+        document.body.classList.remove("mobile-menu-open");
+        document.documentElement.style.overflow = "";
+        toggle.setAttribute("aria-expanded", "false");
+        toggle.setAttribute("aria-label", "Open navigation menu");
+        toggle.innerHTML = '<i class="fas fa-bars" aria-hidden="true"></i>';
+        backdrop.hidden = true;
+    };
+    const openMenu = () => {
+        document.body.classList.add("mobile-menu-open");
+        document.documentElement.style.overflow = "hidden";
+        toggle.setAttribute("aria-expanded", "true");
+        toggle.setAttribute("aria-label", "Close navigation menu");
+        toggle.innerHTML = '<i class="fas fa-xmark" aria-hidden="true"></i>';
+        backdrop.hidden = false;
+    };
+    toggle.addEventListener("click", () => {
+        document.body.classList.contains("mobile-menu-open") ? closeMenu() : openMenu();
+    });
+    backdrop.addEventListener("click", closeMenu);
+    sidebar.querySelectorAll("a").forEach(link => link.addEventListener("click", closeMenu));
+    document.addEventListener("keydown", event => {
+        if (event.key === "Escape") closeMenu();
+    });
+}
+
+if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initSharedMobileMenu);
+} else {
+    initSharedMobileMenu();
+}

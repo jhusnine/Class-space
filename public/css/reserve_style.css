@@ -287,61 +287,7 @@ button:focus-visible {
 }
 
 
-/* Canonical desktop ClassSpace shell — identical on User View and Reserve View. */
-@media (min-width: 769px) {
-    .sidebar {
-        width: 220px;
-        min-height: 100dvh;
-        height: auto;
-        padding: 20px;
-        background: var(--sidebar-bg);
-        border-right: 1px solid var(--border-color);
-    }
 
-    .logo {
-        gap: 10px;
-        margin-bottom: 30px;
-        padding: 0;
-        color: var(--brand-accent);
-        font-size: 16px;
-    }
-
-    .logo img {
-        width: 36px;
-        height: 36px;
-    }
-
-    .nav-menu {
-        display: block;
-        padding: 0;
-    }
-
-    .nav-item {
-        margin-bottom: 2px;
-    }
-
-    .nav-link {
-        gap: 12px;
-        padding: 12px 16px;
-        border-radius: 8px;
-        border-left: 3px solid transparent;
-        font-size: 14px;
-    }
-
-    .nav-link i {
-        width: 20px;
-        font-size: 16px;
-    }
-
-    .sidebar-footer {
-        margin-top: 30px;
-        padding-top: 20px;
-    }
-
-    .main-content {
-        padding: 40px;
-    }
-}
 
 
 /* Reservation form hierarchy: group existing fields without adding new data. */
@@ -424,18 +370,6 @@ button:focus-visible {
     scrollbar-width: thin;
 }
 
-.sidebar .sidebar-footer {
-    flex: 0 0 auto;
-    margin-top: auto;
-    background: var(--sidebar-bg);
-}
-
-.sidebar .footer-link {
-    display: block;
-    min-height: 36px;
-    padding: 7px 0;
-}
-
 @media (min-width: 769px) {
     .sidebar {
         position: sticky;
@@ -497,19 +431,6 @@ button:focus-visible {
         overflow-y: auto !important;
     }
 
-    .sidebar .sidebar-footer {
-        display: flex !important;
-        flex: 0 0 auto !important;
-        margin-top: auto !important;
-        padding: 14px 0 0 !important;
-        border-top: 1px solid var(--border-footer) !important;
-        background: var(--sidebar-bg) !important;
-    }
-
-    .sidebar .footer-link {
-        min-height: 40px;
-        padding: 8px 0;
-    }
 
     .main-content {
         width: 100% !important;
