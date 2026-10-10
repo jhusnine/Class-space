@@ -14,8 +14,8 @@ $requiredCssSnippets = [
     '#3D9B68',                  // Available institutional green
     '#7B8798',                  // Unavailable slate gray
     'border-left: 4px solid',   // 4px signature status edge
-    'repeat(3, 1fr)',           // Predictable 3-column grid
-    'aspect-ratio: 16 / 9',     // 16:9 photography ratio
+    'repeat(auto-fill, minmax(', // Responsive auto-fill grid
+    'aspect-ratio: 1 / 1',      // 1:1 square room card ratio
     '.room-status-legend',      // Status legend indicator
     '.quick-reserve-drawer'     // In-page reservation drawer
 ];
