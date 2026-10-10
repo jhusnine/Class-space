@@ -15,19 +15,59 @@
 
     const PLACEHOLDER_IMAGE = "../../public/images/example.jpg";
 
+    const BUILDING_IMAGES = {
+        gym: "../../public/images/gym.png",
+        hotel: "../../public/images/hotel.jpeg",
+        melchora: "../../public/images/melchora.jpg",
+        plaridel: "../../public/images/plaridel.jpeg",
+        balagtas: "../../public/images/balagtas.jpg",
+        ople: "../../public/images/ople.jpg",
+        rizal: "../../public/images/rizal.jpg",
+        conference: "../../public/images/conference.jpg"
+    };
+
+    const ROOM_TYPE_IMAGES = {
+        "computer lab": "../../public/images/computer_lab.jpg",
+        "cisco lab": "../../public/images/computer_lab.jpg",
+        "it department": "../../public/images/computer_lab.jpg",
+        "ai data center": "../../public/images/computer_lab.jpg",
+        "crime lab": "../../public/images/crime_lab.jpg",
+        "forensic room": "../../public/images/crime_lab.jpg",
+        "firing range room": "../../public/images/crime_lab.jpg",
+        "nursing skills": "../../public/images/crime_lab.jpg",
+        "lecture": "../../public/images/lecture_hall.jpg",
+        "psychology testing r": "../../public/images/lecture_hall.jpg",
+        "demo room": "../../public/images/lecture_hall.jpg",
+        "engineering": "../../public/images/lecture_hall.jpg",
+        "broadcasting room": "../../public/images/lecture_hall.jpg",
+        "library": "../../public/images/lecture_hall.jpg",
+        "event": "../../public/images/conference.jpg",
+        "function hall": "../../public/images/conference.jpg",
+        "reception": "../../public/images/hotel.jpeg",
+        "office": "../../public/images/hotel.jpeg"
+    };
+
+    const SPECIALTY_ROOM_TYPES = {
+        "computer lab": "../../public/images/computer_lab.jpg",
+        "cisco lab": "../../public/images/computer_lab.jpg",
+        "it department": "../../public/images/computer_lab.jpg",
+        "ai data center": "../../public/images/computer_lab.jpg",
+        "crime lab": "../../public/images/crime_lab.jpg",
+        "forensic room": "../../public/images/crime_lab.jpg",
+        "firing range room": "../../public/images/crime_lab.jpg",
+        "nursing skills": "../../public/images/crime_lab.jpg",
+        "event": "../../public/images/conference.jpg",
+        "function hall": "../../public/images/conference.jpg",
+        "reception": "../../public/images/hotel.jpeg"
+    };
+
     function buildingPhoto(hallId) {
-        return `../../public/images/halls/${encodeURIComponent(hallId)}.jpg`;
+        return PLACEHOLDER_IMAGE;
     }
 
     function hallPhoto(hall) {
         const hallName = String(hall?.hall_name ?? "").trim().toLowerCase();
-        const buildingImages = {
-            gym: "../../public/images/gym.png",
-            hotel: "../../public/images/hotel.jpeg",
-            melchora: "../../public/images/melchora.jpg",
-            plaridel: "../../public/images/plaridel.jpeg"
-        };
-        return buildingImages[hallName] || buildingPhoto(hall.hall_id);
+        return BUILDING_IMAGES[hallName] || PLACEHOLDER_IMAGE;
     }
 
     function hallPlaceholder(hall) {
@@ -38,9 +78,28 @@
     function roomPhoto(room) {
         const hallName = String(room?.hall_name ?? "").trim().toLowerCase();
         const roomName = String(room?.room_name ?? "").trim().toLowerCase();
-        return hallName === "gym" || roomName === "gym"
-            ? "../../public/images/gym.png"
-            : `../../public/images/rooms/${encodeURIComponent(room.room_id)}.jpg`;
+        const roomType = String(room?.room_type ?? "").trim().toLowerCase();
+
+        if (hallName === "gym" || roomName === "gym") {
+            return "../../public/images/gym.png";
+        }
+
+        // 1. Specialized Room Type image (labs, tech, forensic, event spaces)
+        if (SPECIALTY_ROOM_TYPES[roomType]) {
+            return SPECIALTY_ROOM_TYPES[roomType];
+        }
+
+        // 2. Building / Hall facade image for general lecture rooms
+        if (BUILDING_IMAGES[hallName]) {
+            return BUILDING_IMAGES[hallName];
+        }
+
+        // 3. Room Type fallback
+        if (ROOM_TYPE_IMAGES[roomType]) {
+            return ROOM_TYPE_IMAGES[roomType];
+        }
+
+        return PLACEHOLDER_IMAGE;
     }
 
     function roomStatusClass(status) {
@@ -627,6 +686,13 @@
         searchBtn.addEventListener("click", triggerSearch);
     }
 
+    document.addEventListener("keydown", function (e) {
+        if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") {
+            e.preventDefault();
+            if (input) input.focus();
+        }
+    });
+
     document.addEventListener("click", function (e) {
         const bar = document.querySelector(".search-bar");
         if (bar && resultsBox && !bar.contains(e.target)) {
@@ -711,9 +777,12 @@
         if (roomIdEl)   roomIdEl.value         = room.room_id;
         if (hallIdEl)   hallIdEl.value         = room.hall_id;
 
-        if (dateEl && !dateEl.value) {
+        if (dateEl) {
             const today = new Date().toISOString().split("T")[0];
-            dateEl.value = today;
+            dateEl.min = today;
+            if (!dateEl.value) {
+                dateEl.value = today;
+            }
         }
 
         if (advLink) {

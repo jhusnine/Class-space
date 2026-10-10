@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mockup 1 UI/UX Pro Max Iterations — ClassSpace</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <style>
+        :root {
+            --bg: #090E17;
+            --surface: #0E1626;
+            --surface-elevated: #152037;
+            --border: rgba(255, 255, 255, 0.08);
+            --border-hover: rgba(47, 133, 133, 0.45);
+            --teal: #2F8585;
+            --teal-light: #3EA6A6;
+            --teal-dim: rgba(47, 133, 133, 0.16);
+            --text-high: #F8FAFC;
+            --text-mid: #94A3B8;
+            --text-low: #475569;
+            --font-mono: 'JetBrains Mono', monospace;
+            --font-sans: 'Plus Jakarta Sans', sans-serif;
+            --radius-sm: 8px;
+            --radius-md: 14px;
+            --radius-lg: 20px;
+            --transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: var(--font-sans);
+            background-color: var(--bg);
+            color: var(--text-high);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* Top Bar */
+        .top-bar {
+            background: rgba(14, 22, 38, 0.9);
+            backdrop-filter: blur(14px);
+            border-bottom: 1px solid var(--border);
+            padding: 14px 32px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            gap: 20px;
+        }
+
+        .brand-meta {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .brand-meta img {
+            width: 30px;
+            height: 30px;
+            border-radius: var(--radius-sm);
+        }
+
+        .brand-meta h1 {
+            font-size: 15px;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+        }
+
+        .badge-pro-max {
+            font-size: 10px;
+            font-family: var(--font-mono);
+            background: rgba(47, 133, 133, 0.2);
+            color: var(--teal-light);
+            border: 1px solid rgba(47, 133, 133, 0.35);
+            padding: 2px 8px;
+            border-radius: 9999px;
+            font-weight: 600;
+        }
+
+        .switch-nav {
+            display: flex;
+            background: var(--bg);
+            padding: 4px;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border);
+            gap: 4px;
+        }
+
+        .tab-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-mid);
+            padding: 7px 16px;
+            font-size: 12.5px;
+            font-weight: 600;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .tab-btn:hover {
+            color: var(--text-high);
+        }
+
+        .tab-btn.active {
+            background: var(--teal);
+            color: white;
+            box-shadow: 0 2px 8px var(--teal-dim);
+        }
+
+        .btn-fullscreen {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-mid);
+            background: var(--surface-elevated);
+            padding: 8px 14px;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border);
+            text-decoration: none;
+            transition: var(--transition);
+        }
+
+        .btn-fullscreen:hover {
+            color: var(--text-high);
+            border-color: rgba(255, 255, 255, 0.25);
+        }
+
+        /* Hero Explainer */
+        .showcase-header {
+            padding: 30px 32px 16px;
+            max-width: 1440px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .showcase-header h2 {
+            font-size: 24px;
+            font-weight: 800;
+            letter-spacing: -0.03em;
+            margin-bottom: 6px;
+        }
+
+        .showcase-header p {
+            font-size: 14px;
+            color: var(--text-mid);
+            max-width: 850px;
+            line-height: 1.5;
+        }
+
+        /* 3-Card Iteration Picker */
+        .iteration-cards-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            padding: 10px 32px 24px;
+            max-width: 1440px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .iter-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: var(--transition);
+            cursor: pointer;
+            position: relative;
+        }
+
+        .iter-card:hover {
+            border-color: var(--border-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 24px rgba(0, 0, 0, 0.35);
+        }
+
+        .iter-card.active-card {
+            border-color: var(--teal);
+            box-shadow: 0 0 0 2px var(--teal-dim);
+            background: var(--surface-elevated);
+        }
+
+        .iter-badge {
+            font-size: 10.5px;
+            font-family: var(--font-mono);
+            font-weight: 600;
+            padding: 3px 8px;
+            border-radius: var(--radius-full);
+            background: var(--teal-dim);
+            color: var(--teal-light);
+            display: inline-block;
+            margin-bottom: 8px;
+        }
+
+        .iter-title {
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+
+        .iter-desc {
+            font-size: 12.5px;
+            color: var(--text-mid);
+            line-height: 1.5;
+            margin-bottom: 14px;
+        }
+
+        .iter-highlights {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            font-size: 12px;
+            color: var(--text-mid);
+            margin-bottom: 16px;
+        }
+
+        .iter-highlights li {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .iter-highlights li i {
+            color: var(--teal-light);
+            font-size: 10px;
+        }
+
+        .btn-launch-iter {
+            display: block;
+            text-align: center;
+            background: var(--teal);
+            color: white;
+            font-size: 12.5px;
+            font-weight: 600;
+            padding: 8px 14px;
+            border-radius: var(--radius-sm);
+            text-decoration: none;
+            transition: var(--transition);
+        }
+
+        .btn-launch-iter:hover {
+            background: var(--teal-light);
+        }
+
+        /* Live Preview Container */
+        .preview-box {
+            flex: 1;
+            padding: 0 32px 32px;
+            max-width: 1440px;
+            margin: 0 auto;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .frame-wrapper {
+            flex: 1;
+            min-height: 760px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45);
+        }
+
+        iframe {
+            width: 100%;
+            height: 100%;
+            min-height: 760px;
+            border: none;
+            display: block;
+        }
+
+        /* Deletion footer */
+        .delete-bar {
+            margin: 20px 32px 36px;
+            max-width: 1440px;
+            margin-left: auto;
+            margin-right: auto;
+            width: calc(100% - 64px);
+            background: #141017;
+            border: 1px solid rgba(239, 68, 68, 0.25);
+            border-radius: var(--radius-md);
+            padding: 16px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .delete-code {
+            font-family: var(--font-mono);
+            font-size: 12px;
+            background: rgba(0, 0, 0, 0.4);
+            padding: 6px 12px;
+            border-radius: var(--radius-sm);
+            color: #FCA5A5;
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            user-select: all;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header Navigation -->
+    <header class="top-bar">
+        <div class="brand-meta">
+            <img src="../public/images/logo.png" alt="ClassSpace">
+            <h1>ClassSpace &bull; Mockup 1 Pro Max Iterations</h1>
+            <span class="badge-pro-max">UI/UX PRO MAX</span>
+        </div>
+
+            <div class="switch-nav">
+                <button class="tab-btn" onclick="switchFrame('option_1_collegiate.html', this, null)">
+                    <i class="fa-solid fa-graduation-cap"></i> Mockup 1 (Original)
+                </button>
+                <button class="tab-btn active" onclick="switchFrame('iteration_1_pro_max_dark.html', this, 'card-dark')">
+                    <i class="fa-solid fa-moon"></i> 1A: Executive Dark
+                </button>
+                <button class="tab-btn" onclick="switchFrame('iteration_1_pro_max_light.html', this, 'card-light')">
+                    <i class="fa-solid fa-sun"></i> 1B: Editorial Light
+                </button>
+                <button class="tab-btn" onclick="switchFrame('iteration_1_pro_max_timeline.html', this, 'card-time')">
+                    <i class="fa-solid fa-clock"></i> 1C: Hourly Scrubber
+                </button>
+            </div>
+
+            <a id="btn-open-direct" href="iteration_1_pro_max_dark.html" target="_blank" class="btn-fullscreen">
+                <i class="fa-solid fa-arrow-up-right-from-square"></i> Fullscreen
+            </a>
+        </div>
+    </header>
+
+    <!-- Explainer -->
+    <section class="showcase-header">
+        <h2>Polished Mockup 1 Suite with Signature Status Edge</h2>
+        <p>All designs strictly retain the predictable 3-column structured grid, 16:9 room photos, and the signature <strong>4px green left-edge border (<code style="color:#4ade80;">#3D9B68</code>) for available rooms</strong> and <strong>4px gray left-edge border (<code style="color:#94a3b8;">#7B8798</code>) for unavailable rooms</strong> alongside an edge legend.</p>
+    </section>
+
+    <!-- 3 Iteration Cards Grid -->
+    <section class="iteration-cards-grid">
+
+        <!-- Card 1A -->
+        <div class="iter-card active-card" id="card-dark" onclick="switchFrame('iteration_1_pro_max_dark.html', document.querySelectorAll('.tab-btn')[0], 'card-dark')">
+            <div>
+                <span class="iter-badge">FLAGSHIP PRO MAX</span>
+                <h3 class="iter-title">1A: Executive Dark Studio</h3>
+                <p class="iter-desc">Curated obsidian &amp; FCPC teal. Interactive live filtering by building, lab, or vacancy, plus a slide-out conflict check reservation drawer.</p>
+                <ul class="iter-highlights">
+                    <li><i class="fa-solid fa-check"></i> Slide-out Quick Reserve Drawer on click</li>
+                    <li><i class="fa-solid fa-check"></i> Real-time JS filter pills &amp; instant search</li>
+                    <li><i class="fa-solid fa-check"></i> Micro-interactions &amp; tactile button depressions</li>
+                </ul>
+            </div>
+            <a href="iteration_1_pro_max_dark.html" target="_blank" class="btn-launch-iter">Open Iteration 1A</a>
+        </div>
+
+        <!-- Card 1B -->
+        <div class="iter-card" id="card-light" onclick="switchFrame('iteration_1_pro_max_light.html', document.querySelectorAll('.tab-btn')[1], 'card-light')">
+            <div>
+                <span class="iter-badge" style="background:rgba(21,128,61,0.12); color:#15803D;">DAYLIGHT CLASSROOM</span>
+                <h3 class="iter-title">1B: Editorial Light (Ivory)</h3>
+                <p class="iter-desc">High-legibility daylight theme for academic environments. Off-white chalk surfaces, crisp typography, and deep institutional teal.</p>
+                <ul class="iter-highlights">
+                    <li><i class="fa-solid fa-check"></i> Non-glare off-white background (<code>#F8FAFC</code>)</li>
+                    <li><i class="fa-solid fa-check"></i> WCAG AA high-contrast slate text &amp; teal borders</li>
+                    <li><i class="fa-solid fa-check"></i> Pairs with ClassSpace's cookie theme toggle</li>
+                </ul>
+            </div>
+            <a href="iteration_1_pro_max_light.html" target="_blank" class="btn-launch-iter" style="background:#1B6868;">Open Iteration 1B</a>
+        </div>
+
+        <!-- Card 1C -->
+        <div class="iter-card" id="card-time" onclick="switchFrame('iteration_1_pro_max_timeline.html', document.querySelectorAll('.tab-btn')[2], 'card-time')">
+            <div>
+                <span class="iter-badge" style="background:rgba(212,163,42,0.15); color:#D4A32A;">SCHEDULE-FIRST UX</span>
+                <h3 class="iter-title">1C: Hourly Timeline Scrubber</h3>
+                <p class="iter-desc">Embeds a live hourly scrubber (8 AM to 7 PM) directly inside each room card so students can preview busy vs free hours without extra clicks.</p>
+                <ul class="iter-highlights">
+                    <li><i class="fa-solid fa-check"></i> Mini hourly scrubber bar on every card</li>
+                    <li><i class="fa-solid fa-check"></i> Hover on hour ticks to see class names</li>
+                    <li><i class="fa-solid fa-check"></i> Master time-block filter bar at the top</li>
+                </ul>
+            </div>
+            <a href="iteration_1_pro_max_timeline.html" target="_blank" class="btn-launch-iter">Open Iteration 1C</a>
+        </div>
+
+    </section>
+
+    <!-- Embedded Live Frame Preview -->
+    <div class="preview-box">
+        <div class="frame-wrapper">
+            <iframe id="main-frame" src="iteration_1_pro_max_dark.html"></iframe>
+        </div>
+    </div>
+
+    <!-- Easy Deletion Note -->
+    <div class="delete-bar">
+        <div>
+            <h4 style="font-size:13.5px; font-weight:700;">Easily Delete When Done</h4>
+            <p style="font-size:12px; color:#94A3B8; margin-top:2px;">All prototype iterations are self-contained in <code>classspace/mockups/</code>.</p>
+        </div>
+        <div>
+            <span style="font-size:11px; color:#94A3B8; margin-right:8px;">PowerShell delete command:</span>
+            <code class="delete-code">Remove-Item -Recurse c:\xampp\htdocs\classspace\mockups</code>
+        </div>
+    </div>
+
+    <script>
+        function switchFrame(url, btn, cardId) {
+            document.getElementById('main-frame').src = url;
+            document.getElementById('btn-open-direct').href = url;
+
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            if (btn) btn.classList.add('active');
+
+            document.querySelectorAll('.iter-card').forEach(c => c.classList.remove('active-card'));
+            if (cardId) document.getElementById(cardId).classList.add('active-card');
+        }
+    </script>
+</body>
+</html>

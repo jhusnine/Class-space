@@ -68,7 +68,9 @@ $requiredJsSnippets = [
     'initSharedMobileMenu',
     'wireImageFallbacks',
     'loadStats',
-    'loadNotifBadge'
+    'loadNotifBadge',
+    'BUILDING_IMAGES',
+    'ROOM_TYPE_IMAGES'
 ];
 
 foreach ($requiredJsSnippets as $snippet) {
@@ -76,7 +78,11 @@ foreach ($requiredJsSnippets as $snippet) {
         throw new RuntimeException("FAIL [JS]: Missing required snippet: " . $snippet);
     }
 }
-echo "PASS: Task 3 JavaScript handlers and preserved endpoints verified.\n";
+
+if (str_contains($js, 'public/images/rooms/') || str_contains($js, 'public/images/halls/')) {
+    throw new RuntimeException("FAIL [JS]: Non-existent rooms/ or halls/ paths detected in homepage_script.js");
+}
+echo "PASS: Task 3 JavaScript handlers, zero-404 resolvers, and preserved endpoints verified.\n";
 
 // --- Section 4: Quick Reserve Drawer Interactions ---
 $requiredDrawerSnippets = [

@@ -1,0 +1,1144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mockup 2 (Refined): Spatial Catalog & Timeline — ClassSpace</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <style>
+        :root {
+            --bg-canvas: #090E17;
+            --bg-panel: #0E1524;
+            --bg-card: #131C2E;
+            --bg-card-hover: #17243B;
+            --border-subtle: rgba(255, 255, 255, 0.08);
+            --border-strong: rgba(255, 255, 255, 0.16);
+            --brand-primary: #14B8A6; /* Surgical Emerald-Teal */
+            --brand-primary-light: #2DD4BF;
+            --brand-glow: rgba(20, 184, 166, 0.18);
+            --text-high: #F8FAFC;
+            --text-mid: #94A3B8;
+            --text-low: #475569;
+            --badge-green: #10B981;
+            --badge-green-bg: rgba(16, 185, 129, 0.12);
+            --badge-orange: #F59E0B;
+            --badge-orange-bg: rgba(245, 158, 11, 0.12);
+            --radius-xs: 6px;
+            --radius-sm: 8px;
+            --radius-md: 12px;
+            --radius-lg: 16px;
+            --font-mono: 'JetBrains Mono', monospace;
+            --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            --transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: var(--font-sans);
+            background-color: var(--bg-canvas);
+            color: var(--text-high);
+            min-height: 100vh;
+            display: flex;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .workspace-shell {
+            display: flex;
+            width: 100%;
+            min-height: 100vh;
+        }
+
+        /* Sidebar Rail */
+        .rail-sidebar {
+            width: 240px;
+            background: var(--bg-panel);
+            border-right: 1px solid var(--border-subtle);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 20px 14px;
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            flex-shrink: 0;
+        }
+
+        .workspace-brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 4px 10px 16px;
+            border-bottom: 1px solid var(--border-subtle);
+            margin-bottom: 16px;
+        }
+
+        .workspace-brand img {
+            width: 28px;
+            height: 28px;
+            border-radius: var(--radius-xs);
+            object-fit: cover;
+        }
+
+        .brand-text {
+            font-size: 14px;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+        }
+
+        .brand-badge {
+            font-size: 10px;
+            font-family: var(--font-mono);
+            background: rgba(255, 255, 255, 0.06);
+            padding: 2px 6px;
+            border-radius: 4px;
+            color: var(--brand-primary-light);
+            border: 1px solid var(--border-subtle);
+            margin-left: auto;
+        }
+
+        .rail-nav {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            flex: 1;
+        }
+
+        .nav-category {
+            font-size: 10px;
+            font-family: var(--font-mono);
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--text-low);
+            padding: 10px 10px 4px;
+        }
+
+        .rail-link {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 10px;
+            border-radius: var(--radius-xs);
+            color: var(--text-mid);
+            font-size: 13px;
+            font-weight: 500;
+            text-decoration: none;
+            transition: var(--transition);
+        }
+
+        .rail-link i {
+            font-size: 14px;
+            width: 16px;
+            text-align: center;
+            color: var(--text-low);
+        }
+
+        .rail-link:hover {
+            color: var(--text-high);
+            background: rgba(255, 255, 255, 0.04);
+        }
+
+        .rail-link.active {
+            color: var(--text-high);
+            background: rgba(20, 184, 166, 0.12);
+            border: 1px solid rgba(20, 184, 166, 0.25);
+            font-weight: 600;
+        }
+
+        .rail-link.active i {
+            color: var(--brand-primary-light);
+        }
+
+        .rail-counter {
+            margin-left: auto;
+            font-size: 11px;
+            font-family: var(--font-mono);
+            background: var(--bg-canvas);
+            padding: 1px 6px;
+            border-radius: 10px;
+            color: var(--text-mid);
+        }
+
+        .user-strip {
+            padding: 10px;
+            border-top: 1px solid var(--border-subtle);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .avatar-box {
+            width: 30px;
+            height: 30px;
+            border-radius: var(--radius-xs);
+            background: #1e293b;
+            color: var(--brand-primary-light);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 700;
+            font-family: var(--font-mono);
+            border: 1px solid var(--border-strong);
+        }
+
+        .avatar-name {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-high);
+        }
+
+        .avatar-sub {
+            font-size: 10px;
+            color: var(--text-low);
+            font-family: var(--font-mono);
+        }
+
+        /* Workspace Main */
+        .workspace-main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+
+        /* Top Bar */
+        .top-command-header {
+            padding: 14px 36px;
+            border-bottom: 1px solid var(--border-subtle);
+            background: rgba(14, 21, 36, 0.8);
+            backdrop-filter: blur(12px);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            gap: 20px;
+        }
+
+        .command-search-bar {
+            position: relative;
+            width: 440px;
+        }
+
+        .command-search-bar i {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 13px;
+            color: var(--text-low);
+        }
+
+        .command-input {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-sm);
+            padding: 7px 42px 7px 34px;
+            font-size: 13px;
+            color: var(--text-high);
+            font-family: var(--font-sans);
+            outline: none;
+            transition: var(--transition);
+        }
+
+        .command-input:focus {
+            border-color: var(--brand-primary);
+            box-shadow: 0 0 0 2px var(--brand-glow);
+            background: #17223b;
+        }
+
+        .kbd-shortcut {
+            position: absolute;
+            right: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 10.5px;
+            font-family: var(--font-mono);
+            background: var(--bg-panel);
+            color: var(--text-mid);
+            border: 1px solid var(--border-subtle);
+            padding: 1px 5px;
+            border-radius: 4px;
+        }
+
+        .header-actions-right {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .live-ticker {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            font-family: var(--font-mono);
+            color: var(--text-mid);
+            background: rgba(255, 255, 255, 0.04);
+            padding: 5px 12px;
+            border-radius: var(--radius-xs);
+            border: 1px solid var(--border-subtle);
+        }
+
+        .ticker-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--badge-green);
+        }
+
+        .btn-instant-reserve {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--brand-primary);
+            color: #042f2e;
+            padding: 7px 14px;
+            border-radius: var(--radius-xs);
+            font-size: 12.5px;
+            font-weight: 600;
+            text-decoration: none;
+            border: none;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .btn-instant-reserve:hover {
+            background: var(--brand-primary-light);
+            transform: translateY(-1px);
+        }
+
+        /* Workspace Content */
+        .workspace-content {
+            padding: 28px 36px 60px;
+            max-width: 1440px;
+            width: 100%;
+        }
+
+        /* Structured Building & Floor Controller */
+        .catalog-controller {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            border-bottom: 1px solid var(--border-subtle);
+            padding-bottom: 16px;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .building-segment-tabs {
+            display: flex;
+            gap: 6px;
+            background: var(--bg-panel);
+            padding: 4px;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border-subtle);
+        }
+
+        .building-tab {
+            padding: 6px 14px;
+            border-radius: var(--radius-xs);
+            font-size: 12.5px;
+            font-weight: 500;
+            color: var(--text-mid);
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .building-tab:hover {
+            color: var(--text-high);
+        }
+
+        .building-tab.active {
+            background: var(--bg-card);
+            color: var(--text-high);
+            font-weight: 600;
+            border: 1px solid var(--border-strong);
+        }
+
+        .tab-count {
+            font-family: var(--font-mono);
+            font-size: 10.5px;
+            background: rgba(255, 255, 255, 0.08);
+            padding: 1px 5px;
+            border-radius: 4px;
+        }
+
+        .floor-toggles {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .floor-btn {
+            font-size: 12px;
+            font-family: var(--font-mono);
+            color: var(--text-mid);
+            background: var(--bg-panel);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-xs);
+            padding: 5px 12px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .floor-btn:hover {
+            color: var(--text-high);
+            border-color: var(--border-strong);
+        }
+
+        .floor-btn.active {
+            background: var(--bg-card);
+            color: var(--brand-primary-light);
+            border-color: var(--brand-primary);
+        }
+
+        /* PREDICTABLE 3-COLUMN STRUCTURED ROOM CARDS WITH PHOTOS */
+        .room-catalog-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 22px;
+        }
+
+        .catalog-room-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-left: 4px solid var(--border-subtle); /* Signature status edge */
+            border-radius: var(--radius-md);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            transition: var(--transition);
+            position: relative;
+        }
+
+        /* Status Edge Colors: Green for available, Gray for unavailable */
+        .catalog-room-card.room-status-available,
+        .catalog-room-card[data-status="vacant"] {
+            border-left: 4px solid #3D9B68 !important;
+        }
+
+        .catalog-room-card.room-status-unavailable,
+        .catalog-room-card[data-status="busy"] {
+            border-left: 4px solid #7B8798 !important;
+        }
+
+        .catalog-room-card:hover {
+            border-color: var(--border-strong);
+            background: var(--bg-card-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 24px rgba(0, 0, 0, 0.3);
+        }
+
+        .catalog-room-card[data-status="vacant"]:hover,
+        .catalog-room-card.room-status-available:hover {
+            border-left-color: #4ade80 !important;
+            box-shadow: -2px 0 14px rgba(61, 155, 104, 0.35), 0 10px 24px rgba(0, 0, 0, 0.3);
+        }
+
+        .catalog-room-card[data-status="busy"]:hover,
+        .catalog-room-card.room-status-unavailable:hover {
+            border-left-color: #94a3b8 !important;
+            box-shadow: -2px 0 10px rgba(123, 135, 152, 0.25), 0 10px 24px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Status Edge Legend */
+        .room-status-legend {
+            display: inline-flex;
+            align-items: center;
+            gap: 14px;
+            color: var(--text-mid);
+            font-size: 11.5px;
+            font-weight: 500;
+        }
+
+        .legend-item {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            white-space: nowrap;
+        }
+
+        .legend-edge-bar {
+            width: 4px;
+            height: 12px;
+            border-radius: 2px;
+            display: inline-block;
+        }
+
+        .legend-edge-available {
+            background: #3D9B68;
+            box-shadow: 0 0 6px rgba(61, 155, 104, 0.4);
+        }
+
+        .legend-edge-unavailable {
+            background: #7B8798;
+        }
+
+        /* 16:9 Photography Frame */
+        .room-image-banner {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 16 / 9;
+            overflow: hidden;
+            background: #0f1c30;
+        }
+
+        .room-image-banner img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            transition: transform 0.4s ease;
+        }
+
+        .catalog-room-card:hover .room-image-banner img {
+            transform: scale(1.04);
+        }
+
+        .banner-scrim {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(180deg, rgba(0,0,0,0.4) 0%, transparent 40%, rgba(9,14,23,0.9) 100%);
+            pointer-events: none;
+        }
+
+        .card-crumb-pill {
+            position: absolute;
+            bottom: 10px;
+            left: 12px;
+            font-size: 10.5px;
+            font-family: var(--font-mono);
+            font-weight: 600;
+            background: rgba(9, 14, 23, 0.85);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            padding: 3px 8px;
+            border-radius: 4px;
+            color: var(--text-high);
+        }
+
+        .card-status-pill {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+            padding: 3px 9px;
+            border-radius: var(--radius-xs);
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            backdrop-filter: blur(8px);
+        }
+
+        .card-status-pill.vacant {
+            background: var(--badge-green-bg);
+            color: var(--badge-green);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+
+        .card-status-pill.in-session {
+            background: var(--badge-orange-bg);
+            color: var(--badge-orange);
+            border: 1px solid rgba(245, 158, 11, 0.3);
+        }
+
+        /* Card Content */
+        .card-body-section {
+            padding: 16px 18px 18px;
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+        }
+
+        .card-header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            margin-bottom: 4px;
+        }
+
+        .room-num-title {
+            font-family: var(--font-mono);
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--text-high);
+        }
+
+        .room-seats {
+            font-size: 11.5px;
+            color: var(--text-mid);
+        }
+
+        .room-usage-subtitle {
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--brand-primary-light);
+            margin-bottom: 12px;
+        }
+
+        /* Specs Row */
+        .specs-chips {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            margin-bottom: 14px;
+        }
+
+        .spec-item {
+            font-size: 11px;
+            color: var(--text-mid);
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid var(--border-subtle);
+            padding: 3px 7px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        /* Interactive Timeline Visual Block */
+        .timeline-visual {
+            background: var(--bg-canvas);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-xs);
+            padding: 10px 12px;
+            margin-top: auto;
+            margin-bottom: 14px;
+        }
+
+        .timeline-visual-header {
+            display: flex;
+            justify-content: space-between;
+            font-size: 11.5px;
+            margin-bottom: 6px;
+        }
+
+        .timeline-visual-bar {
+            height: 6px;
+            background: #1e293b;
+            border-radius: 3px;
+            display: flex;
+            overflow: hidden;
+            gap: 2px;
+        }
+
+        .slot {
+            height: 100%;
+            border-radius: 2px;
+        }
+        .slot.free { background: var(--badge-green); flex: 2; }
+        .slot.busy { background: var(--badge-orange); flex: 1; }
+        .slot.open { background: rgba(255, 255, 255, 0.15); flex: 3; }
+
+        .timeline-visual-legend {
+            display: flex;
+            justify-content: space-between;
+            font-size: 9.5px;
+            font-family: var(--font-mono);
+            color: var(--text-low);
+            margin-top: 4px;
+        }
+
+        /* Card Button Row */
+        .card-actions-strip {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-subtle-outline {
+            flex: 1;
+            padding: 7px 10px;
+            border-radius: var(--radius-xs);
+            background: transparent;
+            color: var(--text-mid);
+            border: 1px solid var(--border-subtle);
+            font-size: 12px;
+            font-weight: 500;
+            text-align: center;
+            text-decoration: none;
+            transition: var(--transition);
+        }
+
+        .btn-subtle-outline:hover {
+            color: var(--text-high);
+            border-color: var(--border-strong);
+            background: rgba(255, 255, 255, 0.04);
+        }
+
+        .btn-primary-reserve-slot {
+            flex: 1;
+            padding: 7px 10px;
+            border-radius: var(--radius-xs);
+            background: var(--brand-primary);
+            color: #042f2e;
+            border: none;
+            font-size: 12px;
+            font-weight: 600;
+            text-align: center;
+            text-decoration: none;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .btn-primary-reserve-slot:hover {
+            background: var(--brand-primary-light);
+        }
+
+        /* Switcher tag */
+        .mockup-switcher-float {
+            position: fixed;
+            bottom: 22px;
+            right: 22px;
+            background: rgba(14, 21, 36, 0.95);
+            border: 1px solid rgba(20, 184, 166, 0.4);
+            backdrop-filter: blur(12px);
+            padding: 8px 16px;
+            border-radius: 9999px;
+            font-size: 12.5px;
+            color: var(--text-high);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            z-index: 1000;
+        }
+
+        .mockup-switcher-float a {
+            color: var(--brand-primary-light);
+            text-decoration: underline;
+            font-weight: 600;
+        }
+
+        @media (max-width: 1200px) {
+            .room-catalog-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+        @media (max-width: 768px) {
+            .room-catalog-grid { grid-template-columns: 1fr; }
+            .rail-sidebar { display: none; }
+            .workspace-content { padding: 20px; }
+            .command-search-bar { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="workspace-shell">
+
+    <!-- RAIL SIDEBAR -->
+    <aside class="rail-sidebar">
+        <div>
+            <div class="workspace-brand">
+                <img src="../public/images/logo.png" alt="ClassSpace">
+                <span class="brand-text">ClassSpace</span>
+                <span class="brand-badge">FCPC</span>
+            </div>
+
+            <nav class="rail-nav">
+                <div class="nav-category">Navigation</div>
+                <a href="#" class="rail-link active">
+                    <i class="fa-solid fa-table-cells"></i>
+                    <span>Space Matrix</span>
+                    <span class="rail-counter">42</span>
+                </a>
+                <a href="#" class="rail-link">
+                    <i class="fa-regular fa-calendar"></i>
+                    <span>Master Timetable</span>
+                </a>
+                <a href="#" class="rail-link">
+                    <i class="fa-regular fa-clock"></i>
+                    <span>My Reservations</span>
+                    <span class="rail-counter" style="color:var(--brand-primary-light);">1</span>
+                </a>
+
+                <div class="nav-category" style="margin-top:14px;">Campus Buildings</div>
+                <a href="#" class="rail-link">
+                    <i class="fa-regular fa-building"></i>
+                    <span>Plaridel Hall</span>
+                    <span class="rail-counter">14</span>
+                </a>
+                <a href="#" class="rail-link">
+                    <i class="fa-regular fa-building"></i>
+                    <span>Melchora Hall</span>
+                    <span class="rail-counter">12</span>
+                </a>
+                <a href="#" class="rail-link">
+                    <i class="fa-solid fa-dumbbell"></i>
+                    <span>Gymnasium</span>
+                    <span class="rail-counter">4</span>
+                </a>
+                <a href="#" class="rail-link">
+                    <i class="fa-solid fa-hotel"></i>
+                    <span>Training Hotel</span>
+                    <span class="rail-counter">8</span>
+                </a>
+            </nav>
+        </div>
+
+        <div class="user-strip">
+            <div class="avatar-box">AP</div>
+            <div style="flex:1; overflow:hidden;">
+                <div class="avatar-name">Aldrin Peña</div>
+                <div class="avatar-sub">BSIT-3A &bull; #2410</div>
+            </div>
+            <i class="fa-solid fa-arrow-right-from-bracket" style="color:var(--text-low); font-size:12px; cursor:pointer;" title="Logout"></i>
+        </div>
+    </aside>
+
+    <!-- MAIN WORKSPACE -->
+    <main class="workspace-main">
+
+        <!-- Top Command Strip -->
+        <header class="top-command-header">
+            <div class="command-search-bar">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="text" class="command-input" placeholder="Jump to space, building, or professor...">
+                <span class="kbd-shortcut">⌘K</span>
+            </div>
+
+            <div class="header-actions-right">
+                <div class="live-ticker">
+                    <div class="ticker-dot"></div>
+                    <span>28 / 42 VACANT (67%)</span>
+                </div>
+                <a href="../app/views/reserve_view.php" class="btn-instant-reserve">
+                    <i class="fa-solid fa-plus"></i>
+                    <span>New Booking</span>
+                </a>
+            </div>
+        </header>
+
+        <!-- Workspace Content -->
+        <div class="workspace-content">
+
+            <!-- Catalog Building & Floor Controller -->
+            <div class="catalog-controller">
+                <div class="building-segment-tabs">
+                    <button class="building-tab active">
+                        <span>Plaridel Hall</span>
+                        <span class="tab-count">14 rms</span>
+                    </button>
+                    <button class="building-tab">
+                        <span>Melchora Hall</span>
+                        <span class="tab-count">12 rms</span>
+                    </button>
+                    <button class="building-tab">
+                        <span>College Gym</span>
+                        <span class="tab-count">4 rms</span>
+                    </button>
+                    <button class="building-tab">
+                        <span>Training Hotel</span>
+                        <span class="tab-count">8 rms</span>
+                    </button>
+                </div>
+
+                <div style="display:flex; align-items:center; gap:16px; flex-wrap:wrap;">
+                    <div class="room-status-legend">
+                        <span class="legend-item"><span class="legend-edge-bar legend-edge-available"></span> Available</span>
+                        <span class="legend-item"><span class="legend-edge-bar legend-edge-unavailable"></span> Unavailable</span>
+                    </div>
+                    <div class="floor-toggles">
+                        <button class="floor-btn active">All Floors</button>
+                        <button class="floor-btn">1st Floor</button>
+                        <button class="floor-btn">2nd Floor</button>
+                        <button class="floor-btn">3rd Floor</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PREDICTABLE 3-COLUMN STRUCTURED ROOM CARDS WITH PHOTOS -->
+            <div class="room-catalog-grid">
+
+                <!-- Room 1: RM 101 -->
+                <article class="catalog-room-card room-status-available" data-status="vacant">
+                    <div class="room-image-banner">
+                        <img src="../public/images/plaridel.jpeg" alt="Plaridel RM 101">
+                        <div class="banner-scrim"></div>
+                        <span class="card-crumb-pill">PLARIDEL &bull; 1F</span>
+                        <span class="card-status-pill vacant">
+                            <i class="fa-solid fa-circle" style="font-size:6px;"></i> VACANT
+                        </span>
+                    </div>
+                    <div class="card-body-section">
+                        <div class="card-header-row">
+                            <h3 class="room-num-title">RM 101</h3>
+                            <span class="room-seats"><i class="fa-solid fa-users" style="margin-right:4px;"></i> 55 Seats</span>
+                        </div>
+                        <div class="room-usage-subtitle">General Lecture Theater</div>
+                        <div class="specs-chips">
+                            <span class="spec-item"><i class="fa-solid fa-video"></i> Projector</span>
+                            <span class="spec-item"><i class="fa-solid fa-snowflake"></i> AC</span>
+                            <span class="spec-item"><i class="fa-solid fa-wifi"></i> Wi-Fi 6</span>
+                        </div>
+                        <div class="timeline-visual">
+                            <div class="timeline-visual-header">
+                                <span style="color:var(--text-mid);">Live Schedule:</span>
+                                <span style="font-family:var(--font-mono); font-weight:600; color:var(--badge-green);">Free until 2:30 PM</span>
+                            </div>
+                            <div class="timeline-visual-bar">
+                                <div class="slot free" title="8:00 AM - 2:30 PM (Free)"></div>
+                                <div class="slot busy" title="2:30 PM - 4:00 PM (IT 302)"></div>
+                                <div class="slot open" title="4:00 PM - 7:00 PM (Open)"></div>
+                            </div>
+                            <div class="timeline-visual-legend">
+                                <span>8 AM</span>
+                                <span>12 PM</span>
+                                <span>4 PM</span>
+                                <span>7 PM</span>
+                            </div>
+                        </div>
+                        <div class="card-actions-strip">
+                            <a href="#" class="btn-subtle-outline">Schedule</a>
+                            <a href="../app/views/reserve_view.php?room_id=1" class="btn-primary-reserve-slot">Reserve RM 101</a>
+                        </div>
+                    </div>
+                </article>
+
+                <!-- Room 2: RM 102 -->
+                <article class="catalog-room-card room-status-available" data-status="vacant">
+                    <div class="room-image-banner">
+                        <img src="../public/images/plaridel.jpeg" alt="Plaridel RM 102">
+                        <div class="banner-scrim"></div>
+                        <span class="card-crumb-pill">PLARIDEL &bull; 1F</span>
+                        <span class="card-status-pill vacant">
+                            <i class="fa-solid fa-circle" style="font-size:6px;"></i> VACANT
+                        </span>
+                    </div>
+                    <div class="card-body-section">
+                        <div class="card-header-row">
+                            <h3 class="room-num-title">RM 102</h3>
+                            <span class="room-seats"><i class="fa-solid fa-users" style="margin-right:4px;"></i> 45 Seats</span>
+                        </div>
+                        <div class="room-usage-subtitle">Standard Lecture Room</div>
+                        <div class="specs-chips">
+                            <span class="spec-item"><i class="fa-solid fa-chalkboard"></i> Smart Board</span>
+                            <span class="spec-item"><i class="fa-solid fa-snowflake"></i> AC</span>
+                        </div>
+                        <div class="timeline-visual">
+                            <div class="timeline-visual-header">
+                                <span style="color:var(--text-mid);">Live Schedule:</span>
+                                <span style="font-family:var(--font-mono); font-weight:600; color:var(--badge-green);">Free All Day</span>
+                            </div>
+                            <div class="timeline-visual-bar">
+                                <div class="slot free" style="flex:1;" title="Free until 7:00 PM"></div>
+                            </div>
+                            <div class="timeline-visual-legend">
+                                <span>8 AM</span>
+                                <span>12 PM</span>
+                                <span>4 PM</span>
+                                <span>7 PM</span>
+                            </div>
+                        </div>
+                        <div class="card-actions-strip">
+                            <a href="#" class="btn-subtle-outline">Schedule</a>
+                            <a href="../app/views/reserve_view.php?room_id=2" class="btn-primary-reserve-slot">Reserve RM 102</a>
+                        </div>
+                    </div>
+                </article>
+
+                <!-- Room 3: RM 201 (In session) -->
+                <article class="catalog-room-card room-status-unavailable" data-status="busy">
+                    <div class="room-image-banner">
+                        <img src="../public/images/lecture_hall.jpg" alt="Plaridel RM 201">
+                        <div class="banner-scrim"></div>
+                        <span class="card-crumb-pill">PLARIDEL &bull; 2F</span>
+                        <span class="card-status-pill in-session">
+                            <i class="fa-solid fa-clock" style="font-size:8px;"></i> IN SESSION
+                        </span>
+                    </div>
+                    <div class="card-body-section">
+                        <div class="card-header-row">
+                            <h3 class="room-num-title">RM 201</h3>
+                            <span class="room-seats"><i class="fa-solid fa-users" style="margin-right:4px;"></i> 60 Seats</span>
+                        </div>
+                        <div class="room-usage-subtitle">Audiovisual Multi-Media Hall</div>
+                        <div class="specs-chips">
+                            <span class="spec-item"><i class="fa-solid fa-film"></i> HD Cinema</span>
+                            <span class="spec-item"><i class="fa-solid fa-volume-high"></i> Surround</span>
+                            <span class="spec-item"><i class="fa-solid fa-snowflake"></i> AC</span>
+                        </div>
+                        <div class="timeline-visual">
+                            <div class="timeline-visual-header">
+                                <span style="color:var(--text-mid);">Occupied (ENGL 101):</span>
+                                <span style="font-family:var(--font-mono); font-weight:600; color:var(--badge-orange);">Clears 1:00 PM</span>
+                            </div>
+                            <div class="timeline-visual-bar">
+                                <div class="slot busy" title="10:00 AM - 1:00 PM (ENGL 101)"></div>
+                                <div class="slot free" title="1:00 PM - 5:00 PM (Free)"></div>
+                            </div>
+                            <div class="timeline-visual-legend">
+                                <span>8 AM</span>
+                                <span>12 PM</span>
+                                <span>4 PM</span>
+                                <span>7 PM</span>
+                            </div>
+                        </div>
+                        <div class="card-actions-strip">
+                            <a href="#" class="btn-subtle-outline">Schedule</a>
+                            <a href="../app/views/reserve_view.php?room_id=3" class="btn-subtle-outline" style="color:var(--text-high);">Book for 1 PM</a>
+                        </div>
+                    </div>
+                </article>
+
+                <!-- Room 4: RM 204 -->
+                <article class="catalog-room-card room-status-available" data-status="vacant">
+                    <div class="room-image-banner">
+                        <img src="../public/images/melchora.jpg" alt="Melchora RM 204">
+                        <div class="banner-scrim"></div>
+                        <span class="card-crumb-pill">MELCHORA &bull; 2F</span>
+                        <span class="card-status-pill vacant">
+                            <i class="fa-solid fa-circle" style="font-size:6px;"></i> VACANT
+                        </span>
+                    </div>
+                    <div class="card-body-section">
+                        <div class="card-header-row">
+                            <h3 class="room-num-title">RM 204</h3>
+                            <span class="room-seats"><i class="fa-solid fa-users" style="margin-right:4px;"></i> 40 Seats</span>
+                        </div>
+                        <div class="room-usage-subtitle">STEM Seminar &amp; Discussion Lab</div>
+                        <div class="specs-chips">
+                            <span class="spec-item"><i class="fa-solid fa-video"></i> Dual Projector</span>
+                            <span class="spec-item"><i class="fa-solid fa-microphone"></i> Audio</span>
+                            <span class="spec-item"><i class="fa-solid fa-snowflake"></i> AC</span>
+                        </div>
+                        <div class="timeline-visual">
+                            <div class="timeline-visual-header">
+                                <span style="color:var(--text-mid);">Live Schedule:</span>
+                                <span style="font-family:var(--font-mono); font-weight:600; color:var(--badge-green);">Free until 4:00 PM</span>
+                            </div>
+                            <div class="timeline-visual-bar">
+                                <div class="slot free" style="flex:3;"></div>
+                                <div class="slot busy" style="flex:1;"></div>
+                            </div>
+                            <div class="timeline-visual-legend">
+                                <span>8 AM</span>
+                                <span>12 PM</span>
+                                <span>4 PM</span>
+                                <span>7 PM</span>
+                            </div>
+                        </div>
+                        <div class="card-actions-strip">
+                            <a href="#" class="btn-subtle-outline">Schedule</a>
+                            <a href="../app/views/reserve_view.php?room_id=4" class="btn-primary-reserve-slot">Reserve RM 204</a>
+                        </div>
+                    </div>
+                </article>
+
+                <!-- Room 5: Gym Main Court -->
+                <article class="catalog-room-card room-status-available" data-status="vacant">
+                    <div class="room-image-banner">
+                        <img src="../public/images/gym.png" alt="Gymnasium">
+                        <div class="banner-scrim"></div>
+                        <span class="card-crumb-pill">GYM &bull; MAIN HALL</span>
+                        <span class="card-status-pill vacant">
+                            <i class="fa-solid fa-circle" style="font-size:6px;"></i> VACANT
+                        </span>
+                    </div>
+                    <div class="card-body-section">
+                        <div class="card-header-row">
+                            <h3 class="room-num-title">MAIN COURT</h3>
+                            <span class="room-seats"><i class="fa-solid fa-users" style="margin-right:4px;"></i> 300 Seats</span>
+                        </div>
+                        <div class="room-usage-subtitle">Multi-Purpose Arena &amp; Stage</div>
+                        <div class="specs-chips">
+                            <span class="spec-item"><i class="fa-solid fa-basketball"></i> Hardwood</span>
+                            <span class="spec-item"><i class="fa-solid fa-cubes-stacked"></i> Stage</span>
+                            <span class="spec-item"><i class="fa-solid fa-lightbulb"></i> Lights</span>
+                        </div>
+                        <div class="timeline-visual">
+                            <div class="timeline-visual-header">
+                                <span style="color:var(--text-mid);">Live Schedule:</span>
+                                <span style="font-family:var(--font-mono); font-weight:600; color:var(--badge-green);">Free until 3:00 PM</span>
+                            </div>
+                            <div class="timeline-visual-bar">
+                                <div class="slot free" style="flex:2;"></div>
+                                <div class="slot busy" style="flex:1;"></div>
+                                <div class="slot open" style="flex:1;"></div>
+                            </div>
+                            <div class="timeline-visual-legend">
+                                <span>8 AM</span>
+                                <span>12 PM</span>
+                                <span>4 PM</span>
+                                <span>7 PM</span>
+                            </div>
+                        </div>
+                        <div class="card-actions-strip">
+                            <a href="#" class="btn-subtle-outline">Schedule</a>
+                            <a href="../app/views/reserve_view.php?room_id=5" class="btn-primary-reserve-slot">Reserve Court</a>
+                        </div>
+                    </div>
+                </article>
+
+                <!-- Room 6: Hotel Suite 201 -->
+                <article class="catalog-room-card room-status-available" data-status="vacant">
+                    <div class="room-image-banner">
+                        <img src="../public/images/hotel.jpeg" alt="FCPC Hotel">
+                        <div class="banner-scrim"></div>
+                        <span class="card-crumb-pill">HOTEL &bull; 2F</span>
+                        <span class="card-status-pill vacant">
+                            <i class="fa-solid fa-circle" style="font-size:6px;"></i> VACANT
+                        </span>
+                    </div>
+                    <div class="card-body-section">
+                        <div class="card-header-row">
+                            <h3 class="room-num-title">SUITE 201</h3>
+                            <span class="room-seats"><i class="fa-solid fa-bed" style="margin-right:4px;"></i> Executive</span>
+                        </div>
+                        <div class="room-usage-subtitle">Hospitality Practicum Suite</div>
+                        <div class="specs-chips">
+                            <span class="spec-item"><i class="fa-solid fa-bell-concierge"></i> Reception</span>
+                            <span class="spec-item"><i class="fa-solid fa-snowflake"></i> Inverter AC</span>
+                        </div>
+                        <div class="timeline-visual">
+                            <div class="timeline-visual-header">
+                                <span style="color:var(--text-mid);">Practicum Window:</span>
+                                <span style="font-family:var(--font-mono); font-weight:600; color:var(--badge-green);">Open for Booking</span>
+                            </div>
+                            <div class="timeline-visual-bar">
+                                <div class="slot free" style="flex:1;"></div>
+                            </div>
+                            <div class="timeline-visual-legend">
+                                <span>8 AM</span>
+                                <span>12 PM</span>
+                                <span>4 PM</span>
+                                <span>7 PM</span>
+                            </div>
+                        </div>
+                        <div class="card-actions-strip">
+                            <a href="#" class="btn-subtle-outline">Schedule</a>
+                            <a href="../app/views/reserve_view.php?room_id=6" class="btn-primary-reserve-slot">Reserve Suite</a>
+                        </div>
+                    </div>
+                </article>
+
+            </div>
+
+        </div>
+
+    </main>
+
+</div>
+
+<!-- Floating Switcher Badge -->
+<div class="mockup-switcher-float">
+    <span>Mockup 2 (Refined): <strong>Spatial Catalog &amp; Timeline</strong></span>
+    &bull; <a href="index.html">Back to Showcase</a>
+</div>
+
+</body>
+</html>

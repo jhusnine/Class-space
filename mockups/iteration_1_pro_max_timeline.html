@@ -1,0 +1,1081 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ClassSpace — Pro Max Hourly Scrubber</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <style>
+        :root {
+            --bg-base: #0B1220;
+            --bg-surface: #101B2E;
+            --bg-card: #132138;
+            --bg-card-hover: #182844;
+            --bg-elevated: #192A47;
+            --border: rgba(255, 255, 255, 0.08);
+            --border-hover: rgba(47, 133, 133, 0.5);
+            --brand-teal: #2F8585;
+            --brand-teal-light: #3EA6A6;
+            --brand-teal-dim: rgba(47, 133, 133, 0.16);
+            --brand-gold: #D4A32A;
+            --brand-gold-dim: rgba(212, 163, 42, 0.14);
+            --text-high: #F8FAFC;
+            --text-mid: #94A3B8;
+            --text-low: #64748B;
+            --status-green: #22C55E;
+            --status-green-dim: rgba(34, 197, 94, 0.14);
+            --status-amber: #F59E0B;
+            --status-amber-dim: rgba(245, 158, 11, 0.14);
+            --radius-xs: 6px;
+            --radius-sm: 8px;
+            --radius-md: 14px;
+            --radius-lg: 18px;
+            --radius-full: 9999px;
+            --shadow-subtle: 0 4px 20px rgba(0, 0, 0, 0.25);
+            --shadow-float: 0 14px 34px -4px rgba(0, 0, 0, 0.45);
+            --transition-smooth: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: var(--bg-base);
+            color: var(--text-high);
+            min-height: 100vh;
+            display: flex;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        *:focus-visible {
+            outline: 2px solid var(--brand-teal);
+            outline-offset: 2px;
+        }
+
+        .app-shell {
+            display: flex;
+            width: 100%;
+            min-height: 100vh;
+        }
+
+        /* Sidebar Navigation */
+        .sidebar {
+            width: 255px;
+            background-color: var(--bg-surface);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            padding: 24px 14px;
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            flex-shrink: 0;
+            z-index: 20;
+        }
+
+        .brand-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 0 10px 22px;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 18px;
+        }
+
+        .brand-logo {
+            width: 36px;
+            height: 36px;
+            border-radius: var(--radius-sm);
+            background: var(--brand-teal-dim);
+            border: 1px solid rgba(47, 133, 133, 0.35);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .brand-logo img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .brand-info h2 {
+            font-size: 15px;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            color: var(--text-high);
+        }
+
+        .brand-info span {
+            font-size: 10.5px;
+            color: var(--text-low);
+            font-weight: 600;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+        }
+
+        .nav-list {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+            flex: 1;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 12px;
+            border-radius: var(--radius-sm);
+            color: var(--text-mid);
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 500;
+            transition: var(--transition-smooth);
+        }
+
+        .nav-link i {
+            width: 18px;
+            font-size: 14px;
+            text-align: center;
+            color: var(--text-low);
+            transition: var(--transition-smooth);
+        }
+
+        .nav-link:hover {
+            color: var(--text-high);
+            background-color: rgba(255, 255, 255, 0.04);
+        }
+
+        .nav-link.active {
+            color: var(--text-high);
+            background-color: var(--brand-teal-dim);
+            border: 1px solid rgba(47, 133, 133, 0.32);
+            font-weight: 600;
+        }
+
+        .nav-link.active i {
+            color: var(--brand-teal-light);
+        }
+
+        .sidebar-user {
+            padding: 12px 14px;
+            background: var(--bg-elevated);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .user-avatar {
+            width: 34px;
+            height: 34px;
+            border-radius: var(--radius-full);
+            background: linear-gradient(135deg, var(--brand-teal), var(--brand-teal-light));
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 12px;
+        }
+
+        .user-meta {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .user-name {
+            font-size: 12.5px;
+            font-weight: 600;
+            color: var(--text-high);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .user-sub {
+            font-size: 10.5px;
+            color: var(--text-low);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        /* --- Main Content --- */
+        .main-content {
+            flex: 1;
+            padding: 36px 48px 64px;
+            overflow-y: auto;
+            max-width: 1440px;
+        }
+
+        /* --- Header --- */
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 26px;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .header-title-group h1 {
+            font-size: 25px;
+            font-weight: 800;
+            letter-spacing: -0.03em;
+            color: var(--text-high);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .header-pill {
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            padding: 3px 10px;
+            background: var(--brand-gold-dim);
+            color: var(--brand-gold);
+            border-radius: var(--radius-full);
+            border: 1px solid rgba(212, 163, 42, 0.25);
+        }
+
+        .header-title-group p {
+            font-size: 13.5px;
+            color: var(--text-mid);
+            margin-top: 4px;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .search-pill-box {
+            position: relative;
+            width: 320px;
+        }
+
+        .search-pill-box i {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-low);
+            font-size: 13px;
+        }
+
+        .search-input {
+            width: 100%;
+            background: var(--bg-surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-full);
+            padding: 9px 38px 9px 38px;
+            font-size: 13px;
+            color: var(--text-high);
+            font-family: inherit;
+            outline: none;
+            transition: var(--transition-smooth);
+        }
+
+        .search-input:focus {
+            border-color: var(--brand-teal);
+            box-shadow: 0 0 0 3px var(--brand-teal-dim);
+        }
+
+        .btn-primary-reserve {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: linear-gradient(135deg, var(--brand-teal), var(--brand-teal-light));
+            color: white;
+            padding: 9px 20px;
+            border-radius: var(--radius-full);
+            font-size: 13px;
+            font-weight: 600;
+            text-decoration: none;
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            box-shadow: 0 2px 10px rgba(47, 133, 133, 0.35);
+            transition: var(--transition-smooth);
+            cursor: pointer;
+        }
+
+        .btn-primary-reserve:hover {
+            transform: translateY(-1px);
+        }
+
+        .btn-primary-reserve:active {
+            transform: scale(0.97) translateY(1px);
+        }
+
+        /* --- Master Hour Time Scrubber (Page-level sync) --- */
+        .timeline-global-controller {
+            background: var(--bg-surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 14px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 26px;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .time-scrub-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12.5px;
+            font-weight: 600;
+            color: var(--text-high);
+        }
+
+        .time-blocks-group {
+            display: flex;
+            gap: 6px;
+            background: var(--bg-base);
+            padding: 4px;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border);
+        }
+
+        .time-block-pill {
+            padding: 5px 12px;
+            border-radius: var(--radius-xs);
+            font-size: 11.5px;
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 500;
+            color: var(--text-mid);
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            transition: var(--transition-smooth);
+        }
+
+        .time-block-pill:hover {
+            color: var(--text-high);
+        }
+
+        .time-block-pill.active {
+            background: var(--brand-teal);
+            color: white;
+            font-weight: 600;
+        }
+
+        /* --- 3-Column Structured Grid --- */
+        .rooms-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 24px;
+        }
+
+        /* Consistent Room Card Shell with 4px Status Edge */
+        .room-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-left: 4px solid var(--border); /* Signature status edge */
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            transition: var(--transition-smooth);
+            box-shadow: var(--shadow-subtle);
+            position: relative;
+        }
+
+        /* Status Edge Colors: Green for available, Gray for unavailable */
+        .room-card[data-status="vacant"],
+        .room-card.room-status-available {
+            border-left-color: #3D9B68;
+        }
+
+        .room-card[data-status="busy"],
+        .room-card.room-status-unavailable {
+            border-left-color: #7B8798;
+        }
+
+        .room-card:hover {
+            border-color: var(--border-hover);
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-float);
+            background: var(--bg-card-hover);
+        }
+
+        .room-card[data-status="vacant"]:hover {
+            border-left-color: #4ade80;
+            box-shadow: -2px 0 14px rgba(61, 155, 104, 0.35), var(--shadow-float);
+        }
+
+        .room-card[data-status="busy"]:hover {
+            border-left-color: #94a3b8;
+            box-shadow: -2px 0 10px rgba(123, 135, 152, 0.25), var(--shadow-float);
+        }
+
+        /* Room status edge legend */
+        .room-status-legend {
+            display: inline-flex;
+            align-items: center;
+            gap: 14px;
+            color: var(--text-mid);
+            font-size: 11.5px;
+            font-weight: 500;
+        }
+
+        .legend-item {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            white-space: nowrap;
+        }
+
+        .legend-edge-bar {
+            width: 3.5px;
+            height: 12px;
+            border-radius: 2px;
+            display: inline-block;
+        }
+
+        .legend-edge-available {
+            background: #3D9B68;
+            box-shadow: 0 0 6px rgba(61, 155, 104, 0.4);
+        }
+
+        .legend-edge-unavailable {
+            background: #7B8798;
+        }
+
+        .room-card.user-active-space {
+            box-shadow: 0 0 0 1px var(--brand-teal-dim), var(--shadow-subtle);
+        }
+
+        .card-photo-box {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 16 / 9;
+            overflow: hidden;
+            background: #0f1c30;
+        }
+
+        .card-photo-box img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s ease;
+            display: block;
+        }
+
+        .room-card:hover .card-photo-box img {
+            transform: scale(1.04);
+        }
+
+        .photo-scrim {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(180deg, rgba(0,0,0,0.3) 0%, transparent 40%, rgba(11,18,32,0.85) 100%);
+            pointer-events: none;
+        }
+
+        .hall-pill {
+            position: absolute;
+            bottom: 10px;
+            left: 12px;
+            font-size: 10.5px;
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.95);
+            background: rgba(11, 18, 32, 0.85);
+            backdrop-filter: blur(8px);
+            padding: 3px 8px;
+            border-radius: 4px;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+        }
+
+        .status-chip {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+            padding: 4px 10px;
+            border-radius: var(--radius-full);
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            backdrop-filter: blur(8px);
+        }
+
+        .status-chip.vacant {
+            background: rgba(34, 197, 94, 0.92);
+            color: #042f2e;
+            box-shadow: 0 2px 10px rgba(34, 197, 94, 0.35);
+        }
+
+        .status-chip.in-session {
+            background: rgba(245, 158, 11, 0.92);
+            color: #451a03;
+            box-shadow: 0 2px 10px rgba(245, 158, 11, 0.35);
+        }
+
+        .card-body {
+            padding: 18px 20px 20px;
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+        }
+
+        .title-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            margin-bottom: 4px;
+        }
+
+        .room-code {
+            font-size: 17px;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            color: var(--text-high);
+        }
+
+        .room-seats {
+            font-size: 12px;
+            color: var(--text-low);
+            font-weight: 500;
+        }
+
+        .room-desc-type {
+            font-size: 13px;
+            color: var(--brand-teal-light);
+            font-weight: 600;
+            margin-bottom: 14px;
+        }
+
+        /* Mini Hourly Scrubber inside Card */
+        .card-hourly-scrubber {
+            background: rgba(0, 0, 0, 0.28);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 10px 12px;
+            margin-top: auto;
+            margin-bottom: 16px;
+        }
+
+        .scrubber-header {
+            display: flex;
+            justify-content: space-between;
+            font-size: 11.5px;
+            margin-bottom: 6px;
+        }
+
+        .scrubber-time-bar {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 4px;
+            height: 8px;
+        }
+
+        .hour-tick {
+            border-radius: 2px;
+            background: rgba(255, 255, 255, 0.1);
+            position: relative;
+            cursor: pointer;
+            transition: var(--transition-smooth);
+        }
+
+        .hour-tick.free { background: var(--status-green); }
+        .hour-tick.busy { background: var(--status-amber); }
+        .hour-tick.active-user { background: var(--brand-teal-light); }
+
+        .hour-tick:hover {
+            transform: scaleY(1.4);
+        }
+
+        .scrubber-labels {
+            display: flex;
+            justify-content: space-between;
+            font-size: 9.5px;
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--text-low);
+            margin-top: 5px;
+        }
+
+        .action-cluster {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn-subtle {
+            flex: 1;
+            padding: 8px 12px;
+            border-radius: var(--radius-sm);
+            background: var(--bg-surface);
+            color: var(--text-mid);
+            border: 1px solid var(--border);
+            font-size: 12.5px;
+            font-weight: 600;
+            cursor: pointer;
+            text-align: center;
+            text-decoration: none;
+            transition: var(--transition-smooth);
+        }
+
+        .btn-subtle:hover {
+            color: var(--text-high);
+            border-color: rgba(255, 255, 255, 0.25);
+            background: var(--bg-elevated);
+        }
+
+        .btn-reserve-trigger {
+            flex: 1;
+            padding: 8px 12px;
+            border-radius: var(--radius-sm);
+            background: var(--brand-teal);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            font-size: 12.5px;
+            font-weight: 600;
+            cursor: pointer;
+            text-align: center;
+            text-decoration: none;
+            transition: var(--transition-smooth);
+        }
+
+        .btn-reserve-trigger:hover {
+            background: var(--brand-teal-light);
+        }
+
+        .mockup-switcher-float {
+            position: fixed;
+            bottom: 22px;
+            right: 22px;
+            background: rgba(16, 27, 46, 0.95);
+            border: 1px solid rgba(47, 133, 133, 0.4);
+            backdrop-filter: blur(12px);
+            padding: 8px 16px;
+            border-radius: var(--radius-full);
+            font-size: 12.5px;
+            color: var(--text-high);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            z-index: 999;
+        }
+
+        .mockup-switcher-float a {
+            color: var(--brand-teal-light);
+            text-decoration: underline;
+            font-weight: 600;
+        }
+
+        @media (max-width: 1200px) {
+            .rooms-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+        @media (max-width: 768px) {
+            .rooms-grid { grid-template-columns: 1fr; }
+            .sidebar { display: none; }
+            .main-content { padding: 20px; }
+            .search-pill-box { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="app-shell">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+        <div class="brand-header">
+            <div class="brand-logo">
+                <img src="../public/images/logo.png" alt="ClassSpace">
+            </div>
+            <div class="brand-info">
+                <h2>ClassSpace</h2>
+                <span>First City Providential</span>
+            </div>
+        </div>
+
+        <nav class="nav-list">
+            <a href="#" class="nav-link active">
+                <i class="fa-solid fa-layer-group"></i>
+                <span>Campus Dashboard</span>
+            </a>
+            <a href="#" class="nav-link">
+                <i class="fa-regular fa-calendar-check"></i>
+                <span>Master Calendar</span>
+            </a>
+            <a href="#" class="nav-link">
+                <i class="fa-regular fa-bell"></i>
+                <span>Notifications</span>
+            </a>
+            <a href="#" class="nav-link">
+                <i class="fa-regular fa-user"></i>
+                <span>Student Profile</span>
+            </a>
+            <a href="#" class="nav-link">
+                <i class="fa-solid fa-sliders"></i>
+                <span>Preferences</span>
+            </a>
+        </nav>
+
+        <div class="sidebar-user">
+            <div class="user-avatar">AP</div>
+            <div class="user-meta">
+                <div class="user-name">Aldrin Peña</div>
+                <div class="user-sub">BSIT-3A &bull; #2410</div>
+            </div>
+            <i class="fa-solid fa-arrow-right-from-bracket" style="color:var(--text-low); font-size:12px; cursor:pointer;" title="Sign out"></i>
+        </div>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="main-content">
+
+        <header class="page-header">
+            <div class="header-title-group">
+                <h1>
+                    San Jose Del Monte Campus
+                    <span class="header-pill">AY 2026–2027</span>
+                </h1>
+                <p>Interactive hourly timetable scrubber with real-time room conflict detection.</p>
+            </div>
+
+            <div class="header-actions">
+                <div class="search-pill-box">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <input type="text" class="search-input" placeholder="Search rooms, labs, or buildings...">
+                </div>
+                <a href="../app/views/reserve_view.php" class="btn-primary-reserve">
+                    <i class="fa-solid fa-calendar-plus"></i>
+                    <span>Quick Reserve</span>
+                </a>
+            </div>
+        </header>
+
+        <!-- Master Hourly Controller Bar -->
+        <div class="timeline-global-controller">
+            <div class="time-scrub-label">
+                <i class="fa-solid fa-clock-desk" style="color:var(--brand-teal-light);"></i>
+                <span>Filter by Available Time Block:</span>
+            </div>
+
+            <div style="display:flex; align-items:center; gap:16px; flex-wrap:wrap;">
+                <div class="room-status-legend">
+                    <span class="legend-item"><span class="legend-edge-bar legend-edge-available"></span> Available</span>
+                    <span class="legend-item"><span class="legend-edge-bar legend-edge-unavailable"></span> Unavailable</span>
+                </div>
+
+                <div class="time-blocks-group">
+                    <button class="time-block-pill active">All Day</button>
+                    <button class="time-block-pill">8 AM – 10 AM</button>
+                    <button class="time-block-pill">10 AM – 12 PM</button>
+                    <button class="time-block-pill">12 PM – 2 PM</button>
+                    <button class="time-block-pill">2 PM – 4 PM</button>
+                    <button class="time-block-pill">4 PM – 6 PM</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3-Column Structured Grid with Card Hourly Scrubbers -->
+        <div class="rooms-grid">
+
+            <!-- Card 1 -->
+            <article class="room-card room-status-available" data-status="vacant">
+                <div class="card-photo-box">
+                    <img src="../public/images/plaridel.jpeg" alt="Plaridel RM 101">
+                    <div class="photo-scrim"></div>
+                    <span class="hall-pill">PLARIDEL &bull; 1F</span>
+                    <span class="status-chip vacant">
+                        <i class="fa-solid fa-circle" style="font-size:6px;"></i> VACANT
+                    </span>
+                </div>
+                <div class="card-body">
+                    <div class="title-row">
+                        <h3 class="room-code">RM 101</h3>
+                        <span class="room-seats">55 Seats</span>
+                    </div>
+                    <div class="room-desc-type">General Lecture Hall</div>
+
+                    <div class="card-hourly-scrubber">
+                        <div class="scrubber-header">
+                            <span style="color:var(--text-mid);">Today's Hourly Schedule:</span>
+                            <span style="color:var(--status-green); font-weight:600;">Free until 2:30 PM</span>
+                        </div>
+                        <div class="scrubber-time-bar">
+                            <div class="hour-tick free" title="8:00 AM - 10:00 AM: Free"></div>
+                            <div class="hour-tick free" title="10:00 AM - 12:00 PM: Free"></div>
+                            <div class="hour-tick free" title="12:00 PM - 2:00 PM: Free"></div>
+                            <div class="hour-tick busy" title="2:00 PM - 4:00 PM: In Session (IT 302)"></div>
+                            <div class="hour-tick free" title="4:00 PM - 6:00 PM: Free"></div>
+                            <div class="hour-tick free" title="6:00 PM - 7:00 PM: Free"></div>
+                        </div>
+                        <div class="scrubber-labels">
+                            <span>8 AM</span>
+                            <span>10 AM</span>
+                            <span>12 PM</span>
+                            <span>2 PM</span>
+                            <span>4 PM</span>
+                            <span>6 PM</span>
+                        </div>
+                    </div>
+
+                    <div class="action-cluster">
+                        <a href="#" class="btn-subtle">Timetable</a>
+                        <a href="../app/views/reserve_view.php?room_id=1" class="btn-reserve-trigger">Reserve Space</a>
+                    </div>
+                </div>
+            </article>
+
+            <!-- Card 2 (Active Booking) -->
+            <article class="room-card user-active-space">
+                <div class="card-photo-box">
+                    <img src="../public/images/melchora.jpg" alt="Melchora RM 204">
+                    <div class="photo-scrim"></div>
+                    <span class="hall-pill">MELCHORA &bull; 2F</span>
+                    <span class="status-chip vacant">
+                        <i class="fa-solid fa-circle" style="font-size:6px;"></i> YOUR SLOT
+                    </span>
+                </div>
+                <div class="card-body">
+                    <div class="title-row">
+                        <h3 class="room-code">RM 204</h3>
+                        <span class="room-seats">40 Seats</span>
+                    </div>
+                    <div class="room-desc-type">STEM Lecture &amp; Seminar Room</div>
+
+                    <div class="card-hourly-scrubber" style="background:var(--brand-teal-dim); border-color:rgba(47,133,133,0.35);">
+                        <div class="scrubber-header">
+                            <span style="color:var(--brand-teal-light);">Your Slot Active:</span>
+                            <span style="color:var(--brand-teal-light); font-weight:600;">1:00 PM – 3:00 PM</span>
+                        </div>
+                        <div class="scrubber-time-bar">
+                            <div class="hour-tick busy" title="8:00 AM - 10:00 AM: Busy"></div>
+                            <div class="hour-tick busy" title="10:00 AM - 12:00 PM: Busy"></div>
+                            <div class="hour-tick free" title="12:00 PM - 1:00 PM: Free"></div>
+                            <div class="hour-tick active-user" title="1:00 PM - 3:00 PM: Reserved by you"></div>
+                            <div class="hour-tick free" title="3:00 PM - 5:00 PM: Free"></div>
+                            <div class="hour-tick free" title="5:00 PM - 7:00 PM: Free"></div>
+                        </div>
+                        <div class="scrubber-labels">
+                            <span>8 AM</span>
+                            <span>10 AM</span>
+                            <span>12 PM</span>
+                            <span>2 PM</span>
+                            <span>4 PM</span>
+                            <span>6 PM</span>
+                        </div>
+                    </div>
+
+                    <div class="action-cluster">
+                        <a href="#" class="btn-subtle">Manage Pass</a>
+                        <a href="../app/views/reserve_view.php?room_id=2" class="btn-reserve-trigger" style="background:var(--brand-teal-light);">Extend Slot</a>
+                    </div>
+                </div>
+            </article>
+
+            <!-- Card 3 -->
+            <article class="room-card">
+                <div class="card-photo-box">
+                    <img src="../public/images/lecture_hall.jpg" alt="Plaridel RM 201">
+                    <div class="photo-scrim"></div>
+                    <span class="hall-pill">PLARIDEL &bull; 2F</span>
+                    <span class="status-chip in-session">
+                        <i class="fa-solid fa-clock" style="font-size:8px;"></i> IN SESSION
+                    </span>
+                </div>
+                <div class="card-body">
+                    <div class="title-row">
+                        <h3 class="room-code">RM 201</h3>
+                        <span class="room-seats">60 Seats</span>
+                    </div>
+                    <div class="room-desc-type">Audiovisual Multi-Media Theater</div>
+
+                    <div class="card-hourly-scrubber">
+                        <div class="scrubber-header">
+                            <span style="color:var(--text-mid);">Today's Hourly Schedule:</span>
+                            <span style="color:var(--status-amber); font-weight:600;">Clears at 1:00 PM</span>
+                        </div>
+                        <div class="scrubber-time-bar">
+                            <div class="hour-tick free" title="8:00 AM - 10:00 AM: Free"></div>
+                            <div class="hour-tick busy" title="10:00 AM - 1:00 PM: In Session (ENGL 101)"></div>
+                            <div class="hour-tick busy" title="10:00 AM - 1:00 PM: In Session (ENGL 101)"></div>
+                            <div class="hour-tick free" title="1:00 PM - 3:00 PM: Free"></div>
+                            <div class="hour-tick free" title="3:00 PM - 5:00 PM: Free"></div>
+                            <div class="hour-tick free" title="5:00 PM - 7:00 PM: Free"></div>
+                        </div>
+                        <div class="scrubber-labels">
+                            <span>8 AM</span>
+                            <span>10 AM</span>
+                            <span>12 PM</span>
+                            <span>2 PM</span>
+                            <span>4 PM</span>
+                            <span>6 PM</span>
+                        </div>
+                    </div>
+
+                    <div class="action-cluster">
+                        <a href="#" class="btn-subtle">Timetable</a>
+                        <a href="../app/views/reserve_view.php?room_id=3" class="btn-subtle" style="color:var(--text-high);">Book for 1 PM</a>
+                    </div>
+                </div>
+            </article>
+
+            <!-- Card 4 -->
+            <article class="room-card">
+                <div class="card-photo-box">
+                    <img src="../public/images/computer_lab.jpg" alt="Melchora Lab 1">
+                    <div class="photo-scrim"></div>
+                    <span class="hall-pill">MELCHORA &bull; 1F</span>
+                    <span class="status-chip vacant">
+                        <i class="fa-solid fa-circle" style="font-size:6px;"></i> VACANT
+                    </span>
+                </div>
+                <div class="card-body">
+                    <div class="title-row">
+                        <h3 class="room-code">COMP LAB 1</h3>
+                        <span class="room-seats">45 PCs</span>
+                    </div>
+                    <div class="room-desc-type">Advanced IT &amp; Programming Lab</div>
+
+                    <div class="card-hourly-scrubber">
+                        <div class="scrubber-header">
+                            <span style="color:var(--text-mid);">Today's Hourly Schedule:</span>
+                            <span style="color:var(--status-green); font-weight:600;">Free until 4:00 PM</span>
+                        </div>
+                        <div class="scrubber-time-bar">
+                            <div class="hour-tick free" title="8:00 AM - 10:00 AM: Free"></div>
+                            <div class="hour-tick free" title="10:00 AM - 12:00 PM: Free"></div>
+                            <div class="hour-tick free" title="12:00 PM - 2:00 PM: Free"></div>
+                            <div class="hour-tick free" title="2:00 PM - 4:00 PM: Free"></div>
+                            <div class="hour-tick busy" title="4:00 PM - 6:00 PM: CS Lab Session"></div>
+                            <div class="hour-tick free" title="6:00 PM - 7:00 PM: Free"></div>
+                        </div>
+                        <div class="scrubber-labels">
+                            <span>8 AM</span>
+                            <span>10 AM</span>
+                            <span>12 PM</span>
+                            <span>2 PM</span>
+                            <span>4 PM</span>
+                            <span>6 PM</span>
+                        </div>
+                    </div>
+
+                    <div class="action-cluster">
+                        <a href="#" class="btn-subtle">Timetable</a>
+                        <a href="../app/views/reserve_view.php?room_id=4" class="btn-reserve-trigger">Reserve Lab</a>
+                    </div>
+                </div>
+            </article>
+
+            <!-- Card 5 -->
+            <article class="room-card">
+                <div class="card-photo-box">
+                    <img src="../public/images/gym.png" alt="Gymnasium">
+                    <div class="photo-scrim"></div>
+                    <span class="hall-pill">GYM &bull; MAIN HALL</span>
+                    <span class="status-chip vacant">
+                        <i class="fa-solid fa-circle" style="font-size:6px;"></i> VACANT
+                    </span>
+                </div>
+                <div class="card-body">
+                    <div class="title-row">
+                        <h3 class="room-code">MAIN COURT</h3>
+                        <span class="room-seats">300 Bleachers</span>
+                    </div>
+                    <div class="room-desc-type">Indoor Sports &amp; Assembly Arena</div>
+
+                    <div class="card-hourly-scrubber">
+                        <div class="scrubber-header">
+                            <span style="color:var(--text-mid);">Today's Hourly Schedule:</span>
+                            <span style="color:var(--status-green); font-weight:600;">Free until 3:00 PM</span>
+                        </div>
+                        <div class="scrubber-time-bar">
+                            <div class="hour-tick free" title="8:00 AM - 10:00 AM: Free"></div>
+                            <div class="hour-tick free" title="10:00 AM - 12:00 PM: Free"></div>
+                            <div class="hour-tick free" title="12:00 PM - 3:00 PM: Free"></div>
+                            <div class="hour-tick busy" title="3:00 PM - 5:00 PM: Varsity Practice"></div>
+                            <div class="hour-tick busy" title="5:00 PM - 7:00 PM: PE Class"></div>
+                            <div class="hour-tick free" title="7:00 PM: Open"></div>
+                        </div>
+                        <div class="scrubber-labels">
+                            <span>8 AM</span>
+                            <span>10 AM</span>
+                            <span>12 PM</span>
+                            <span>2 PM</span>
+                            <span>4 PM</span>
+                            <span>6 PM</span>
+                        </div>
+                    </div>
+
+                    <div class="action-cluster">
+                        <a href="#" class="btn-subtle">Timetable</a>
+                        <a href="../app/views/reserve_view.php?room_id=5" class="btn-reserve-trigger">Reserve Court</a>
+                    </div>
+                </div>
+            </article>
+
+            <!-- Card 6 -->
+            <article class="room-card">
+                <div class="card-photo-box">
+                    <img src="../public/images/hotel.jpeg" alt="FCPC Hotel">
+                    <div class="photo-scrim"></div>
+                    <span class="hall-pill">HOTEL &bull; 2F</span>
+                    <span class="status-chip vacant">
+                        <i class="fa-solid fa-circle" style="font-size:6px;"></i> VACANT
+                    </span>
+                </div>
+                <div class="card-body">
+                    <div class="title-row">
+                        <h3 class="room-code">SUITE 201</h3>
+                        <span class="room-seats">Executive</span>
+                    </div>
+                    <div class="room-desc-type">Hospitality Simulation Suite</div>
+
+                    <div class="card-hourly-scrubber">
+                        <div class="scrubber-header">
+                            <span style="color:var(--text-mid);">Today's Hourly Schedule:</span>
+                            <span style="color:var(--status-green); font-weight:600;">Open for Practicum</span>
+                        </div>
+                        <div class="scrubber-time-bar">
+                            <div class="hour-tick free" style="grid-column: span 6;" title="8:00 AM - 7:00 PM: Free for Practicum"></div>
+                        </div>
+                        <div class="scrubber-labels">
+                            <span>8 AM</span>
+                            <span>10 AM</span>
+                            <span>12 PM</span>
+                            <span>2 PM</span>
+                            <span>4 PM</span>
+                            <span>6 PM</span>
+                        </div>
+                    </div>
+
+                    <div class="action-cluster">
+                        <a href="#" class="btn-subtle">Timetable</a>
+                        <a href="../app/views/reserve_view.php?room_id=6" class="btn-reserve-trigger">Reserve Suite</a>
+                    </div>
+                </div>
+            </article>
+
+        </div>
+
+    </main>
+
+</div>
+
+<div class="mockup-switcher-float">
+    <span>Iteration 1C: <strong>Pro Max Timeline Scrubber</strong></span>
+    &bull; <a href="index.html">Back to Showcase</a>
+</div>
+
+</body>
+</html>
