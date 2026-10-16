@@ -116,6 +116,21 @@ function fmtTime(string $time): string
     return $parsed->format('g:i A');
 }
 
+function isExcludedDeanOffice($room, $hallName = '')
+{
+    $hall = strtolower(trim((string) ($hallName !== '' ? $hallName : ($room['hall_name'] ?? ($room['name'] ?? '')))));
+    $roomLabel = strtolower(trim((string) ($room['room_name'] ?? '')) . ' ' . trim((string) ($room['room_type'] ?? '')));
+    $normalizedLabel = preg_replace('/[^a-z0-9]+/', ' ', $roomLabel);
+    $isDeanProgramHeadOffice = strpos($normalizedLabel, 'dean') !== false
+        && preg_match('/\bprogram head\b/', $normalizedLabel) === 1;
+    $isPlaridelDeanRoom = strpos($hall, 'plaridel') !== false
+        && strpos($normalizedLabel, 'dean') !== false
+        && (preg_match('/\bdean (?:s )?(?:room|office)\b/', $normalizedLabel) === 1
+            || preg_match('/\b(?:room|office) dean\b/', $normalizedLabel) === 1);
+
+    return $isDeanProgramHeadOffice || $isPlaridelDeanRoom;
+}
+
 if (!$roomId || $start === '' || $end === '' || $type === '') {
     respond([
         'success' => false,
@@ -195,7 +210,7 @@ try {
     $accountId = $account['account_id'];
 
     $stmtRoom = $pdo->prepare(
-        'SELECT r.room_name, h.hall_name
+        'SELECT r.room_name, r.room_type, h.hall_name
          FROM room r
          JOIN hall h ON r.hall_id = h.hall_id
          WHERE r.room_id = ?
@@ -208,6 +223,13 @@ try {
         respond([
             'success' => false,
             'message' => 'Room not found.'
+        ]);
+    }
+
+    if (isExcludedDeanOffice($roomRow)) {
+        respond([
+            'success' => false,
+            'message' => 'This room is not available for user reservations.'
         ]);
     }
 

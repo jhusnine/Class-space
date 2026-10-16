@@ -35,6 +35,21 @@ function formatTime($t) {
     return $h12 . ':' . $m . ' ' . $suffix;
 }
 
+function isExcludedDeanOffice($room, $hallName = '')
+{
+    $hall = strtolower(trim((string) ($hallName !== '' ? $hallName : ($room['hall_name'] ?? ($room['name'] ?? '')))));
+    $roomLabel = strtolower(trim((string) ($room['room_name'] ?? '')) . ' ' . trim((string) ($room['room_type'] ?? '')));
+    $normalizedLabel = preg_replace('/[^a-z0-9]+/', ' ', $roomLabel);
+    $isDeanProgramHeadOffice = strpos($normalizedLabel, 'dean') !== false
+        && preg_match('/\bprogram head\b/', $normalizedLabel) === 1;
+    $isPlaridelDeanRoom = strpos($hall, 'plaridel') !== false
+        && strpos($normalizedLabel, 'dean') !== false
+        && (preg_match('/\bdean (?:s )?(?:room|office)\b/', $normalizedLabel) === 1
+            || preg_match('/\b(?:room|office) dean\b/', $normalizedLabel) === 1);
+
+    return $isDeanProgramHeadOffice || $isPlaridelDeanRoom;
+}
+
 // ==================== ACTION: GET HALLS ====================
 // Used by: user reservation form dropdown
 if ($action === 'get_halls') {
@@ -56,6 +71,13 @@ if ($action === 'get_rooms') {
     $stmt->execute([$hallId]);
     $data = $stmt->fetchAll(PDO::FETCH_ASSOC);
     $stmt->closeCursor();
+
+    $hallStmt = $pdo->prepare("SELECT hall_name FROM hall WHERE hall_id = ? LIMIT 1");
+    $hallStmt->execute([$hallId]);
+    $hallName = (string) ($hallStmt->fetchColumn() ?: '');
+    $data = array_values(array_filter($data, function ($room) use ($hallName) {
+        return !isExcludedDeanOffice($room, $hallName);
+    }));
 
     echo json_encode(["success" => true, "data" => $data]);
     exit;
@@ -139,7 +161,9 @@ if ($action === 'get_all') {
     ");
 
     $stmt->execute([$sessionId, $sessionId]);
-    $rooms = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    $rooms = array_values(array_filter($stmt->fetchAll(PDO::FETCH_ASSOC), function ($room) {
+        return !isExcludedDeanOffice($room);
+    }));
 
     foreach ($rooms as $index => $room) {
         $conflictStmt = $pdo->prepare("
@@ -256,7 +280,9 @@ if ($action === 'get_featured') {
     ");
 
     $stmt->execute([$sessionId, $sessionId, $id]);
-    $rooms = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    $rooms = array_values(array_filter($stmt->fetchAll(PDO::FETCH_ASSOC), function ($room) {
+        return !isExcludedDeanOffice($room);
+    }));
 
     // For each room, do a separate simple query to get conflict_start / conflict_end
     // This replaces the repeated correlated subqueries that were in the original SELECT

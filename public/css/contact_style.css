@@ -1,698 +1,505 @@
 /* ==========================================================================
-   CSS Custom Property Design Variable Tokens (Defaults to Dark Matrix)
+   contact_style.css — Contact Support page (redesign)
+   Page-specific only: sidebar, layout and theme variables come from
+   global.css. The message thread styles (bubbles, avatars, dividers) are
+   included at the bottom, so this is the only stylesheet needed.
    ========================================================================== */
-:root {
-    --workspace-bg: #0f172a;
-    --panel-bg: #1e293b;
-    --border-color: #334155;
-    --text-high: #f8fafc;
-    --text-low: #94a3b8;
-    --brand-accent: #38bdf8;
-    --brand-hover: #0ea5e9;
-    --chat-stream-bg: rgba(15, 23, 42, 0.4);
-    --bubble-user: rgba(56, 189, 248, 0.15);
-    --bubble-admin: #334155;
-    --shadow-depth: rgba(0, 0, 0, 0.25);
+
+/* --------------------------------------------------------------------------
+   Page shell + background glow + watermark
+   -------------------------------------------------------------------------- */
+.contact-page {
+    --tile-line: var(--border-card, rgba(148, 163, 184, 0.18));
+    --soft: color-mix(in srgb, var(--text-high) 7%, transparent);
+
+    position: relative;
+    isolation: isolate;
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 8px 0 48px;
 }
 
-/* ==========================================================================
-   Light Mode Theme Toggle Variables
-   ========================================================================== */
-body.light-mode {
-    --workspace-bg: #f8fafc;
-    --panel-bg: #ffffff;
-    --border-color: #e2e8f0;
-    --text-high: #1e293b;
-    --text-low: #64748b;
-    --brand-accent: #0284c7;
-    --brand-hover: #0369a1;
-    --chat-stream-bg: #f1f5f9;
-    --bubble-user: rgba(2, 132, 199, 0.12);
-    --bubble-admin: #e2e8f0;
-    --shadow-depth: rgba(148, 163, 184, 0.08);
+/* green-teal light spilling from the top, like the reference */
+.contact-page::before {
+    content: "";
+    position: absolute;
+    inset: -120px -10vw auto;
+    height: 520px;
+    z-index: -1;
+    pointer-events: none;
+    background: radial-gradient(
+        ellipse 55% 100% at 50% 0%,
+        color-mix(in srgb, var(--brand-accent) 28%, transparent),
+        transparent 72%
+    );
 }
 
-/* ==========================================================================
-   Split Interface Framework Blocks
-   ========================================================================== */
-.contact-workspace {
+.contact-watermark {
+    position: absolute;
+    top: 18px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: -1;
+    font-size: clamp(88px, 15vw, 210px);
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    line-height: 1;
+    text-transform: uppercase;
+    color: var(--text-high);
+    opacity: 0.05;
+    white-space: nowrap;
+    pointer-events: none;
+    user-select: none;
+    -webkit-mask-image: linear-gradient(#000 35%, transparent 95%);
+            mask-image: linear-gradient(#000 35%, transparent 95%);
+}
+
+/* --------------------------------------------------------------------------
+   Two columns: intro + tiles | form
+   -------------------------------------------------------------------------- */
+.contact-grid {
     display: grid;
-    grid-template-columns: 1fr 1.2fr;
-    gap: 24px;
-    margin-top: 24px;
-    align-items: stretch;
-}
-
-.contact-card, .chat-preview-panel {
-    background: var(--panel-bg);
-    border: 1px solid var(--border-color);
-    border-radius: 12px;
-    padding: 24px;
-    box-shadow: 0 4px 6px -1px var(--shadow-depth);
-    display: flex;
-    flex-direction: column;
-}
-
-.contact-info-wrapper {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 20px;
-    padding-bottom: 16px;
-    border-bottom: 1px solid var(--border-color);
-    margin-bottom: 20px;
-}
-
-.contact-info {
-    display: flex;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
     align-items: center;
-    gap: 8px;
-    font-size: 14px;
-    color: var(--text-low);
+    gap: 32px;
+    padding-top: 120px;          /* leaves room for the watermark */
 }
 
-.contact-info i {
-    color: var(--brand-accent);
-}
-
-.contact-info a {
-    color: var(--text-low);
-    text-decoration: none;
-}
-
-/* Form Styles */
-.form-group {
-    margin-bottom: 18px;
-}
-
-.form-label {
-    display: block;
-    font-size: 13px;
-    font-weight: 600;
-    margin-bottom: 8px;
-    color: var(--text-high);
-}
-
-.form-input {
-    width: 100%;
-    padding: 12px;
-    background: var(--workspace-bg);
-    border: 1px solid var(--border-color);
-    border-radius: 8px;
-    color: var(--text-high);
-    font-size: 14px;
-    box-sizing: border-box;
-}
-
-textarea.form-input {
-    min-height: 120px;
-    resize: vertical;
-}
-
-.btn-primary-submit {
-    width: 100%;
-    background: var(--brand-accent);
-    color: #ffffff;
-    border: none;
-    padding: 12px;
-    border-radius: 8px;
-    font-weight: 600;
-    font-size: 14px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    transition: background 0.2s;
-}
-
-body:not(.light-mode) .btn-primary-submit {
-    color: #0f172a;
-}
-
-.btn-primary-submit:hover {
-    background: var(--brand-hover);
-}
-
-/* ==========================================================================
-   Chat Stream Workspace Layout Component
-   ========================================================================== */
-.chat-preview-panel {
-    padding: 0;
-    overflow: hidden;
-    height: 480px;
-}
-
-.chat-preview-header {
-    padding: 16px 20px;
-    background: rgba(56, 189, 248, 0.03);
-    border-bottom: 1px solid var(--border-color);
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-weight: 600;
-    font-size: 14px;
-    color: var(--text-high);
-}
-
-.status-dot {
-    width: 8px;
-    height: 8px;
-    background: #10b981;
-    border-radius: 50%;
-}
-
-.chat-preview-body {
-    flex: 1;
-    padding: 20px;
-    background: var(--chat-stream-bg);
-    overflow-y: auto;
+.contact-tiles {
     display: flex;
     flex-direction: column;
     gap: 12px;
 }
 
-.chat-bubble {
-    max-width: 80%;
-    padding: 12px 16px;
-    border-radius: 12px;
-    font-size: 14px;
-    line-height: 1.5;
-    word-break: break-word;
-}
+.contact-intro { margin: 0; }
 
-.chat-bubble.user-msg {
-    background: var(--bubble-user);
-    border: 1px solid var(--brand-accent);
-    color: var(--text-high);
-    align-self: flex-end;
-    border-bottom-right-radius: 2px;
-}
-
-.chat-bubble.admin-msg {
-    background: var(--bubble-admin);
-    border: 1px solid var(--border-color);
-    color: var(--text-high);
-    align-self: flex-start;
-    border-bottom-left-radius: 2px;
-}
-
-.chat-system-notice {
-    text-align: center;
-    color: var(--text-low);
-    font-size: 13px;
-    margin: auto 0;
-    padding: 0 20px;
-}
-
-.chat-preview-footer {
-    padding: 14px;
-    border-top: 1px solid var(--border-color);
-    display: flex;
+.contact-badge {
+    display: inline-flex;
+    align-items: center;
     gap: 10px;
+    padding: 6px 16px 6px 8px;
+    margin-bottom: 20px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-high);
+    background: var(--soft);
+    border: 1px solid var(--tile-line);
+    border-radius: 999px;
 }
-
-.chat-preview-footer .form-input {
-    flex: 1;
-}
-
-.btn-chat-send {
-    background: var(--brand-accent);
-    color: #ffffff;
-    border: none;
-    width: 42px;
-    border-radius: 8px;
-    cursor: pointer;
+.contact-badge i {
+    width: 24px;
+    height: 24px;
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: background 0.2s;
+    font-size: 11px;
+    color: var(--brand-accent);
+    background: color-mix(in srgb, var(--brand-accent) 16%, transparent);
+    border-radius: 50%;
 }
 
-body:not(.light-mode) .btn-chat-send {
-    color: #0f172a;
-}
-
-.btn-chat-send:hover {
-    background: var(--brand-hover);
-}
-
-/* Response Media Adapters */
-@media (max-width: 992px) {
-    .contact-workspace {
-        grid-template-columns: 1fr;
-    }
-    .chat-preview-panel {
-        height: 400px;
-    }
-}
-
-/* ==========================================================================
-   1. CORE THEME EMULATION & VARIABLE DESIGN ENGINE (DEFAULT DARK MODE)
-   ========================================================================== */
-:root {
-    /* Eksaktong kulay mula sa iyong default base style code */
-    --bg-color: #030816;
-    --sidebar-bg: #050c1e;
-    --card-bg: #050c1e;
-    --border-color: #1a365d;
-    --text-high: #ffffff;
-    --text-low: #a0aec0;
-    
-    /* Dedicated Chat Color Palette Blocks */
-    --chat-container-bg: #050c1e;
-    --chat-sidebar-bg: #050c1e;
-    --chat-window-bg: #050c1e;
-    --chat-search-bg: transparent;
-    --chat-active-row: #0d1b3a;
-    
-    /* Bubble & Accent System States */
-    --bubble-incoming: transparent;
-    --bubble-outgoing: #0d1b3a;
-    --bubble-outgoing-border: #00d2ff;
-    --brand-accent: #00d2ff;
-    --brand-accent-hover: #7dd3fc;
-    --shadow-depth: rgba(0, 0, 0, 0.4);
-}
-
-/* ==========================================================================
-   DYNAMICAL LIGHT MODE THEME OVERRIDES (AUTOMATIC ADJUSTMENTS)
-   ========================================================================== */
-body.light-mode {
-    --bg-color: #f8fafc;
-    --sidebar-bg: #f1f5f9;
-    --card-bg: #ffffff;
-    --border-color: #cbd5e1;
-    --text-high: #0f172a;
-    --text-low: #475569;
-    
-    --chat-container-bg: #ffffff;
-    --chat-sidebar-bg: #f8fafc;
-    --chat-window-bg: #ffffff;
-    --chat-search-bg: #f1f5f9;
-    --chat-active-row: #e2e8f0;
-    
-    --bubble-incoming: #f1f5f9;
-    --bubble-outgoing: #e2e8f0;
-    --bubble-outgoing-border: #0284c7;
-    --brand-accent: #0284c7;
-    --brand-accent-hover: #0369a1;
-    --shadow-depth: rgba(15, 23, 42, 0.05);
-}
-
-/* ==========================================================================
-   2. DUAL-PANEL WORKSPACE BLUEPRINT (SPLIT COLUMN ARCHITECTURE)
-   ========================================================================== */
-.split-workspace {
-    display: grid;
-    grid-template-columns: 380px 1fr;
-    gap: 30px;
-    align-items: stretch; /* both columns grow to the same height */
-    margin-top: 10px;
-}
-
-.contact-card {
-    background: var(--card-bg);
-    border: 1px solid var(--border-color);
-    box-shadow: 0 4px 12px var(--shadow-depth);
-    margin-bottom: 0;
-}
-
-.contact-info-wrapper {
-    display: flex;
-    gap: 24px;
-    margin-bottom: 25px;
-    padding-bottom: 15px;
-    border-bottom: 1px solid var(--border-color);
-}
-
-.contact-info {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 13.5px;
+.contact-intro h1 {
+    margin: 0 0 12px;
+    font-size: 32px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
     color: var(--text-high);
 }
-
-.contact-info i { 
-    color: var(--brand-accent); 
-}
-
-.contact-link { 
-    color: var(--text-high); 
-    text-decoration: none; 
-}
-
-.contact-link:hover { 
-    text-decoration: underline; 
-    color: var(--brand-accent); 
-}
-
-.form-group label {
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 0.8px;
+.contact-intro p {
+    max-width: 380px;
+    margin: 0;
+    font-size: 13px;
+    line-height: 1.6;
     color: var(--text-low);
-    margin-bottom: 6px;
-    text-transform: uppercase;
 }
 
-.submit-full {
-    width: 100%;
-    background: var(--brand-accent) !important;
-    border: none !important;
-    color: #ffffff !important;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background 0.2s, transform 0.1s;
-}
-
-body:not(.light-mode) .submit-full {
-    color: #030816 !important; /* Rich contrast contrast balance for pure dark theme views */
-}
-
-.submit-full:hover {
-    background: var(--brand-accent-hover) !important;
-}
-
-/* ==========================================================================
-   3. PLATFORM COMMUNICATION HUB (MOCKUP SYNCHRONIZATION)
-   ========================================================================== */
-.message-dashboard {
+/* --------------------------------------------------------------------------
+   Contact tiles
+   -------------------------------------------------------------------------- */
+.contact-tile {
     display: flex;
-    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    padding: 16px 18px;
+    text-decoration: none;
+    color: var(--text-high);
+    background: var(--card-bg);
+    border: 1px solid var(--tile-line);
+    border-radius: 18px;
 }
+.contact-tile:hover { border-color: var(--brand-accent); }
+.contact-tile:focus-visible { outline: 2px solid var(--brand-accent); outline-offset: 2px; }
+
+.tile-icon {
+    width: 46px;
+    height: 46px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    background: var(--soft);
+    border: 1px solid var(--tile-line);
+    border-radius: 12px;
+}
+
+.tile-text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.tile-text strong { font-size: 14px; font-weight: 600; }
+.tile-text span {
+    font-size: 13px;
+    color: var(--text-low);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.tile-arrow {
+    width: 34px;
+    height: 34px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    background: var(--soft);
+    border-radius: 50%;
+}
+.tile-arrow i { transform: rotate(-45deg); }
+
+/* --------------------------------------------------------------------------
+   Chat panel (thread styles are further below)
+   -------------------------------------------------------------------------- */
+.message-dashboard { margin-top: 48px; scroll-margin-top: 24px; }
 
 .dashboard-title {
-    font-size: 13px;
+    margin-bottom: 14px;
+    font-size: 18px;
     font-weight: 700;
-    letter-spacing: 0.5px;
-    color: var(--text-low);
-    margin-bottom: 10px;
-    text-transform: uppercase;
+    color: var(--text-high);
 }
 
 .dashboard-container-box {
-    display: grid;
-    grid-template-columns: 1fr;
-    background: var(--chat-container-bg);
-    border: 1px solid var(--border-color);
-    border-radius: 12px;
-    height: 520px;
+    background: var(--card-bg);
+    border: 1px solid var(--tile-line);
+    border-radius: 22px;
     overflow: hidden;
-    box-shadow: 0 4px 12px var(--shadow-depth);
 }
 
-/* CHAT DIRECTORY SIDEPANEL */
-.chat-sidebar {
-    background: var(--chat-sidebar-bg);
-    border-right: 1px solid var(--border-color);
-    display: flex;
-    flex-direction: column;
-}
-
-.search-container {
-    position: relative;
-    padding: 12px;
-    border-bottom: 1px solid var(--border-color);
-}
-
-.chat-search {
-    width: 100%;
-    padding: 8px 12px 8px 34px;
-    background: var(--chat-search-bg);
-    border: 1px solid var(--border-color);
-    border-radius: 20px;
-    color: var(--text-high);
-    font-size: 13px;
-    outline: none;
-}
-
-.search-container .search-icon {
-    position: absolute;
-    left: 22px;
-    top: 21px;
-    color: var(--text-low);
-    font-size: 13px;
-    opacity: 0.6;
-}
-
-.user-list {
-    flex: 1;
-    overflow-y: auto;
-}
-
-.user-item {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 12px 16px;
-    border-bottom: 1px solid var(--border-color);
-    cursor: pointer;
-    transition: background 0.2s ease;
-}
-
-.user-item:hover {
-    background: rgba(56, 189, 248, 0.03);
-}
-
-.user-item.active {
-    background: var(--chat-active-row);
-    border-left: 3px solid var(--brand-accent);
-}
-
-.avatar-circle {
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    background: var(--border-color);
-    flex-shrink: 0;
-}
-
-.user-name {
-    font-size: 13px;
-    font-weight: 500;
-    color: var(--text-high);
-}
-
-/* INTERACTION CANVAS WINDOW */
 .chat-main-window {
     display: flex;
     flex-direction: column;
-    background: var(--chat-window-bg);
-    width: 100%;
-    overflow: hidden; /* prevents children from pushing footer out */
+    height: min(70vh, 560px);
 }
 
 .chat-header-user {
-    padding: 14px 20px;
-    background: var(--chat-sidebar-bg);
-    border-bottom: 1px solid var(--border-color);
     display: flex;
     align-items: center;
     gap: 12px;
+    padding: 14px 20px;
+    flex-shrink: 0;
+    border-bottom: 1px solid var(--border-color);
     font-size: 14px;
     font-weight: 600;
     color: var(--text-high);
-    flex-shrink: 0; /* never compressed */
 }
+.chat-header-sub { margin-top: 2px; font-size: 12px; font-weight: 400; color: var(--text-low); }
 
-.chat-body-stream {
-    flex: 1;
-    min-height: 0; /* critical: allows flex child to scroll instead of grow */
-    padding: 20px;
-    overflow-y: auto;
+.avatar-circle {
+    width: 38px;
+    height: 38px;
     display: flex;
-    flex-direction: column;
-    gap: 16px;
-    background-color: rgba(0, 0, 0, 0.15);
-}
-
-body.light-mode .chat-body-stream {
-    background-color: rgba(0, 0, 0, 0.02);
-}
-
-/* STREAM TALK BUBBLES SCHEME */
-.chat-row {
-    display: flex;
-    gap: 10px;
-    max-width: 85%;
-    align-items: flex-end;
-}
-
-.chat-row.incoming {
-    align-self: flex-start;
-}
-
-.chat-row.outgoing {
-    align-self: flex-end;
-}
-
-.msg-avatar {
-    width: 26px;
-    height: 26px;
-    border-radius: 50%;
-    background: var(--border-color);
-    flex-shrink: 0;
-}
-
-.msg-box {
-    padding: 10px 14px;
-    border-radius: 8px;
+    align-items: center;
+    justify-content: center;
     font-size: 13px;
-    line-height: 1.5;
-    word-break: break-word;
-    border: 1px solid var(--border-color);
+    font-weight: 700;
+    color: var(--bg-color);
+    background: linear-gradient(135deg, var(--brand-accent), var(--brand-accent-hover));
+    border-radius: 50%;
 }
 
-.incoming .msg-box {
-    background: var(--bubble-incoming);
-    color: var(--text-high);
-    border-bottom-left-radius: 2px;
-}
-
-.outgoing .msg-box {
-    background: var(--bubble-outgoing);
-    border-color: var(--bubble-outgoing-border);
-    color: var(--text-high);
-    border-bottom-right-radius: 2px;
-}
-
-/* FOOTER ACTION CONTROL STRIP */
 .chat-footer-bar {
-    padding: 14px 20px;
-    background: var(--chat-sidebar-bg);
+    flex-shrink: 0;
+    padding: 12px 16px 16px;
     border-top: 1px solid var(--border-color);
-    display: flex;
-    align-items: center;
-    gap: 15px;
-}
-
-.action-icons {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    color: var(--text-low);
-    font-size: 16px;
-}
-
-.action-icons i {
-    cursor: pointer;
-    transition: color 0.2s;
-    opacity: 0.7;
-}
-
-.action-icons i:hover {
-    color: var(--brand-accent);
-    opacity: 1;
-}
-
-.gif-lbl {
-    font-size: 9px;
-    font-weight: 800;
-    border: 1.5px solid var(--text-low);
-    padding: 0px 3px;
-    border-radius: 4px;
-    cursor: pointer;
-    opacity: 0.7;
-    line-height: 1.2;
-}
-
-.gif-lbl:hover {
-    color: var(--brand-accent);
-    border-color: var(--brand-accent);
-    opacity: 1;
 }
 
 .input-wrapper {
-    flex: 1;
-    background: transparent;
-    border: 1px solid var(--border-color);
-    border-radius: 6px;
-    padding: 8px 16px;
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 8px;
+    padding: 5px 5px 5px 18px;
+    background: var(--bg-input);
+    border: 1px solid var(--border-color);
+    border-radius: 999px;
 }
-
+.input-wrapper:focus-within {
+    border-color: var(--brand-accent);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand-accent) 15%, transparent);
+}
 .input-wrapper input {
     flex: 1;
+    min-width: 0;
+    padding: 8px 0;
     background: transparent;
     border: none;
     outline: none;
-    color: var(--text-high);
-    font-size: 13px;
-}
-
-.send-btn-icon {
-    color: var(--brand-accent);
-    cursor: pointer;
+    box-shadow: none;
+    font: inherit;
     font-size: 14px;
-    transition: transform 0.1s ease;
+    color: var(--text-high);
+}
+.input-wrapper input::placeholder { color: var(--text-low); }
+
+.input-wrapper .send-btn-icon {
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    color: var(--bg-color);
+    background: var(--brand-accent);
+    border-radius: 50%;
 }
 
-.send-btn-icon:hover {
-    transform: scale(1.1);
+/* --------------------------------------------------------------------------
+   Light theme: softer glow and watermark
+   -------------------------------------------------------------------------- */
+body.light-mode .contact-page::before {
+    background: radial-gradient(
+        ellipse 55% 100% at 50% 0%,
+        color-mix(in srgb, var(--brand-accent) 14%, transparent),
+        transparent 72%
+    );
+}
+body.light-mode .contact-watermark { opacity: 0.045; }
+
+/* --------------------------------------------------------------------------
+   Responsive
+   -------------------------------------------------------------------------- */
+@media (max-width: 900px) {
+    .contact-grid { grid-template-columns: 1fr; padding-top: 72px; }
+    .contact-intro h1 { font-size: 32px; }
+}
+@media (max-width: 480px) {
+    .contact-watermark { font-size: 72px; }
+    .tile-arrow { display: none; }
 }
 
 /* ==========================================================================
-   4. WEB RESPONSE BREAKPOINT ADAPTERS
-   ========================================================================== */
-@media (max-width: 1100px) {
-    .split-workspace {
-        grid-template-columns: 1fr;
-    }
-}
-
-/* ==========================================================================
-   5. CHAT MESSAGES - alignment & spacing cleanup
-   Layout / spacing / typography only. Colors and bubble themes untouched.
-   Placed last so it overrides the earlier .chat-row / .msg-box rules.
+   MESSAGE THREAD
+   Spacing scale: 4px same sender, 16px when the sender changes,
+   10px avatar to bubble, 24px thread padding
    ========================================================================== */
 .chat-body-stream {
-    padding: 20px 24px;
-    gap: 14px;
-}
+    --bubble-in-bg: rgba(148, 163, 184, 0.12);
+    --bubble-in-line: rgba(148, 163, 184, 0.18);
+    --accent: var(--brand-accent, #38bdf8);
 
-/* One row = avatar + (bubble over time). Avatar lines up with the bubble top. */
-.chat-row {
-    align-items: flex-start;
-    gap: 10px;
-    max-width: 75%;
-}
-
-/* The column holding the bubble and its timestamp */
-.chat-row > :has(> .msg-box) {
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: 0;                         /* spacing is set per row below */
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    padding: 20px;
+}
+
+/* ---------- Rows ---------- */
+.chat-row {
+    display: flex;
+    align-items: flex-end;          /* avatar sits level with the last bubble */
+    gap: 8px;
+    max-width: 72%;
+    margin-bottom: 14px;            /* end of a run */
+}
+.chat-row.in-run { margin-bottom: 3px; }
+.chat-row:last-child { margin-bottom: 0; }
+
+.chat-row.incoming { align-self: flex-start; }
+.chat-row.outgoing { align-self: flex-end; }
+
+/* ---------- Avatar ---------- */
+.msg-avatar {
+    width: 24px;
+    height: 24px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--bg-color, #060d1e);
+    background: linear-gradient(135deg, var(--accent), var(--brand-accent-hover, #0ea5e9));
+}
+.msg-avatar.is-hidden { visibility: hidden; }   /* keeps the column aligned */
+
+/* ---------- Bubble + time share one edge ---------- */
+.msg-col {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
     min-width: 0;
 }
-.chat-row.incoming > :has(> .msg-box) { align-items: flex-start; }
-.chat-row.outgoing > :has(> .msg-box) { align-items: flex-end; }
+.chat-row.outgoing .msg-col { align-items: flex-end; }
 
-/* Timestamp: small, muted, tucked under the bubble on the same side */
-.chat-row > :has(> .msg-box) > :not(.msg-box) {
-    margin: 0;
-    padding: 0 2px;
-    font-size: 11px;
-    line-height: 1.2;
-    color: var(--text-low);
-    opacity: 0.8;
-}
-
-/* Bubble: roomier radius, consistent padding, no stray inner margins */
 .msg-box {
+    width: fit-content;
     max-width: 100%;
-    padding: 10px 14px;
+    padding: 6px 12px;
+    font-size: 13px;
+    line-height: 1.45;
+    color: var(--text-high);
+    background: var(--bubble-in-bg);
+    border: 1px solid var(--bubble-in-line);
     border-radius: 14px;
-    font-size: 13.5px;
-    line-height: 1.5;
     overflow-wrap: anywhere;
 }
-.msg-box > * { margin: 0; }
-.incoming .msg-box { border-bottom-left-radius: 4px; }
-.outgoing .msg-box { border-bottom-right-radius: 4px; }
-
-@media (max-width: 600px) {
-    .chat-row { max-width: 88%; }
+.msg-text { white-space: pre-wrap; }   /* keeps the user's own line breaks only */
+.chat-row.outgoing .msg-box {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: var(--bg-color, #060d1e);
 }
+
+/* Only the last bubble of a run gets the tail */
+.chat-row.incoming:not(.in-run) .msg-box { border-bottom-left-radius: 3px; }
+.chat-row.outgoing:not(.in-run) .msg-box { border-bottom-right-radius: 3px; }
+
+.msg-subject {
+    margin-bottom: 4px;
+    font-size: 11px;
+    font-weight: 700;
+    opacity: 0.75;
+}
+
+.msg-time {
+    margin-top: 3px;
+    padding: 0 2px;
+    font-size: 10px;
+    line-height: 1;
+    color: var(--text-low);
+}
+
+/* ---------- Day divider ---------- */
+.day-divider {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 8px 0 16px;
+    font-size: 11px;
+    color: var(--text-low);
+}
+.day-divider::before,
+.day-divider::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: var(--border-color, rgba(148, 163, 184, 0.2));
+}
+
+/* ---------- Empty / loading ---------- */
+.empty-chat-state {
+    margin: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    max-width: 280px;
+    text-align: center;
+    font-size: 13px;
+    color: var(--text-low);
+}
+.empty-chat-state i { font-size: 40px; opacity: 0.3; }
+
+/* ---------- Send button (was an <i>, now a real button) ---------- */
+.send-btn-icon {
+    background: none;
+    border: none;
+    padding: 6px;
+    color: var(--accent, var(--brand-accent));
+    font-size: 16px;
+    cursor: pointer;
+}
+.send-btn-icon:hover { filter: brightness(1.15); }
+.send-btn-icon:focus-visible {
+    outline: 2px solid var(--brand-accent);
+    outline-offset: 2px;
+    border-radius: 6px;
+}
+
+/* ---------- Wide screens / phones ---------- */
+@media (min-width: 1280px) {
+    .chat-row { max-width: 62%; }
+}
+@media (max-width: 768px) {
+    .chat-body-stream { padding: 16px; }
+    .chat-row { max-width: 90%; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .chat-body-stream { scroll-behavior: auto; }
+}
+
+/* ---------- Chat filters ---------- */
+.chat-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 10px 20px;
+    flex-shrink: 0;
+    border-bottom: 1px solid var(--border-color);
+}
+.chat-filters { display: flex; gap: 6px; }
+.chip {
+    padding: 4px 12px;
+    font: inherit;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-low);
+    background: transparent;
+    border: 1px solid var(--border-color);
+    border-radius: 999px;
+    cursor: pointer;
+}
+.chip:hover { color: var(--text-high); }
+.chip.active {
+    color: var(--brand-accent);
+    background: color-mix(in srgb, var(--brand-accent) 12%, transparent);
+    border-color: color-mix(in srgb, var(--brand-accent) 35%, transparent);
+}
+.chip:focus-visible { outline: 2px solid var(--brand-accent); outline-offset: 2px; }
+
+.chat-search {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 220px;
+    max-width: 100%;
+    padding: 5px 12px;
+    background: var(--bg-input);
+    border: 1px solid var(--border-color);
+    border-radius: 999px;
+    color: var(--text-low);
+    font-size: 12px;
+}
+.chat-search:focus-within { border-color: var(--brand-accent); }
+.chat-search input {
+    flex: 1;
+    min-width: 0;
+    padding: 0;
+    background: transparent;
+    border: none;
+    outline: none;
+    box-shadow: none;
+    font: inherit;
+    font-size: 13px;
+    color: var(--text-high);
+}
+@media (max-width: 480px) { .chat-search { width: 100%; } }

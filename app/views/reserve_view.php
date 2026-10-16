@@ -74,19 +74,6 @@ $themeClass = (isset($_COOKIE['theme']) && $_COOKIE['theme'] === 'light') ? 'lig
                 </a>
             </li>
             <li class="nav-item">
-                <a href="notifications_view.php" class="nav-link">
-                    <i class="fas fa-bell"></i>
-                    <span>Notifications</span>
-                    <span id="notif-badge"></span>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a href="profile_view.php" class="nav-link">
-                    <i class="fas fa-user"></i>
-                    <span>Account Profile</span>
-                </a>
-            </li>
-            <li class="nav-item">
                 <a href="security_view.php" class="nav-link">
                     <i class="fas fa-shield"></i>
                     <span>Security</span>
@@ -116,13 +103,38 @@ $themeClass = (isset($_COOKIE['theme']) && $_COOKIE['theme'] === 'light') ? 'lig
             <div class="sidebar-footer">
                 <a href="about_view.php" class="footer-link">About Us</a>
                 <span class="footer-dot">&bull;</span>
-                <a href="contact_view.php" class="footer-link">Contact Us</a>
-                <span class="footer-dot">&bull;</span>
                 <a href="logout.php" class="footer-link">Log out</a>
             </div>
         </div>
     </aside>
     <main class="main-content">
+        <?php
+        $utilityName = trim((string)($_SESSION["fname"] ?? "User") . " " . (string)($_SESSION["lname"] ?? ""));
+        $utilityEmail = (string)($_SESSION["email"] ?? "");
+        $utilityInitial = strtoupper(substr(trim((string)($_SESSION["fname"] ?? "U")), 0, 1));
+        if ($utilityInitial === "") $utilityInitial = "U";
+        $utilityCurrentPage = basename($_SERVER["PHP_SELF"] ?? "");
+        ?>
+        <nav class="user-utility-bar" aria-label="Account shortcuts">
+            <div class="user-utility-actions">
+                <a href="contact_view.php" class="utility-icon-link<?php echo $utilityCurrentPage === 'contact_view.php' ? ' is-active' : ''; ?>" aria-label="Contact Us" title="Contact Us"<?php echo $utilityCurrentPage === 'contact_view.php' ? ' aria-current="page"' : ''; ?>>
+                    <i class="fa-regular fa-envelope" aria-hidden="true"></i>
+                </a>
+                <a href="notifications_view.php" class="utility-icon-link<?php echo $utilityCurrentPage === 'notifications_view.php' ? ' is-active' : ''; ?>" aria-label="Notifications" title="Notifications"<?php echo $utilityCurrentPage === 'notifications_view.php' ? ' aria-current="page"' : ''; ?>>
+                    <i class="fas fa-bell" aria-hidden="true"></i>
+                    <span id="notif-badge" class="notif-badge" aria-live="polite"></span>
+                </a>
+                <a href="profile_view.php" class="utility-profile-link<?php echo $utilityCurrentPage === 'profile_view.php' ? ' is-active' : ''; ?>" aria-label="Account Profile" title="Account Profile"<?php echo $utilityCurrentPage === 'profile_view.php' ? ' aria-current="page"' : ''; ?>>
+                    <span class="utility-avatar" aria-hidden="true"><?php echo htmlspecialchars($utilityInitial, ENT_QUOTES, "UTF-8"); ?></span>
+                    <span class="utility-profile-meta">
+                        <span class="utility-profile-name"><?php echo htmlspecialchars($utilityName, ENT_QUOTES, "UTF-8"); ?></span>
+                        <span class="utility-profile-email"><?php echo htmlspecialchars($utilityEmail !== "" ? $utilityEmail : "Account Profile", ENT_QUOTES, "UTF-8"); ?></span>
+                    </span>
+                </a>
+            </div>
+        </nav>
+
+
         <div class="page-header">
             <div>
                 <h1>Reserve a <span class="highlight">Room</span></h1>

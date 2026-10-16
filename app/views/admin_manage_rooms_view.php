@@ -1,6 +1,6 @@
 <?php
 session_start();
-if (!isset($_SESSION["id"])) {
+if (!isset($_SESSION["id"]) || empty($_SESSION["is_admin"])) {
     header("Location: ../index.php");
     exit;
 }
@@ -22,14 +22,14 @@ if (isset($_COOKIE['theme'])) {
     <link rel="stylesheet" href="../../public/css/global.css">
 <link rel="stylesheet" href="../../public/css/admin_manage_rooms_style.css">
 </head>
-<body class="<?php echo htmlspecialchars($themeClass, ENT_QUOTES, 'UTF-8'); ?>">
+<body class="admin-shell <?php echo htmlspecialchars($themeClass, ENT_QUOTES, 'UTF-8'); ?>">
 
 <div class="container">
 
     <aside class="sidebar">
         <div class="logo">
             <img src="../../public/images/logo.png" alt="ClassSpace">
-            <span>ClassSpace</span>
+            <span class="brand-text-block"><strong class="brand-title">ClassSpace</strong><small class="brand-subtitle">First City Providential College</small></span>
         </div>
 
         <ul class="nav-menu">

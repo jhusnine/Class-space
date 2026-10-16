@@ -2,14 +2,14 @@
    1. THEME VARIABLES (DARK MODE DEFAULT / LIGHT MODE OVERRIDES)
    ========================================================================== */
 :root {
-    --background-slate: #060d1e;
-    --surface-slate: #0f172a;
+    --background-slate: #000C12;
+    --surface-slate: #0B171E;
     --text-high: #f8fafc;
     --text-low: #94a3b8;
-    --border-slate: #1e293b;
+    --border-slate: #263941;
     --accent-sky: #38bdf8;
-    --modal-bg: #0d1220;
-    --dropdown-bg: #0d1829;
+    --modal-bg: #0B171E;
+    --dropdown-bg: #10212A;
 }
 
 body.light-mode {
@@ -60,26 +60,26 @@ body.light-mode {
 }
 
 .tstat-total { background: rgba(56,189,248,0.08); border-color: rgba(56,189,248,0.25); color: var(--accent-sky); }
-.tstat-avail { background: rgba(74,222,128,0.08); border-color: rgba(74,222,128,0.25); color: #4ade80; }
-.tstat-unavail { background: rgba(255,107,107,0.08); border-color: rgba(255,107,107,0.25); color: #ff6b6b; }
-.tstat-maint { background: rgba(250,204,21,0.08); border-color: rgba(250,204,21,0.25); color: #facc15; }
+.tstat-avail { background: rgba(22,163,74,0.10); border-color: rgba(22,163,74,0.30); color: #16A34A; }
+.tstat-unavail { background: rgba(220,38,38,0.10); border-color: rgba(220,38,38,0.30); color: #DC2626; }
+.tstat-maint { background: rgba(217,119,6,0.10); border-color: rgba(217,119,6,0.30); color: #D97706; }
 
 .tstat .dot { width: 7px; height: 7px; border-radius: 50%; }
 .tstat-total .dot { background: var(--accent-sky); }
-.tstat-avail .dot { background: #4ade80; }
-.tstat-unavail .dot { background: #ff6b6b; }
-.tstat-maint .dot { background: #facc15; }
+.tstat-avail .dot { background: #16A34A; }
+.tstat-unavail .dot { background: #DC2626; }
+.tstat-maint .dot { background: #D97706; }
 
 /* Stat badges - WALANG GALAW O HOVER TRANSITION EFFECT */
 .tstat-avail, .tstat-unavail, .tstat-maint { cursor: pointer; opacity: 1; }
-.tstat-avail:hover { background: rgba(74,222,128,0.15); }
-.tstat-unavail:hover { background: rgba(255,107,107,0.15); }
-.tstat-maint:hover { background: rgba(250,204,21,0.15); }
+.tstat-avail:hover { background: rgba(22,163,74,0.16); }
+.tstat-unavail:hover { background: rgba(220,38,38,0.16); }
+.tstat-maint:hover { background: rgba(217,119,6,0.16); }
 
 /* Active / selected state */
-.tstat-avail.tstat-active { background: rgba(74,222,128,0.22); border-color: rgba(74,222,128,0.6); }
-.tstat-unavail.tstat-active { background: rgba(255,107,107,0.22); border-color: rgba(255,107,107,0.6); }
-.tstat-maint.tstat-active { background: rgba(250,204,21,0.22); border-color: rgba(250,204,21,0.6); }
+.tstat-avail.tstat-active { background: rgba(22,163,74,0.22); border-color: rgba(22,163,74,0.60); }
+.tstat-unavail.tstat-active { background: rgba(220,38,38,0.22); border-color: rgba(220,38,38,0.60); }
+.tstat-maint.tstat-active { background: rgba(217,119,6,0.22); border-color: rgba(217,119,6,0.60); }
 
 /* Dim unselected badges when one is active */
 .tstat-active ~ .tstat:not(.tstat-active),
@@ -147,12 +147,12 @@ body.light-mode {
 }
 
 /* Button color states */
-.custom-status-btn.s-available  { background-color: rgba(74,222,128,0.12); color: #4ade80; border-color: rgba(74,222,128,0.2); }
-.custom-status-btn.s-unavailable{ background-color: rgba(255,107,107,0.12); color: #ff6b6b; border-color: rgba(255,107,107,0.2); }
-.custom-status-btn.s-maintenance{ background-color: rgba(250,204,21,0.12); color: #facc15; border-color: rgba(250,204,21,0.2); }
-.custom-status-btn.s-available  .csd-dot { background: #4ade80; }
-.custom-status-btn.s-unavailable .csd-dot { background: #ff6b6b; }
-.custom-status-btn.s-maintenance .csd-dot { background: #facc15; }
+.custom-status-btn.s-available  { background-color: rgba(22,163,74,0.12); color: #16A34A; border-color: rgba(22,163,74,0.30); }
+.custom-status-btn.s-unavailable{ background-color: rgba(220,38,38,0.12); color: #DC2626; border-color: rgba(220,38,38,0.30); }
+.custom-status-btn.s-maintenance{ background-color: rgba(217,119,6,0.12); color: #D97706; border-color: rgba(217,119,6,0.30); }
+.custom-status-btn.s-available  .csd-dot { background: #16A34A; }
+.custom-status-btn.s-unavailable .csd-dot { background: #DC2626; }
+.custom-status-btn.s-maintenance .csd-dot { background: #D97706; }
 
 .custom-status-btn:hover { filter: brightness(1.1); }
 
@@ -184,10 +184,39 @@ body.light-mode {
 }
 
 .csm-item .csd-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
-.csm-available   { color: #4ade80; } .csm-available   .csd-dot { background: #4ade80; }
-.csm-unavailable { color: #ff6b6b; } .csm-unavailable .csd-dot { background: #ff6b6b; }
-.csm-maintenance { color: #facc15; } .csm-maintenance .csd-dot { background: #facc15; }
+.csm-available   { color: #16A34A; } .csm-available   .csd-dot { background: #16A34A; }
+.csm-unavailable { color: #DC2626; } .csm-unavailable .csd-dot { background: #DC2626; }
+.csm-maintenance { color: #D97706; } .csm-maintenance .csd-dot { background: #D97706; }
 .csm-item:hover  { background: rgba(255,255,255,0.05); }
+
+/* Reservation report status labels use the shared room-state palette. */
+.status-available,
+.status-maintenance,
+.status-unavailable {
+    display: inline-block;
+    padding: 3px 8px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 1.3;
+}
+.status-available { background: #16A34A; color: #052e16; }
+.status-maintenance { background: #D97706; color: #231200; }
+.status-unavailable { background: #DC2626; color: #ffffff; }
+
+body:not(.light-mode) .tstat-unavail,
+body:not(.light-mode) .custom-status-btn.s-unavailable,
+body:not(.light-mode) .csm-unavailable { color: #FCA5A5; }
+
+body.light-mode .tstat-avail,
+body.light-mode .custom-status-btn.s-available,
+body.light-mode .csm-available { color: #166534; }
+body.light-mode .tstat-unavail,
+body.light-mode .custom-status-btn.s-unavailable,
+body.light-mode .csm-unavailable { color: #B91C1C; }
+body.light-mode .tstat-maint,
+body.light-mode .custom-status-btn.s-maintenance,
+body.light-mode .csm-maintenance { color: #92400E; }
 
 /* Proteksyon laban sa layout system components extension */
 .markdown-loading>:not(ol):not(ul):not(pre):last-child:after,

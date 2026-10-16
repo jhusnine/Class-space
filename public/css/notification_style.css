@@ -8,7 +8,7 @@
 }
 
 .notif-title-main {
-    font-size: 28px;
+    font-size: 24px;
     font-weight: 700;
     margin-bottom: 4px;
     color: var(--text-high);
@@ -17,7 +17,7 @@
 
 .notif-subtitle {
     color: var(--text-low);
-    font-size: 14px;
+    font-size: 13px;
     transition: color 0.3s ease;
 }
 
@@ -146,7 +146,7 @@
     display: flex;
     align-items: flex-start;
     gap: 16px;
-    padding: 18px 20px;
+    padding: 18px 58px 18px 20px;
     border-radius: 10px;
     margin-bottom: 12px;
     border: 1px solid transparent;
@@ -254,7 +254,7 @@ body.light-mode .notification-item.declined {
 
 .notif-title {
     font-weight: 700;
-    font-size: 14px;
+    font-size: 13px;
     color: var(--text-high);
     margin-bottom: 4px;
     display: flex;
@@ -320,4 +320,52 @@ body.light-mode .notif-desc {
 
 .notif-error .notif-empty-title {
     color: #ef4444;
+}
+
+.notif-item-delete {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    z-index: 1;
+    display: inline-grid;
+    place-items: center;
+    width: 30px;
+    height: 30px;
+    border: 0;
+    border-radius: 7px;
+    background: transparent;
+    color: var(--text-low);
+    cursor: pointer;
+    transition: background 0.2s ease, color 0.2s ease;
+}
+
+.notif-item-delete:hover,
+.notif-item-delete:focus-visible {
+    background: rgba(220, 38, 38, 0.1);
+    color: var(--error);
+}
+
+.notif-item-delete:disabled {
+    cursor: wait;
+    opacity: 0.55;
+}
+
+.notif-delete-note {
+    margin-bottom: 12px;
+    padding: 9px 12px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    color: var(--text-low);
+    font-size: 12px;
+}
+
+@media (max-width: 480px) {
+    .notification-item {
+        padding-right: 48px;
+    }
+
+    .notif-item-delete {
+        top: 8px;
+        right: 8px;
+    }
 }

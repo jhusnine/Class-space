@@ -3,10 +3,10 @@
    Self-contained tokens (this page does not load global.css).
    ========================================================================== */
 :root {
-    --bg: #0B1220;
-    --card: #111A2E;
-    --elevated: #17233A;
-    --border: #26354D;
+    --bg: #000C12;
+    --card: #0B171E;
+    --elevated: #10212A;
+    --border: #263941;
     --primary: #2F8585;
     --primary-hover: #3A9191;
     --text-high: #E7ECF2;

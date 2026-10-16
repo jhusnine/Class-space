@@ -3,11 +3,11 @@
    ========================================================================== */
 
 :root {
-    --bg-dark: #060d1e;
-    --bg-surface: #0f172a;
+    --bg-dark: #000C12;
+    --bg-surface: #0B171E;
     --text-primary: #f8fafc;
     --text-secondary: #94a3b8;
-    --border: #1e293b;
+    --border: #263941;
     --accent: #38bdf8;
     --accent-hover: #0ea5e9;
 }

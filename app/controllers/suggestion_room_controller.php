@@ -9,6 +9,21 @@ if (!isset($_SESSION["id"])) {
 
 require "../../includes/database_include.php";
 
+function isExcludedDeanOffice($room, $hallName = '')
+{
+    $hall = strtolower(trim((string) ($hallName !== '' ? $hallName : ($room['hall_name'] ?? ($room['name'] ?? '')))));
+    $roomLabel = strtolower(trim((string) ($room['room_name'] ?? '')) . ' ' . trim((string) ($room['room_type'] ?? '')));
+    $normalizedLabel = preg_replace('/[^a-z0-9]+/', ' ', $roomLabel);
+    $isDeanProgramHeadOffice = strpos($normalizedLabel, 'dean') !== false
+        && preg_match('/\bprogram head\b/', $normalizedLabel) === 1;
+    $isPlaridelDeanRoom = strpos($hall, 'plaridel') !== false
+        && strpos($normalizedLabel, 'dean') !== false
+        && (preg_match('/\bdean (?:s )?(?:room|office)\b/', $normalizedLabel) === 1
+            || preg_match('/\b(?:room|office) dean\b/', $normalizedLabel) === 1);
+
+    return $isDeanProgramHeadOffice || $isPlaridelDeanRoom;
+}
+
 try {
     $pdo = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8", $db_user, $db_pass);
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
@@ -21,10 +36,13 @@ try {
         FROM room r
         JOIN hall h ON r.hall_id = h.hall_id
         ORDER BY RAND()
-        LIMIT 12
+        LIMIT 13
     ");
     $stmt->execute();
-    $rooms = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    $rooms = array_values(array_filter($stmt->fetchAll(PDO::FETCH_ASSOC), function ($room) {
+        return !isExcludedDeanOffice($room);
+    }));
+    $rooms = array_slice($rooms, 0, 12);
 
     // Process each room with proper data
     foreach ($rooms as &$room) {

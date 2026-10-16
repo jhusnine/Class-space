@@ -96,7 +96,7 @@ if ($action === 'send_message' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     try {
         $input = json_decode(file_get_contents('php://input'), true);
         $messageText = isset($input['message_text']) ? trim($input['message_text']) : '';
-        $subject = isset($input['subject']) ? trim($input['subject']) : 'General Concern';
+        $subject = isset($input['subject']) ? trim($input['subject']) : '';
         
         // Validation
         if (empty($messageText)) {
@@ -105,14 +105,14 @@ if ($action === 'send_message' && $_SERVER['REQUEST_METHOD'] === 'POST') {
             exit;
         }
         
-        if (strlen($messageText) > 500) {
+        if (mb_strlen($messageText) > 500) {
             http_response_code(400);
             echo json_encode(['success' => false, 'message' => 'Message too long (max 500 chars)']);
             exit;
         }
         
         // Format message with subject if provided
-        $finalMessage = !empty($subject) ? "[{$subject}] {$messageText}" : $messageText;
+        $finalMessage = $subject !== '' ? '[' . strtoupper($subject) . '] ' . $messageText : $messageText;
         
         // Insert message (user sends to admin)
         $insertStmt = $pdo->prepare("

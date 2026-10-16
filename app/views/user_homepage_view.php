@@ -63,19 +63,6 @@
                 </a>
             </li>
             <li class="nav-item">
-                <a href="notifications_view.php" class="nav-link">
-                    <i class="fas fa-bell"></i>
-                    <span>Notifications</span>
-                    <span id="notif-badge"></span>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a href="profile_view.php" class="nav-link">
-                    <i class="fas fa-user"></i>
-                    <span>Account Profile</span>
-                </a>
-            </li>
-            <li class="nav-item">
                 <a href="security_view.php" class="nav-link">
                     <i class="fas fa-shield"></i>
                     <span>Security</span>
@@ -105,8 +92,6 @@
             <div class="sidebar-footer">
                 <a href="about_view.php" class="footer-link">About Us</a>
                 <span class="footer-dot">&bull;</span>
-                <a href="contact_view.php" class="footer-link">Contact Us</a>
-                <span class="footer-dot">&bull;</span>
                 <a href="logout.php" class="footer-link">Log out</a>
             </div>
         </div>
@@ -114,6 +99,33 @@
 
     <!-- ================= MAIN ================= -->
     <main class="main-content">
+        <?php
+        $utilityName = trim((string)($_SESSION["fname"] ?? "User") . " " . (string)($_SESSION["lname"] ?? ""));
+        $utilityEmail = (string)($_SESSION["email"] ?? "");
+        $utilityInitial = strtoupper(substr(trim((string)($_SESSION["fname"] ?? "U")), 0, 1));
+        if ($utilityInitial === "") $utilityInitial = "U";
+        $utilityCurrentPage = basename($_SERVER["PHP_SELF"] ?? "");
+        ?>
+        <nav class="user-utility-bar" aria-label="Account shortcuts">
+            <div class="user-utility-actions">
+                <a href="contact_view.php" class="utility-icon-link<?php echo $utilityCurrentPage === 'contact_view.php' ? ' is-active' : ''; ?>" aria-label="Contact Us" title="Contact Us"<?php echo $utilityCurrentPage === 'contact_view.php' ? ' aria-current="page"' : ''; ?>>
+                    <i class="fa-regular fa-envelope" aria-hidden="true"></i>
+                </a>
+                <a href="notifications_view.php" class="utility-icon-link<?php echo $utilityCurrentPage === 'notifications_view.php' ? ' is-active' : ''; ?>" aria-label="Notifications" title="Notifications"<?php echo $utilityCurrentPage === 'notifications_view.php' ? ' aria-current="page"' : ''; ?>>
+                    <i class="fas fa-bell" aria-hidden="true"></i>
+                    <span id="notif-badge" class="notif-badge" aria-live="polite"></span>
+                </a>
+                <a href="profile_view.php" class="utility-profile-link<?php echo $utilityCurrentPage === 'profile_view.php' ? ' is-active' : ''; ?>" aria-label="Account Profile" title="Account Profile"<?php echo $utilityCurrentPage === 'profile_view.php' ? ' aria-current="page"' : ''; ?>>
+                    <span class="utility-avatar" aria-hidden="true"><?php echo htmlspecialchars($utilityInitial, ENT_QUOTES, "UTF-8"); ?></span>
+                    <span class="utility-profile-meta">
+                        <span class="utility-profile-name"><?php echo htmlspecialchars($utilityName, ENT_QUOTES, "UTF-8"); ?></span>
+                        <span class="utility-profile-email"><?php echo htmlspecialchars($utilityEmail !== "" ? $utilityEmail : "Account Profile", ENT_QUOTES, "UTF-8"); ?></span>
+                    </span>
+                </a>
+            </div>
+        </nav>
+
+
 
         <!-- Page header -->
         <div class="page-header">
@@ -133,7 +145,7 @@
                 <div class="search-bar">
                     <i class="fas fa-search search-icon-inside" aria-hidden="true"></i>
                     <input type="text" id="search-input" class="search-input"
-                           placeholder="Search buildings or rooms (Ctrl+K)" autocomplete="off">
+                           placeholder="Search buildings or rooms" autocomplete="off">
                     <span class="search-kbd-badge">Ctrl+K</span>
                     <button type="button" class="search-btn" aria-label="Search" style="display:none;">
                         <i class="fas fa-search"></i>
@@ -197,20 +209,36 @@
                     Plaridel Hall <span class="pill-badge" id="count-plaridel">...</span>
                 </button>
                 <button type="button" class="pill-tab" data-building="melchora">
-                    Melchora Hall <span class="pill-badge" id="count-melchora">...</span>
+                    Melchora Aquino Hall <span class="pill-badge" id="count-melchora">...</span>
                 </button>
                 <button type="button" class="pill-tab" data-building="gym">
-                    Gymnasium <span class="pill-badge" id="count-gym">...</span>
+                    FCPC Gymnasium <span class="pill-badge" id="count-gym">...</span>
                 </button>
                 <button type="button" class="pill-tab" data-building="hotel">
-                    Training Hotel <span class="pill-badge" id="count-hotel">...</span>
+                    FCPC Star Hotel <span class="pill-badge" id="count-hotel">...</span>
+                </button>
+                <button type="button" class="pill-tab" data-building="balagtas">
+                    Balagtas Hall <span class="pill-badge" id="count-balagtas">...</span>
+                </button>
+                <button type="button" class="pill-tab" data-building="rizal">
+                    Rizal Hall <span class="pill-badge" id="count-rizal">...</span>
+                </button>
+                <button type="button" class="pill-tab" data-building="blas-ople">
+                    Blas Ople Hall <span class="pill-badge" id="count-blas-ople">...</span>
                 </button>
             </div>
 
             <div style="display:flex; align-items:center; gap:16px; flex-wrap:wrap;">
-                <div class="room-status-legend">
-                    <span class="legend-item"><span class="legend-edge-bar legend-edge-available"></span> Available</span>
-                    <span class="legend-item"><span class="legend-edge-bar legend-edge-unavailable"></span> Unavailable</span>
+                <div class="room-status-legend" aria-label="Room availability status guide">
+                    <div class="legend-item">
+                        <div class="legend-heading"><span class="legend-edge-bar legend-edge-available" aria-hidden="true"></span><strong>Available</strong></div>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-heading"><span class="legend-edge-bar legend-edge-unavailable" aria-hidden="true"></span><strong>Unavailable / Reserved</strong></div>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-heading"><span class="legend-edge-bar legend-edge-maintenance" aria-hidden="true"></span><strong>Maintenance</strong></div>
+                    </div>
                 </div>
 
                 <div class="quick-filter-toggles">

@@ -22,15 +22,67 @@
         plaridel: "../../public/images/plaridel.jpeg"
     };
 
-    const ROOM_TYPE_IMAGES = {};
+    const ROOM_IMAGES = {
+        "bh 101": "../../public/images/BH%20101.jpg",
+        "bh 102": "../../public/images/BH%20102.jpg",
+        "bh 103": "../../public/images/BH%20103.jpg",
+        "bh 104": "../../public/images/BH%20104.jpg",
+        "bh 201": "../../public/images/BH%20201.jpg",
+        "bh 202": "../../public/images/BH%20202.jpg",
+        "bh 203": "../../public/images/BH%20203.jpg",
+        "bh 204": "../../public/images/BH%20204.jpg",
+        "bh 205": "../../public/images/BH%20205.jpg",
+        "bh 206": "../../public/images/BH%20206.jpg",
+        "bh 207": "../../public/images/BH%20207.jpg",
+        "bh 301": "../../public/images/BH%20301.jpg",
+        "bh 302": "../../public/images/BH%20302.jpg",
+        "bh 303": "../../public/images/BH%20303.jpg",
+        "bh 304": "../../public/images/BH%20304.jpg",
+        "bh 305": "../../public/images/BH%20305.jpg",
+        "bh 306": "../../public/images/BH%20306.jpg",
+        "bh 307": "../../public/images/BH%20307.jpg",
+        "bh 401": "../../public/images/BH%20401.jpg",
+        "bh 402": "../../public/images/BH%20402.jpg",
+        "bh 403": "../../public/images/BH%20403.jpg",
+        "bh 404": "../../public/images/BH%20404.jpg",
+        "bh 405": "../../public/images/BH%20405.jpg",
+        "bh 406": "../../public/images/BH%20406.jpg",
+        "bh 407": "../../public/images/BH%20407.jpg",
+        "bh 501": "../../public/images/BH%20501.jpg",
+        "bh 502": "../../public/images/BH%20502.jpg",
+        "bh 503": "../../public/images/BH%20503.jpg",
+        "bh 504": "../../public/images/BH%20504.jpg",
+        "bh 505": "../../public/images/BH%20505.jpg",
+        "bh 506": "../../public/images/BH%20506.jpg",
+        "bh 507": "../../public/images/BH%20507.jpg",
+        "ople 102": "../../public/images/OPLE%20102.jpeg",
+        "ople 201": "../../public/images/OPLE%20201.jpeg",
+        "ople 202": "../../public/images/OPLE%20202.jpeg",
+        "ople 301": "../../public/images/OPLE%20301.jpeg",
+        "ople 302": "../../public/images/OPLE%20302.jpeg",
+        "ople 303": "../../public/images/OPLE%20303.jpeg",
+        "ople 304": "../../public/images/OPLE%20304.jpeg",
+        "ople 305": "../../public/images/OPLE%20305.jpeg",
+        "ople 401": "../../public/images/OPLE%20401.jpeg",
+        "ople 402": "../../public/images/OPLE%20402.jpeg",
+        "ople 403": "../../public/images/OPLE%20403.jpeg",
+        "ople 404": "../../public/images/OPLE%20404.jpeg",
+        "ople 405": "../../public/images/OPLE%20405.jpeg",
+        "ople 501": "../../public/images/OPLE%20501.jpeg",
+        "ople 502": "../../public/images/OPLE%20502.jpeg",
+        "ople 503": "../../public/images/OPLE%20503.jpeg",
+        "ople psychology testingsimulation room": "../../public/images/PSYCHOLOGY%20TESTINGSIMULATION%20ROOM.jpeg",
+        "ople psychological research laboratory": "../../public/images/OPLE%20PSYCHOLOGICAL%20RESEARCH%20LABORATORY.jpeg"
+    };
 
-    function buildingPhoto(hallId) {
-        return PLACEHOLDER_IMAGE;
+    function buildingImageForName(value) {
+        const hallName = String(value ?? "").trim().toLowerCase();
+        const imageKey = Object.keys(BUILDING_IMAGES).find(key => hallName.includes(key));
+        return imageKey ? BUILDING_IMAGES[imageKey] : null;
     }
 
     function hallPhoto(hall) {
-        const hallName = String(hall?.hall_name ?? "").trim().toLowerCase();
-        return BUILDING_IMAGES[hallName] || PLACEHOLDER_IMAGE;
+        return buildingImageForName(hall?.hall_name) || PLACEHOLDER_IMAGE;
     }
 
     function hallPlaceholder(hall) {
@@ -38,31 +90,65 @@
         return hallName === "gym" ? "../../public/images/gym.png" : PLACEHOLDER_IMAGE;
     }
 
+    function isBlasOplePhotoRoom(room) {
+        const hallName = String(room?.hall_name ?? "").trim().toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+        const roomName = String(room?.room_name ?? "").trim().toLowerCase();
+        const hallMatchesOple = hallName.includes("ople") || hallName === "oh" || hallName.startsWith("oh ");
+        const nameIdentifiesOple = roomName.startsWith("ople ") || roomName.startsWith("oh ") || roomName === "ople" || roomName === "oh";
+        return hallMatchesOple || (!hallName && nameIdentifiesOple);
+    }
+
     function roomPhoto(room) {
         const hallName = String(room?.hall_name ?? "").trim().toLowerCase();
         const roomName = String(room?.room_name ?? "").trim().toLowerCase();
+        const bhCodeMatch = roomName.match(/\bbh[\s-]*(\d{3})\b/i);
+        const isBalagtasHall = hallName.includes("balagtas") || hallName === "bh" || hallName.startsWith("bh ");
+        const balagtasRoomMatch = isBalagtasHall ? roomName.match(/(?:^|\D)(\d{3})(?:\D|$)/) : null;
+        const bhCode = bhCodeMatch?.[1] || balagtasRoomMatch?.[1];
 
-        if (hallName === "gym" || roomName === "gym") {
-            return "../../public/images/gym.png";
+        if (bhCode) {
+            const roomImage = ROOM_IMAGES[`bh ${bhCode}`];
+            if (roomImage) return roomImage;
         }
 
-        // 1. Authentic Building facade if available (Plaridel, Melchora, Hotel)
-        if (BUILDING_IMAGES[hallName]) {
-            return BUILDING_IMAGES[hallName];
+        if (isBlasOplePhotoRoom(room)) {
+            const normalizedRoomLabel = `${roomName} ${String(room?.room_type ?? "").toLowerCase()}`
+                .replace(/[^a-z0-9]+/g, " ")
+                .trim();
+            const compactRoomLabel = normalizedRoomLabel.replace(/\s+/g, "");
+
+            if (compactRoomLabel.includes("psychologytestingsimulationroom")) {
+                return ROOM_IMAGES["ople psychology testingsimulation room"];
+            }
+            if (compactRoomLabel.includes("psychologicalresearchlaboratory")) {
+                return ROOM_IMAGES["ople psychological research laboratory"];
+            }
+
+            const roomCodeMatch = roomName.match(/\b(?:ople|oh)[\s-]*(\d{3})\b/i) || roomName.match(/\b(\d{3})\b/);
+            if (roomCodeMatch) {
+                const roomImage = ROOM_IMAGES[`ople ${roomCodeMatch[1]}`];
+                if (roomImage) return roomImage;
+            }
         }
 
-        // 2. Default neutral classroom fallback (example.jpg, zero 404s)
-        return PLACEHOLDER_IMAGE;
+        if (hallName.includes("gym") || roomName === "gym") {
+            return BUILDING_IMAGES.gym;
+        }
+
+        // Named facade assets remain reserved for their matching buildings.
+        return buildingImageForName(hallName) || PLACEHOLDER_IMAGE;
     }
 
     function roomStatusClass(status) {
-        return status === "available" || status === "vacant"
-            ? "room-status-available"
-            : "room-status-unavailable";
+        if (status === "available" || status === "vacant") return "room-status-available";
+        if (status === "maintenance") return "room-status-maintenance";
+        return "room-status-unavailable";
     }
 
     function roomFloor(room) {
-        return room?.floor ?? room?.floor_number ?? room?.room_floor ?? "";
+        const rawFloor = room?.floor ?? room?.floor_number ?? room?.room_floor ?? "";
+        const match = String(rawFloor).match(/\b([1-5])(?:st|nd|rd|th|f)?\b/i);
+        return match ? Number(match[1]) : "";
     }
 
     const FOCAL_POINTS = {
@@ -78,11 +164,6 @@
             .replace(/>/g, "&gt;")
             .replace(/"/g, "&quot;")
             .replace(/'/g, "&#39;");
-    }
-
-    function capitalize(value) {
-        const text = String(value ?? "");
-        return text.charAt(0).toUpperCase() + text.slice(1);
     }
 
     function formatTime(timeStr) {
@@ -150,32 +231,52 @@
             .catch(() => {});
     }
 
+    const BUILDING_FILTERS = {
+        plaridel: { aliases: ["plaridel"], title: "Plaridel Hall" },
+        melchora: { aliases: ["melchora"], title: "Melchora Aquino Hall" },
+        gym: { aliases: ["gym"], title: "FCPC Gymnasium" },
+        hotel: { aliases: ["hotel"], title: "FCPC Star Hotel" },
+        balagtas: { aliases: ["balagtas", "bh"], title: "Balagtas Hall" },
+        rizal: { aliases: ["rizal"], title: "Rizal Hall" },
+        "blas-ople": { aliases: ["blas ople", "blas-ople", "ople"], title: "Blas Ople Hall" }
+    };
+
+    function roomMatchesBuilding(room, key) {
+        const config = BUILDING_FILTERS[key];
+        if (!config) return false;
+        const hall = String(room?.hall_name || "").trim().toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+        const roomCode = String(room?.room_name || "").match(/\bOH[\s-]?\d{3}\b/i);
+        if (key === "blas-ople" && roomCode) return true;
+        return config.aliases.some(alias => {
+            if (alias === "bh") return hall === "bh" || hall.startsWith("bh ");
+            return hall.includes(alias.replace(/-/g, " "));
+        });
+    }
+
+    function starHotelFloorLabel(floor) {
+        const normalizedFloor = Number(floor);
+        if (normalizedFloor === 1) return "Reception Desk";
+        if (normalizedFloor === 3) return "Star Hotel";
+        return null;
+    }
+
     function updateBuildingCounts(rooms) {
         const list = rooms || allRoomsCache;
-        const total = list.length;
-        const plaridel = list.filter(r => String(r.hall_name || "").toLowerCase().includes("plaridel")).length;
-        const melchora = list.filter(r => String(r.hall_name || "").toLowerCase().includes("melchora")).length;
-        const gym      = list.filter(r => String(r.hall_name || "").toLowerCase().includes("gym")).length;
-        const hotel    = list.filter(r => String(r.hall_name || "").toLowerCase().includes("hotel")).length;
+        const elAll = document.getElementById("count-all");
+        if (elAll) elAll.textContent = list.length;
 
-        const elAll      = document.getElementById("count-all");
-        const elPlaridel = document.getElementById("count-plaridel");
-        const elMelchora = document.getElementById("count-melchora");
-        const elGym      = document.getElementById("count-gym");
-        const elHotel    = document.getElementById("count-hotel");
-
-        if (elAll)      elAll.textContent      = total;
-        if (elPlaridel) elPlaridel.textContent = plaridel;
-        if (elMelchora) elMelchora.textContent = melchora;
-        if (elGym)      elGym.textContent      = gym;
-        if (elHotel)    elHotel.textContent    = hotel;
+        Object.keys(BUILDING_FILTERS).forEach(key => {
+            const count = list.filter(room => roomMatchesBuilding(room, key)).length;
+            const badge = document.getElementById(`count-${key}`);
+            if (badge) badge.textContent = count;
+        });
 
         // Occupancy calculation
         const occupied = list.filter(r => {
             const s = (r.computed_status || "").toLowerCase();
             return s !== "available" && s !== "vacant";
         }).length;
-        const occupancyRate = total > 0 ? Math.round((occupied / total) * 100) : 0;
+        const occupancyRate = list.length > 0 ? Math.round((occupied / list.length) * 100) : 0;
 
         const elOcc  = document.getElementById("stat-occupancy");
         const elFill = document.getElementById("occupancy-fill");
@@ -188,39 +289,25 @@
         currentBuilding = buildingKey || "all";
 
         document.querySelectorAll("#building-filter-pills .pill-tab").forEach(tab => {
-            if (tab.dataset.building === currentBuilding) {
-                tab.classList.add("active");
-            } else {
-                tab.classList.remove("active");
-            }
+            tab.classList.toggle("active", tab.dataset.building === currentBuilding);
         });
 
         let filtered = allRoomsCache;
         if (currentBuilding !== "all") {
-            filtered = filtered.filter(r => {
-                const hall = String(r.hall_name || "").toLowerCase();
-                return hall.includes(currentBuilding.toLowerCase());
-            });
+            filtered = filtered.filter(room => roomMatchesBuilding(room, currentBuilding));
         }
 
         if (vacantOnly) {
             filtered = filtered.filter(r => {
-                const s = (r.computed_status || "").toLowerCase();
-                return s === "available" || s === "vacant";
+                const status = (r.computed_status || "").toLowerCase();
+                return status === "available" || status === "vacant";
             });
         }
 
-        const titleMap = {
-            all:      "Campus Rooms & Spaces",
-            plaridel: "Plaridel Hall Spaces",
-            melchora: "Melchora Hall Spaces",
-            gym:      "Gymnasium & Athletics",
-            hotel:    "Training Hotel Suites"
-        };
-
-        const title = titleMap[currentBuilding] || "Campus Rooms";
-        const label = `Showing ${filtered.length} space(s)`;
-        updateSectionTitle(title, label);
+        const title = currentBuilding === "all"
+            ? "Campus Rooms & Spaces"
+            : (BUILDING_FILTERS[currentBuilding]?.title || "Campus Rooms");
+        updateSectionTitle(title, `Showing ${filtered.length} space(s)`);
         showRoomsView();
         renderRooms(filtered);
     }
@@ -284,11 +371,36 @@
 
     /* -- Room card renderer -------------------------------------------- */
     function floorFromRoomName(roomName) {
-        const match = String(roomName ?? "").match(/(\d{3})\b/);
+        const name = String(roomName ?? "");
+        const explicitFloor = name.match(/\b([1-5])(?:st|nd|rd|th)?\s*(?:floor|f)\b/i);
+        if (explicitFloor) return Number(explicitFloor[1]);
+        const match = name.match(/(\d{3})\b/);
         if (!match) return null;
         const number = Number(match[1]);
         const floor = Math.floor(number / 100);
         return floor >= 1 && floor <= 5 ? floor : null;
+    }
+
+    function roomFloorForDisplay(room) {
+        const normalizedRoomLabel = `${room?.room_name ?? ""} ${room?.room_type ?? ""}`
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, " ")
+            .trim();
+
+        if (roomMatchesBuilding(room, "plaridel")) {
+            if (normalizedRoomLabel.includes("cisco lab")) return 1;
+            if (normalizedRoomLabel.includes("function hall")) return 5;
+        }
+        if (roomMatchesBuilding(room, "hotel")) {
+            if (normalizedRoomLabel.includes("reception desk")) return 1;
+            if (normalizedRoomLabel.includes("star hotel")) return 3;
+        }
+        if (roomMatchesBuilding(room, "balagtas")) {
+            if (normalizedRoomLabel.includes("broadcasting room")) return 2;
+            if (normalizedRoomLabel.includes("cultural hall")) return 5;
+        }
+
+        return roomFloor(room) || floorFromRoomName(room?.room_name);
     }
 
     function roomNumber(roomName) {
@@ -299,35 +411,39 @@
     function renderRoomCard(room, target) {
         const status = (room.computed_status || "unknown").toLowerCase();
         const isAvailable = status === "available" || status === "vacant";
+        const isMaintenance = status === "maintenance";
+        const isInSession = status === "unavailable" && Boolean(room.conflict_start);
         const edgeStatusClass = roomStatusClass(status);
-        const dataStatus = isAvailable ? "vacant" : "busy";
-        const floor = roomFloor(room) || floorFromRoomName(room.room_name);
-        const hallName = (room.hall_name || "Campus").toUpperCase();
-        const locationTag = floor ? `${hallName} • ${floor}F` : hallName;
+        const dataStatus = isAvailable ? "vacant" : isMaintenance ? "maintenance" : "busy";
+        const floor = roomFloorForDisplay(room);
 
-        const timeRange = !isAvailable && room.conflict_start
+        const timeRange = isInSession
             ? ` (${formatTime(room.conflict_start)} - ${formatTime(room.conflict_end)})`
             : "";
+        const statusLabel = isAvailable ? "AVAILABLE" : isMaintenance ? "MAINTENANCE" : isInSession ? "IN SESSION" : "UNAVAILABLE";
+        const statusPillClass = isAvailable ? "vacant" : isMaintenance ? "maintenance" : isInSession ? "in-session" : "unavailable";
+        const statusIcon = isAvailable ? "fa-circle-check" : isMaintenance ? "fa-screwdriver-wrench" : isInSession ? "fa-clock" : "fa-ban";
 
-        const statusPill = `<span class="status-pill ${isAvailable ? 'vacant' : 'in-session'}">` +
-            `<i class="fas ${isAvailable ? 'fa-circle-check' : 'fa-clock'}"></i> ` +
-            `${isAvailable ? 'VACANT' : 'IN SESSION'}${escapeHtml(timeRange)}</span>`;
+        const statusPill = `<span class="status-pill ${statusPillClass}">` +
+            `<i class="fas ${statusIcon}" aria-hidden="true"></i> ` +
+            `${statusLabel}${escapeHtml(timeRange)}</span>`;
 
         const activeBadge = room.is_my_active
             ? `<span class="active-user-badge"><i class="fas fa-user-check"></i> Your Active Booking</span>`
             : "";
         const pendingBadge = room.has_pending
-            ? `<span class="active-user-badge" style="background:#d97706;"><i class="fas fa-hourglass-half"></i> Pending Approval</span>`
+            ? `<span class="active-user-badge" style="background:#D97706;"><i class="fas fa-hourglass-half"></i> Pending Approval</span>`
             : "";
 
         const acChip = room.room_has_ac == 1
             ? `<span class="amenity-tag"><i class="fas fa-snowflake"></i> Air-conditioned</span>`
             : `<span class="amenity-tag"><i class="fas fa-wind"></i> Standard Airflow</span>`;
 
-        const windowLabel = isAvailable ? "Free Until" : "In Session Until";
+        const showAvailabilityDetail = isAvailable || isInSession;
+        const windowLabel = isAvailable ? "Free until" : "Session ends";
         const windowTime  = isAvailable
-            ? (room.next_conflict_start ? formatTime(room.next_conflict_start) : "Open Day")
-            : (room.conflict_end ? formatTime(room.conflict_end) : "Pending Schedule");
+            ? (room.next_conflict_start ? formatTime(room.next_conflict_start) : "Open all day")
+            : isInSession ? formatTime(room.conflict_end) : "";
 
         const scheduleHref = `reserve_view.php?hall_id=${encodeURIComponent(room.hall_id)}&room_id=${encodeURIComponent(room.room_id)}`;
 
@@ -337,28 +453,26 @@
         if (floor !== "" && floor !== null) card.dataset.floor = String(floor);
 
         card.innerHTML = `
-            <div class="card-media">
-                <div class="photo-fallback" aria-hidden="true"><i class="fas fa-door-open"></i></div>
-                <img class="card-photo" src="${roomPhoto(room)}" alt="${escapeHtml(room.room_name)}" loading="lazy" data-placeholder="${escapeHtml(PLACEHOLDER_IMAGE)}">
-                <div class="card-media-scrim"></div>
-                <span class="building-loc-tag">${escapeHtml(locationTag)}</span>
-                ${activeBadge || pendingBadge}
-                ${statusPill}
+                <div class="card-media">
+                    <div class="photo-fallback" aria-hidden="true"><i class="fas fa-door-open"></i></div>
+                    <img class="card-photo" src="${roomPhoto(room)}" alt="${escapeHtml(room.room_name)}" loading="lazy" data-placeholder="${escapeHtml(PLACEHOLDER_IMAGE)}">
+                    <div class="card-media-scrim"></div>
+                    ${activeBadge || pendingBadge}
+                    ${statusPill}
             </div>
             <div class="card-content">
                 <div class="room-title-row">
                     <h3 class="room-code">${escapeHtml(room.room_name)}</h3>
-                    <span class="room-capacity"><i class="fas fa-users"></i> ${escapeHtml(room.room_capacity)} seats</span>
+                    <span class="room-capacity"><i class="fas fa-users" aria-hidden="true"></i> ${escapeHtml(room.room_capacity)} seats</span>
                 </div>
                 <div class="room-type-name">${escapeHtml(room.room_type || 'Lecture Space')}</div>
                 <div class="amenities-list">
                     ${acChip}
-                    <span class="amenity-tag"><i class="fas fa-building"></i> ${escapeHtml(room.hall_name)}</span>
                 </div>
-                <div class="schedule-window-bar">
+                ${showAvailabilityDetail ? `<div class="schedule-window-bar">
                     <span class="window-label">${windowLabel}</span>
                     <span class="window-time">${windowTime}</span>
-                </div>
+                </div>` : ''}
                 <div class="card-actions-row">
                     <a href="${scheduleHref}" class="btn-view-schedule" title="Full schedule and multi-room booking">
                         <i class="far fa-calendar-days"></i> Schedule
@@ -366,8 +480,10 @@
                     <button type="button" class="btn-card-reserve ${!isAvailable ? 'btn-disabled' : ''}"
                         data-hall-id="${escapeHtml(room.hall_id)}"
                         data-room-id="${escapeHtml(room.room_id)}"
+                        aria-label="${isAvailable ? `Quick Reserve ${escapeHtml(room.room_name)}` : `${statusLabel}: ${escapeHtml(room.room_name)}`}"
+                        title="${isAvailable ? 'Quick Reserve' : statusLabel}"
                         ${!isAvailable ? 'disabled' : ''}>
-                        ${isAvailable ? '<i class="fas fa-bolt"></i> Quick Reserve' : 'Occupied'}
+                        ${isAvailable ? '<i class="fas fa-bolt" aria-hidden="true"></i> Reserve' : isMaintenance ? 'Maintenance' : isInSession ? 'Occupied' : 'Unavailable'}
                     </button>
                 </div>
             </div>
@@ -382,6 +498,48 @@
 
         target.appendChild(card);
     }
+
+    function createFloorRail(grid, label) {
+        const rail = document.createElement("div");
+        rail.className = "floor-rail";
+
+        const previous = document.createElement("button");
+        previous.type = "button";
+        previous.className = "floor-rail-arrow floor-rail-arrow-prev";
+        previous.setAttribute("aria-label", `Scroll ${label} rooms left`);
+        previous.innerHTML = '<i class="fas fa-chevron-left" aria-hidden="true"></i>';
+        previous.hidden = true;
+
+        const next = document.createElement("button");
+        next.type = "button";
+        next.className = "floor-rail-arrow floor-rail-arrow-next";
+        next.setAttribute("aria-label", `Scroll ${label} rooms right`);
+        next.innerHTML = '<i class="fas fa-chevron-right" aria-hidden="true"></i>';
+        next.hidden = true;
+
+        const syncButtons = () => {
+            const maxScroll = Math.max(0, grid.scrollWidth - grid.clientWidth);
+            const hasOverflow = maxScroll > 2;
+            rail.classList.toggle("has-overflow", hasOverflow);
+            previous.hidden = !hasOverflow;
+            next.hidden = !hasOverflow;
+            previous.disabled = grid.scrollLeft <= 2;
+            next.disabled = grid.scrollLeft >= maxScroll - 2;
+        };
+
+        previous.addEventListener("click", () => grid.scrollBy({ left: -grid.clientWidth * 0.85, behavior: "smooth" }));
+        next.addEventListener("click", () => grid.scrollBy({ left: grid.clientWidth * 0.85, behavior: "smooth" }));
+        grid.addEventListener("scroll", syncButtons, { passive: true });
+        rail._syncFloorRail = syncButtons;
+        rail.append(previous, grid, next);
+        requestAnimationFrame(syncButtons);
+        return rail;
+    }
+
+    function syncFloorRailControls() {
+        document.querySelectorAll(".floor-rail").forEach(rail => rail._syncFloorRail?.());
+    }
+    window.addEventListener("resize", syncFloorRailControls, { passive: true });
 
     function renderRooms(rooms) {
         const grid = document.getElementById("rooms-grid");
@@ -398,7 +556,7 @@
         const ungrouped = [];
 
         rooms.forEach((room, index) => {
-            const floor = roomFloor(room) || floorFromRoomName(room.room_name);
+            const floor = roomFloorForDisplay(room);
             if (floor === "" || floor === null) {
                 ungrouped.push({ room, index });
                 return;
@@ -420,21 +578,24 @@
             const headingId = `floor-heading-${floor}`;
             const roomsId = `floor-rooms-${floor}`;
             const suffix = floor === 1 ? "st" : floor === 2 ? "nd" : floor === 3 ? "rd" : "th";
-            const roomCount = floorGroups.get(floor).length;
+            const floorRooms = floorGroups.get(floor);
+            const isStarHotelOnlyGroup = floorRooms.every(item => roomMatchesBuilding(item.room, "hotel"));
+            const headingLabel = isStarHotelOnlyGroup ? starHotelFloorLabel(floor) : null;
+            const roomCount = floorRooms.length;
             section.setAttribute("aria-labelledby", headingId);
             const floorButton = document.createElement("h3");
             floorButton.className = "floor-heading";
             floorButton.id = headingId;
-            floorButton.innerHTML = `<span>${floor}${suffix} Floor</span><span class="floor-room-count">${roomCount} ${roomCount === 1 ? "Room" : "Rooms"}</span>`;
+            floorButton.innerHTML = `<span>${headingLabel || `${floor}${suffix} Floor`}</span><span class="floor-room-count">${roomCount} ${roomCount === 1 ? "Room" : "Rooms"}</span>`;
             const floorGrid = document.createElement("div");
             floorGrid.className = "floor-rooms-grid";
             floorGrid.id = roomsId;
-            floorGrid.setAttribute("aria-label", `${floor}${suffix} Floor rooms`);
+            floorGrid.setAttribute("aria-label", `${headingLabel || `${floor}${suffix} Floor`} rooms`);
             floorGroups.get(floor)
                 .sort((a, b) => roomNumber(a.room.room_name) - roomNumber(b.room.room_name) || a.index - b.index)
                 .forEach(item => renderRoomCard(item.room, floorGrid));
             section.appendChild(floorButton);
-            section.appendChild(floorGrid);
+            section.appendChild(createFloorRail(floorGrid, headingLabel || `${floor}${suffix} Floor`));
             grid.appendChild(section);
         });
 
@@ -447,7 +608,7 @@
             otherGrid.className = "floor-rooms-grid";
             ungrouped.sort((a, b) => a.index - b.index)
                 .forEach(item => renderRoomCard(item.room, otherGrid));
-            section.appendChild(otherGrid);
+            section.appendChild(createFloorRail(otherGrid, "Other Rooms / Facilities"));
             grid.appendChild(section);
         }
     }
@@ -679,39 +840,6 @@
             .catch(() => {});
     }
 
-    /* -- Mobile Menu --------------------------------------------------- */
-    function initSharedMobileMenu() {
-        const toggle   = document.getElementById("mobile-menu-toggle");
-        const backdrop = document.getElementById("mobile-menu-backdrop");
-        const sidebar  = document.getElementById("classspace-sidebar");
-        if (!toggle || !backdrop || !sidebar) return;
-
-        const closeMenu = () => {
-            document.body.classList.remove("mobile-menu-open");
-            document.documentElement.style.overflow = "";
-            toggle.setAttribute("aria-expanded", "false");
-            toggle.setAttribute("aria-label", "Open navigation menu");
-            toggle.innerHTML = '<i class="fas fa-bars" aria-hidden="true"></i>';
-            backdrop.hidden = true;
-        };
-        const openMenu = () => {
-            document.body.classList.add("mobile-menu-open");
-            document.documentElement.style.overflow = "hidden";
-            toggle.setAttribute("aria-expanded", "true");
-            toggle.setAttribute("aria-label", "Close navigation menu");
-            toggle.innerHTML = '<i class="fas fa-xmark" aria-hidden="true"></i>';
-            backdrop.hidden = false;
-        };
-        toggle.addEventListener("click", () => {
-            document.body.classList.contains("mobile-menu-open") ? closeMenu() : openMenu();
-        });
-        backdrop.addEventListener("click", closeMenu);
-        sidebar.querySelectorAll("a").forEach(link => link.addEventListener("click", closeMenu));
-        document.addEventListener("keydown", event => {
-            if (event.key === "Escape") closeMenu();
-        });
-    }
-
     /* -- Quick Reserve Drawer Interactions ----------------------------- */
     function openQuickReserveDrawer(room) {
         const drawer   = document.getElementById("quick-reserve-drawer");
@@ -787,11 +915,7 @@
                 const purpose   = document.getElementById("drawer-purpose")?.value;
 
                 if (!roomId || !date || !startTime || !endTime) {
-                    if (typeof window.toast !== "undefined") {
-                        window.toast.show("Please fill out all required fields.", "error", 3000);
-                    } else {
-                        alert("Please fill out all required fields.");
-                    }
+                    window.toast.show("Please fill out all required fields.", "error", 3000);
                     return;
                 }
 
@@ -807,7 +931,7 @@
                         room_id: parseInt(roomId, 10),
                         start: startTime,
                         end: endTime,
-                        type: "single",
+                        type: "one-time",
                         date: date,
                         purpose: purpose
                     })
@@ -822,20 +946,13 @@
                     if (data.success) {
                         closeQuickReserveDrawer();
                         form.reset();
-                        if (typeof window.toast !== "undefined") {
-                            window.toast.show(data.message || "Reservation submitted! Waiting for admin approval.", "success", 4000);
-                        } else {
-                            alert(data.message || "Reservation submitted!");
-                        }
+                        window.toast.show(data.message || "Reservation submitted! Waiting for admin approval.", "success", 4000);
+                        if (typeof window.loadNotifBadge === "function") window.loadNotifBadge();
                         loadStats();
                         loadDefaultRooms();
                     } else {
                         const msg = data.message || "Unable to complete reservation due to schedule conflict.";
-                        if (typeof window.toast !== "undefined") {
-                            window.toast.show(msg, "error", 4500);
-                        } else {
-                            alert(msg);
-                        }
+                        window.toast.show(msg, "error", 4500);
                     }
                 })
                 .catch(() => {
@@ -843,11 +960,7 @@
                         submitBtn.disabled    = false;
                         submitBtn.textContent = "Confirm Quick Booking";
                     }
-                    if (typeof window.toast !== "undefined") {
-                        window.toast.show("Server error during booking. Please try again.", "error", 4000);
-                    } else {
-                        alert("Server error during booking.");
-                    }
+                    window.toast.show("Server error during booking. Please try again.", "error", 4000);
                 });
             });
         }
@@ -912,7 +1025,6 @@
             });
     }
 
-    initSharedMobileMenu();
     initDashboardInteractions();
     initQuickReserveDrawer();
     loadStats();
@@ -926,7 +1038,6 @@
     }
 
     setInterval(loadStats, 60000);
-    setInterval(loadNotifBadge, 30000);
 
     window.filterRooms              = filterRooms;
     window.filterByBuilding         = filterByBuilding;

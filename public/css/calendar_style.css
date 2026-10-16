@@ -3,7 +3,7 @@
 }
 
 .page-header h1 {
-    font-size: 32px;
+    font-size: 26px;
     font-weight: 700;
     color: var(--text-high);
 }
@@ -11,7 +11,7 @@
 .page-header p {
     margin-top: 8px;
     color: var(--text-low);
-    font-size: 14px;
+    font-size: 13px;
 }
 
 .highlight {
@@ -155,7 +155,7 @@
 }
 
 .cal-day-header .day-date {
-    font-size: 20px;
+    font-size: 18px;
     font-weight: 700;
     color: var(--text-high);
     line-height: 1.2;

@@ -33,7 +33,7 @@
     max-width: 900px;
     margin-inline: auto;
     padding: 28px;
-    background: var(--card, #111A2E);
+    background: var(--card, #0B171E);
     border: 1px solid var(--border-card, #26354D);
     border-radius: 14px;
     box-shadow: 0 12px 30px rgba(0, 0, 0, 0.22);
@@ -158,18 +158,30 @@ button:focus-visible {
 }
 
 .preview-status-available {
-    color: #65C18C;
-    font-weight: 600;
+    display: inline-block;
+    color: #052e16;
+    background: #16A34A;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 999px;
 }
 
 .preview-status-unavailable {
-    color: #E58A8A;
-    font-weight: 600;
+    display: inline-block;
+    color: #ffffff;
+    background: #DC2626;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 999px;
 }
 
 .preview-status-maintenance {
-    color: #E5C66A;
-    font-weight: 600;
+    display: inline-block;
+    color: #231200;
+    background: #D97706;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 999px;
 }
 
 .preview-status-unknown {

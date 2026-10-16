@@ -7,13 +7,13 @@ $viewsDir = __DIR__ . '/../app/views/';
 $pages = [
     'user_homepage_view.php' => ['active_nav' => 'user_homepage_view.php', 'active_footer' => null],
     'calendar_view.php'      => ['active_nav' => 'calendar_view.php',      'active_footer' => null],
-    'notifications_view.php' => ['active_nav' => 'notifications_view.php', 'active_footer' => null],
-    'profile_view.php'       => ['active_nav' => 'profile_view.php',       'active_footer' => null],
+    'notifications_view.php' => ['active_nav' => null,                    'active_footer' => null],
+    'profile_view.php'       => ['active_nav' => null,                    'active_footer' => null],
     'security_view.php'      => ['active_nav' => 'security_view.php',      'active_footer' => null],
     'settings_view.php'      => ['active_nav' => 'settings_view.php',      'active_footer' => null],
     'reserve_view.php'       => ['active_nav' => null,                    'active_footer' => null],
     'about_view.php'         => ['active_nav' => null,                    'active_footer' => 'about_view.php'],
-    'contact_view.php'       => ['active_nav' => null,                    'active_footer' => 'contact_view.php'],
+    'contact_view.php'       => ['active_nav' => null,                    'active_footer' => null],
 ];
 
 echo "=== Collegiate Sidebar Consistency Test ===\n";

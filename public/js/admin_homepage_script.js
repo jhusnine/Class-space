@@ -90,7 +90,9 @@ function handleAction(pendingId,action){
     .then(res=>{
         if(res.success){
             toast.show(
-                action==="approve"?"Request approved!":"Request rejected.",
+                action==="approve"
+                    ? `Request approved. ${Number(res.affected_users || 0)} conflicting request(s) were declined and notified.`
+                    : "Request rejected.",
                 action==="approve"?"success":"error",
                 2500
             );

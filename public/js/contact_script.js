@@ -3,23 +3,15 @@ const CONTROLLER = '../../app/controllers/user_messages_controller.php';
 let adminId = null;
 let currentUserId = null;
 let pollInterval = null;
+let allMessages  = [];
+let activeFilter = 'all';   // 'all' | 'sent' | 'received'
+let searchQuery  = '';
+let threadSig = '';   // only re-render when the thread actually changed
 
 document.addEventListener('DOMContentLoaded', () => {
     initChat();
 
-    // DITO MO ILAGAY YUNG CODE PARA SA ENTER KEY NG CONTACT FORM:
-    const contactTextarea = document.getElementById('contact-message-textarea');
-    const contactForm = document.getElementById('contactForm');
-
-    if (contactTextarea && contactForm) {
-        contactTextarea.addEventListener('keydown', (e) => {
-            // Kung Enter ang pinindot at walang Shift key
-            if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault(); // Pigilan ang pagbaba ng linya
-                contactForm.requestSubmit(); // I-submit ang form gamit ang handleContactSubmit(e)
-            }
-        });
-    }
+    setupFilters();
 });
 
 async function initChat() {
@@ -40,95 +32,152 @@ async function loadMessages() {
         if (adminId === null) adminId = data.adminId;
 
         renderThread(data.data);
+
+        await markSupportReplyNotificationsRead();
     } catch (err) {
         console.error('Failed to load messages:', err);
     }
 }
 
-function renderThread(messages) {
+async function markSupportReplyNotificationsRead() {
+    try {
+        const response = await fetch('../controllers/mark_notif_read.php', {
+            method: 'POST',
+            credentials: 'same-origin',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'contact_replies' })
+        });
+        const result = await response.json();
+        if (response.ok && result.success && typeof window.loadNotifBadge === 'function') {
+            window.loadNotifBadge();
+        }
+    } catch (_) {
+        // A transient badge/read request failure must not block the chat itself.
+    }
+}
+
+function isOutgoing(msg) {
+    return parseInt(msg.contact_sender) !== parseInt(adminId);
+}
+
+function getFilteredMessages() {
+    return allMessages.filter(m => {
+        if (activeFilter === 'sent' && !isOutgoing(m)) return false;
+        if (activeFilter === 'received' && isOutgoing(m)) return false;
+        return !searchQuery || String(m.contact_content).toLowerCase().includes(searchQuery);
+    });
+}
+
+function setupFilters() {
+    document.getElementById('chatFilters').addEventListener('click', e => {
+        const chip = e.target.closest('.chip');
+        if (!chip) return;
+        activeFilter = chip.dataset.filter;
+        document.querySelectorAll('#chatFilters .chip')
+            .forEach(c => c.classList.toggle('active', c === chip));
+        threadSig = '';
+        renderThread();
+    });
+
+    let t = null;
+    document.getElementById('chatSearch').addEventListener('input', e => {
+        clearTimeout(t);
+        t = setTimeout(() => {
+            searchQuery = e.target.value.toLowerCase().trim();
+            threadSig = '';
+            renderThread();
+        }, 200);
+    });
+}
+
+function renderThread(incoming) {
     const stream = document.getElementById('chat-stream');
     if (!stream) return;
 
-    if (messages.length === 0) {
+    if (incoming) allMessages = incoming;
+
+    const last = allMessages[allMessages.length - 1];
+    const sig  = allMessages.length + ':' + (last ? last.contact_id : 0) + '|' + activeFilter + '|' + searchQuery;
+    if (sig === threadSig) return;
+    const firstRender = threadSig === '';
+    threadSig = sig;
+
+    if (allMessages.length === 0) {
         stream.innerHTML = `
             <div class="empty-chat-state">
                 <i class="fas fa-comments"></i>
-                <p>No messages yet. Send a message using the form on the left.</p>
+                <p>No messages yet. Type below to contact support.</p>
             </div>`;
         return;
     }
 
-    // Remember scroll position — only auto-scroll if already at bottom
-    const isAtBottom = stream.scrollHeight - stream.scrollTop <= stream.clientHeight + 40;
-
-    stream.innerHTML = messages.map(msg => {
-        const isOutgoing = parseInt(msg.contact_sender) !== parseInt(adminId);
-        const direction  = isOutgoing ? 'outgoing' : 'incoming';
-        const time = new Date(msg.contact_created).toLocaleTimeString('en-US', {
-            hour: '2-digit', minute: '2-digit'
-        });
-
-        if (direction === 'incoming') {
-            return `
-                <div class="chat-row incoming">
-                    <div class="msg-avatar"></div>
-                    <div class="msg-col">
-                        <div class="msg-box">${escapeHtml(msg.contact_content)}</div>
-                        <div class="msg-time">${time}</div>
-                    </div>
-                </div>`;
-        } else {
-            return `
-                <div class="chat-row outgoing">
-                    <div class="msg-col">
-                        <div class="msg-box">${escapeHtml(msg.contact_content)}</div>
-                        <div class="msg-time">${time}</div>
-                    </div>
-                    <div class="msg-avatar"></div>
-                </div>`;
-        }
-    }).join('');
-
-    if (isAtBottom) {
-        stream.scrollTop = stream.scrollHeight;
-    }
-}
-
-// ── Contact Form (left panel) ─────────────────────────────────────────────────
-async function handleContactSubmit(e) {
-    e.preventDefault();
-
-    const subjectInput = document.querySelector('#contactForm input[placeholder="Subject"]');
-    const messageInput = document.querySelector('#contactForm textarea');
-    const subject = subjectInput.value.trim();
-    const message = messageInput.value.trim();
-
-    if (!subject || !message) {
-        toast.show('Please fill in all fields.', 'error', 2000);
+    const messages = getFilteredMessages();
+    if (messages.length === 0) {
+        stream.innerHTML = `
+            <div class="empty-chat-state">
+                <i class="fas fa-magnifying-glass"></i>
+                <p>No messages match your filter.</p>
+            </div>`;
         return;
     }
 
-    const finalMessage = `[${subject.toUpperCase()}] ${message}`;
+    const myInitial = stream.dataset.initial || 'U';
+    const wasAtBottom = stream.scrollHeight - stream.scrollTop <= stream.clientHeight + 40;
 
-    try {
-        const res  = await fetch(`${CONTROLLER}?action=send_message`, {
-            method:  'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body:    JSON.stringify({ message_text: finalMessage })
-        });
-        const data = await res.json();
+    const toDate = m => new Date(String(m.contact_created).replace(' ', 'T'));
+    const isOut  = isOutgoing;
 
-        if (data.success) {
-            toast.show('Your message has been sent!', 'success', 3000);
-            document.getElementById('contactForm').reset();
-            await loadMessages();
-        } else {
-            toast.show(data.message || 'Failed to send message.', 'error', 2500);
+    let html = '';
+    let lastDay = '';
+
+    messages.forEach((msg, i) => {
+        const date = toDate(msg);
+        const day  = date.toDateString();
+        const out  = isOut(msg);
+
+        if (day !== lastDay) {
+            html += `<div class="day-divider"><span>${escapeHtml(dayLabel(date))}</span></div>`;
+            lastDay = day;
         }
-    } catch (err) {
-        console.error(err);
-        toast.show('Connection error. Please try again.', 'error', 2500);
-    }
+
+        // Same sender, same day => same run. Avatar + time show on the last bubble of a run.
+        const next    = messages[i + 1];
+        const endsRun = !next || toDate(next).toDateString() !== day || isOut(next) !== out;
+
+        const time = date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+
+        // "[SUBJECT] text" becomes a small label above the text
+        let subject = '';
+        let text    = String(msg.contact_content);
+        const m = text.match(/^\[([^\]]{1,60})\]\s*([\s\S]*)$/);
+        if (m) { subject = m[1]; text = m[2]; }
+
+        const avatar = `<div class="msg-avatar ${endsRun ? '' : 'is-hidden'}">${out ? escapeHtml(myInitial) : 'S'}</div>`;
+        const col = `
+            <div class="msg-col">
+                <div class="msg-box">
+                    ${subject ? `<div class="msg-subject">${escapeHtml(subject)}</div>` : ''}
+                    <div class="msg-text">${escapeHtml(text)}</div>
+                </div>
+                ${endsRun ? `<div class="msg-time">${escapeHtml(time)}</div>` : ''}
+            </div>`;
+
+        html += `
+            <div class="chat-row ${out ? 'outgoing' : 'incoming'} ${endsRun ? '' : 'in-run'}">
+                ${out ? col + avatar : avatar + col}
+            </div>`;
+    });
+
+    stream.innerHTML = html;
+    if (firstRender || wasAtBottom) stream.scrollTop = stream.scrollHeight;
+}
+
+function dayLabel(date) {
+    const today = new Date();
+    const yest  = new Date(); yest.setDate(today.getDate() - 1);
+    if (date.toDateString() === today.toDateString()) return 'Today';
+    if (date.toDateString() === yest.toDateString())  return 'Yesterday';
+    return date.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
 }
 
 // ── Chat Footer Input (right panel) ──────────────────────────────────────────
@@ -147,6 +196,8 @@ async function sendMessageFromInput() {
 
         if (data.success) {
             input.value = '';
+            threadSig = '';   // force a render + scroll to the new message
+            await markSupportReplyNotificationsRead();
             await loadMessages();
         } else {
             toast.show(data.message || 'Failed to send.', 'error', 2000);
@@ -166,7 +217,7 @@ function checkEnterKey(e) {
 
 // ── XSS Helper ────────────────────────────────────────────────────────────────
 function escapeHtml(str) {
-    const d = document.createElement('div');
-    d.appendChild(document.createTextNode(str));
-    return d.innerHTML;
+    return String(str ?? '')
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 }

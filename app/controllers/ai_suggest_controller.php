@@ -14,6 +14,21 @@ function respond(array $payload, int $status = 200): never
     exit;
 }
 
+function isExcludedDeanOffice($room, $hallName = '')
+{
+    $hall = strtolower(trim((string) ($hallName !== '' ? $hallName : ($room['hall_name'] ?? ($room['name'] ?? '')))));
+    $roomLabel = strtolower(trim((string) ($room['room_name'] ?? '')) . ' ' . trim((string) ($room['room_type'] ?? '')));
+    $normalizedLabel = preg_replace('/[^a-z0-9]+/', ' ', $roomLabel);
+    $isDeanProgramHeadOffice = strpos($normalizedLabel, 'dean') !== false
+        && preg_match('/\bprogram head\b/', $normalizedLabel) === 1;
+    $isPlaridelDeanRoom = strpos($hall, 'plaridel') !== false
+        && strpos($normalizedLabel, 'dean') !== false
+        && (preg_match('/\bdean (?:s )?(?:room|office)\b/', $normalizedLabel) === 1
+            || preg_match('/\b(?:room|office) dean\b/', $normalizedLabel) === 1);
+
+    return $isDeanProgramHeadOffice || $isPlaridelDeanRoom;
+}
+
 if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
     respond(['success' => false, 'error' => 'method_not_allowed'], 405);
 }
@@ -137,6 +152,9 @@ try {
 
     if (!$targetRoom) {
         respond(['success' => false, 'error' => 'room_not_found'], 404);
+    }
+    if (isExcludedDeanOffice($targetRoom)) {
+        respond(['success' => false, 'error' => 'room_not_available'], 404);
     }
 
     $targetCap   = (int)$targetRoom['room_capacity'];
@@ -279,7 +297,9 @@ try {
         ORDER BY r.room_capacity ASC
     ');
     $stmtSameHall->execute([$roomId, $targetHall, $targetCap]);
-    $sameHallRooms = $stmtSameHall->fetchAll();
+    $sameHallRooms = array_values(array_filter($stmtSameHall->fetchAll(), function ($room) {
+        return !isExcludedDeanOffice($room);
+    }));
 
     // Step 2B: Query available rooms in OTHER halls as fallback
     $stmtOtherHalls = $pdo->prepare('
@@ -294,7 +314,9 @@ try {
         ORDER BY r.room_capacity ASC
     ');
     $stmtOtherHalls->execute([$roomId, $targetHall, $targetCap]);
-    $otherHallRooms = $stmtOtherHalls->fetchAll();
+    $otherHallRooms = array_values(array_filter($stmtOtherHalls->fetchAll(), function ($room) {
+        return !isExcludedDeanOffice($room);
+    }));
 
     $allPeerRooms = array_merge($sameHallRooms, $otherHallRooms);
 

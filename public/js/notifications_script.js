@@ -7,6 +7,7 @@ const ICONS = {
 let allNotifs = [];
 let activeTab = 'all';
 let searchTerm = '';
+let notificationsCanDelete = false;
 
 function loadNotifications() {
     fetch('../controllers/notifications_controller.php')  
@@ -17,6 +18,7 @@ function loadNotifications() {
                 return;
             }
             allNotifs = res.data || [];
+            notificationsCanDelete = res.can_delete === true;
             renderList();
         })
         .catch(renderError);
@@ -24,6 +26,19 @@ function loadNotifications() {
 
 function renderList() {
     const list = document.getElementById('notifications-list');
+    let deleteNote = document.getElementById('notif-delete-note');
+
+    if (!notificationsCanDelete) {
+        if (!deleteNote) {
+            deleteNote = document.createElement('div');
+            deleteNote.id = 'notif-delete-note';
+            deleteNote.className = 'notif-delete-note';
+            deleteNote.textContent = 'Notification removal is temporarily unavailable.';
+            list.before(deleteNote);
+        }
+    } else if (deleteNote) {
+        deleteNote.remove();
+    }
 
     let items = allNotifs;
 
@@ -83,6 +98,31 @@ function renderList() {
             </div>
         `;
 
+        if (notificationsCanDelete) {
+            const deleteButton = document.createElement('button');
+            deleteButton.type = 'button';
+            deleteButton.className = 'notif-item-delete';
+            deleteButton.setAttribute('aria-label', 'Remove this notification from your list');
+            deleteButton.title = 'Remove from your notifications';
+            deleteButton.innerHTML = '<i class="fas fa-trash" aria-hidden="true"></i>';
+            deleteButton.addEventListener('click', (event) => {
+                event.stopPropagation();
+                deleteButton.disabled = true;
+                window.softDeleteNotification(n.notif_id)
+                    .then(() => {
+                        allNotifs = allNotifs.filter(item => String(item.notif_id) !== String(n.notif_id));
+                        renderList();
+                        loadNotifBadge();
+                        toast.show('Notification removed. The database record was retained.', 'success', 3000);
+                    })
+                    .catch(error => {
+                        deleteButton.disabled = false;
+                        toast.show(error.message || 'Could not remove this notification.', 'error', 3000);
+                    });
+            });
+            div.appendChild(deleteButton);
+        }
+
         div.addEventListener('click', () => markRead(n.notif_id, div));
         list.appendChild(div);
     });
@@ -123,7 +163,11 @@ function markRead(notifId, el) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ notif_id: notifId })
-    });
+    })
+        .then(response => response.json())
+        .then(result => {
+            if (result.success) loadNotifBadge();
+        });
 
     el.classList.add('read');
 
@@ -143,6 +187,7 @@ function markAllRead() {
     .then(() => {
         allNotifs.forEach(n => n.notif_is_read = 1);
         renderList();
+        loadNotifBadge();
         toast.show('All notifications marked as read.', 'success', 2000);
     })
     .catch(() =>
