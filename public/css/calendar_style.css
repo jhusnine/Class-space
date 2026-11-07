@@ -1,5 +1,5 @@
 .page-header {
-    margin-bottom: 25px;
+    margin-bottom: 24px;
 }
 
 .page-header h1 {
@@ -34,12 +34,15 @@
     flex-wrap: wrap;
 }
 
-.cal-toolbar h1 {
+.cal-toolbar h1,
+.cal-toolbar h2,
+.cal-toolbar-title {
     font-size: 20px;
     font-weight: 700;
     letter-spacing: 1px;
     color: var(--text-high);
     flex: 1;
+    margin: 0;
 }
 
 .cal-toolbar select {

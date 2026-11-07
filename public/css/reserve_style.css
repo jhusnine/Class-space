@@ -3,16 +3,15 @@
 
 
 .main-content {
-    width: 100%;
+    flex: 1;
     min-width: 0;
-    padding: 36px 24px 48px;
+    padding: 24px 36px 36px;
 }
 
 
-.main-content > .page-header,
 .main-content > .reservation-card {
     width: min(100%, 900px);
-    margin-inline: auto;
+    margin-inline: 0;
 }
 
 .main-content > .page-header {
@@ -367,37 +366,7 @@ button:focus-visible {
 
 
 
-.sidebar {
-    display: flex;
-    flex-direction: column;
-    flex-shrink: 0;
-    min-width: 0;
-}
-
-.sidebar .nav-menu {
-    flex: 1 1 auto;
-    min-height: 0;
-    overflow-x: hidden;
-    overflow-y: auto;
-    scrollbar-width: thin;
-}
-
-@media (min-width: 769px) {
-    .sidebar {
-        position: sticky;
-        top: 0;
-        height: 100dvh;
-        max-height: 100dvh;
-        overflow: hidden;
-    }
-
-    .main-content {
-        min-width: 0;
-        min-height: 100dvh;
-        overflow-x: hidden;
-        overflow-y: auto;
-    }
-}
+/* Sidebar rules inherited from global.css */
 
 @media (max-width: 768px) {
     body.mobile-menu-open {

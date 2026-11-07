@@ -31,61 +31,10 @@
 	<div class="container">
 
 
-		<button type="button" class="mobile-menu-toggle" id="mobile-menu-toggle"
-				aria-controls="classspace-sidebar" aria-expanded="false" aria-label="Open navigation menu">
-			<i class="fas fa-bars" aria-hidden="true"></i>
-		</button>
-		<div class="mobile-menu-backdrop" id="mobile-menu-backdrop" hidden></div>
-		<aside class="sidebar" id="classspace-sidebar">
-			<div class="logo brand-header">
-				<div class="brand-logo-frame">
-					<img src="../../public/images/logo.png" alt="ClassSpace">
-				</div>
-				<div class="brand-text-block">
-					<span class="brand-title">ClassSpace</span>
-					<span class="brand-subtitle">First City Providential College</span>
-				</div>
-			</div>
-
-			<ul class="nav-menu">
-				<li class="nav-item">
-					<a href="user_homepage_view.php" class="nav-link">
-						<i class="fas fa-home"></i>
-						<span>Dashboard</span>
-					</a>
-				</li>
-				<li class="nav-item">
-					<a href="calendar_view.php" class="nav-link">
-						<i class="fas fa-calendar"></i>
-						<span>Calendar</span>
-					</a>
-				</li>
-                <li class="nav-item">
-					<a href="settings_view.php" class="nav-link active">
-						<i class="fas fa-cog"></i>
-						<span>Settings</span>
-					</a>
-				</li>
-			</ul>
-
-
-			<div class="sidebar-bottom">
-				<div class="sidebar-profile-card">
-					<div class="user-avatar-circle"><?php echo $firstInitial; ?></div>
-					<div class="sidebar-profile-meta">
-						<div class="sidebar-profile-name" title="<?php echo $fname . ($lname ? " " . $lname : ""); ?>"><?php echo $fname . ($lname ? " " . $lname : ""); ?></div>
-						<div class="sidebar-profile-sub">Teacher</div>
-					</div>
-					<a href="logout.php" class="sidebar-profile-logout" id="logout" title="Log out">
-						<i class="fas fa-arrow-right-from-bracket" aria-hidden="true"></i>
-					</a>
-				</div>
-
-				<div class="sidebar-footer">
-					<a href="logout.php" class="footer-link">Log out</a>
-				</div>
-			</div>
-		</aside>
+		<?php
+		$activeTab = 'settings';
+		require_once __DIR__ . '/partials/user_sidebar.php';
+		?>
 
 		<main class="main-content">
 			<?php
@@ -117,9 +66,8 @@
 
                 <div class="page-header settings-header">
                     <div>
-                        <p class="settings-eyebrow">ACCOUNT PREFERENCES</p>
-                        <h1>Settings</h1>
-                        <p class="settings-intro">Manage your appearance and learn more about ClassSpace.</p>
+                        <h1>Account <span class="highlight">Settings</span></h1>
+                        <p class="settings-intro">Manage your appearance, security, and account preferences.</p>
                     </div>
                 </div>
 
