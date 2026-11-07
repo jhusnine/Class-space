@@ -63,18 +63,17 @@
 			</nav>
 
 
+			<div class="page-header">
+				<div>
+					<h1>Contact <span class="highlight">Support</span></h1>
+					<p>Questions about a room reservation or your account? Message ICT Support below.</p>
+				</div>
+			</div>
+
 			<div class="contact-page">
 				<div class="contact-watermark" aria-hidden="true">Contact</div>
 
 				<section class="contact-grid">
-
-
-					<div class="contact-intro">
-						<span class="contact-badge"><i class="fas fa-headset" aria-hidden="true"></i> Contact Support</span>
-						<h1>Get in touch</h1>
-						<p>Questions about a room reservation or your account? Message ICT Support in the chat below and the reply will show up there.</p>
-					</div>
-
 
 					<div class="contact-tiles">
 						<a class="contact-tile" href="mailto:ictsupport@fcpc.edu.ph">

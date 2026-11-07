@@ -46,14 +46,7 @@ body {
     color: var(--text-high);
 }
 
-.nav-link,
-.footer-link {
-    color: var(--text-low);
-}
-
-.page-header h1 {
-    color: var(--text-high);
-}
+/* Nav and footer link colors managed by global.css */
 
 .settings-eyebrow {
     margin: 0 0 6px;

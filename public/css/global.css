@@ -179,6 +179,7 @@ body.light-mode {
 
 html {
     scroll-behavior: smooth;
+    scrollbar-gutter: stable;
     font-family: var(--font-stack);
     font-size: 14px;
     line-height: var(--line-height-normal);
@@ -229,7 +230,8 @@ body {
 .main-content {
     flex: 1;
     overflow-y: auto;
-    padding: 24px 36px 36px;
+    scrollbar-gutter: stable;
+    padding: 16px 32px 32px;
     min-width: 0;
 }
 
@@ -590,7 +592,7 @@ body.light-mode .sidebar-footer .footer-dot {
     align-items: center;
     width: 100%;
     min-width: 0;
-    margin: 0 0 12px;
+    margin: 0 0 6px;
     position: relative;
     z-index: 5;
 }

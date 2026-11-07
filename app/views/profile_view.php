@@ -63,7 +63,10 @@
 
 
 			<div class="page-header">
-				<h1>Account <span class="highlight">Profile</span></h1>
+				<div>
+					<h1>Account <span class="highlight">Profile</span></h1>
+					<p>View and manage your personal teacher credentials.</p>
+				</div>
 			</div>
 
 			<div class="card">

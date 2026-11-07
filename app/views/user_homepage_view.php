@@ -72,10 +72,10 @@
         <div class="page-header">
             <div>
                 <h1>
-                    First City Providential College
+                    Campus <span class="highlight">Dashboard</span>
                     <span class="header-academic-tag">AY 2026-2027</span>
                 </h1>
-                <p>Welcome Back, <span class="highlight"><?php echo $fname; ?></span>! Room occupancy, schedules, and reservations across all academic facilities.</p>
+                <p>First City Providential College &bull; Welcome Back, <span class="highlight"><?php echo $fname; ?></span>!</p>
             </div>
 
             <div class="header-actions">

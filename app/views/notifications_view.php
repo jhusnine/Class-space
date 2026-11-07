@@ -63,10 +63,10 @@
 
 
 
-        <div class="notif-page-header">
+        <div class="page-header notif-page-header">
             <div>
-                <h1 class="notif-title-main">Notifications</h1>
-                <p class="notif-subtitle">Updates on your reservation requests.</p>
+                <h1>Notifications</h1>
+                <p>Updates on your reservation requests.</p>
             </div>
 
             <div class="notif-actions">
