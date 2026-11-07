@@ -1,0 +1,177 @@
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+.setting-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 24px;
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    margin-bottom: 12px;
+    transition: border-color 0.2s ease, background 0.3s ease;
+}
+
+.setting-label {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-high);
+}
+
+.setting-help {
+    margin: 5px 0 0;
+    color: var(--text-low);
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+.lang-select {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 8px 14px;
+    color: var(--text-high);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    outline: none;
+    min-width: 140px;
+    transition: border-color 0.2s ease;
+}
+
+.lang-select option {
+    background: var(--sidebar-bg);
+    color: var(--text-high);
+}
+
+.nav-link,
+.footer-link {
+    color: var(--text-low);
+}
+
+.page-header h1 {
+    color: var(--text-high);
+}
+
+.settings-eyebrow {
+    margin: 0 0 6px;
+    color: var(--brand-accent);
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: .14em;
+}
+
+.settings-intro {
+    margin: 8px 0 0;
+    color: var(--text-low);
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+.settings-section {
+    max-width: 760px;
+    margin-top: 26px;
+}
+
+.settings-panel {
+    padding: 20px;
+    border: 1px solid var(--border-color);
+    border-radius: 14px;
+    background: var(--card-bg);
+}
+
+.settings-section-heading {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 14px;
+}
+
+.settings-section-icon {
+    width: 34px;
+    height: 34px;
+    display: inline-grid;
+    place-items: center;
+    border: 1px solid var(--border-color);
+    border-radius: 9px;
+    color: var(--brand-accent);
+    background: var(--bg-input);
+    flex: 0 0 auto;
+}
+
+.settings-section-heading h2 {
+    margin: 0;
+    color: var(--text-high);
+    font-size: 18px;
+}
+
+.settings-section-heading p {
+    margin: 4px 0 0;
+    color: var(--text-low);
+    font-size: 13px;
+}
+
+.settings-panel .setting-row {
+    margin-bottom: 0;
+    padding: 16px 0 0;
+    border: 0;
+    border-top: 1px solid var(--border-color);
+    border-radius: 0;
+    background: transparent;
+}
+
+.about-settings-content {
+    padding-top: 16px;
+    border-top: 1px solid var(--border-color);
+    color: var(--text-low);
+    font-size: 13px;
+    line-height: 1.7;
+}
+
+.about-settings-content p {
+    margin: 0;
+}
+
+.about-settings-content strong,
+.about-feature-list strong {
+    color: var(--text-high);
+}
+
+.about-feature-list {
+    display: grid;
+    gap: 10px;
+    margin-top: 16px;
+}
+
+.about-feature-list div {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 11px 12px;
+    border: 1px solid var(--border-color);
+    border-radius: 9px;
+    background: var(--bg-input);
+}
+
+.about-feature-list i {
+    width: 18px;
+    margin-top: 3px;
+    color: var(--brand-accent);
+    text-align: center;
+}
+
+@media (max-width: 600px) {
+    .settings-section {
+        max-width: none;
+    }
+
+    .settings-panel {
+        padding: 16px;
+    }
+
+    .security-row {
+        gap: 16px;
+    }
+}

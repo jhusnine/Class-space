@@ -1,0 +1,41 @@
+
+.page-header {
+    display: block;
+    margin-top: 40px;
+}
+
+.card {
+    margin-top: 12px;
+    max-width: 800px;
+    max-height: 800px;
+}
+
+.brand-highlight {
+    color: #38BDF8;
+}
+
+.about-description {
+    font-size: 13px;
+    margin-bottom: 16px;
+    line-height: 1.8;
+}
+
+.section-title {
+    margin-top: 24px;
+    margin-bottom: 12px;
+}
+
+.features-container {
+    margin-left: 16px;
+}
+
+.features {
+    font-size: 13px;
+    margin-bottom: 12px;
+    line-height: 1.7;
+}
+
+.feature-last {
+    font-size: 13px;
+    line-height: 1.7;
+}
