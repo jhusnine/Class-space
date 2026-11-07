@@ -22,7 +22,7 @@ $themeClass = (isset($_COOKIE['theme']) && trim($_COOKIE['theme']) === 'light') 
 
         <div class="logo">
             <img src="../../public/images/logo.png" alt="ClassSpace">
-            <span class="brand-text-block"><strong class="brand-title">ClassSpace</strong><small class="brand-subtitle">First City Providential College College</small></span>
+            <span class="brand-text-block"><strong class="brand-title">ClassSpace</strong></span>
         </div>
 
         <ul class="nav-menu">

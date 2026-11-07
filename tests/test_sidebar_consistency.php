@@ -20,6 +20,10 @@ if (!file_exists($partialPath)) {
     exit(1);
 }
 $partialContent = file_get_contents($partialPath);
+if (str_contains($partialContent, 'First City Providential College')) {
+    echo "[FAIL] Brand subtitle 'First City Providential College' should be removed from sidebar partial.\n";
+    exit(1);
+}
 
 foreach ($pages as $filename => $expected) {
     $filepath = $viewsDir . $filename;
@@ -54,8 +58,8 @@ foreach ($pages as $filename => $expected) {
     if (!str_contains($content, 'brand-header') || !str_contains($content, 'brand-logo-frame')) {
         $errors[] = "Missing brand-header or brand-logo-frame";
     }
-    if (!str_contains($content, 'First City Providential College')) {
-        $errors[] = "Missing brand subtitle 'First City Providential College'";
+    if (!str_contains($content, 'class="brand-title">ClassSpace')) {
+        $errors[] = "Missing brand title 'ClassSpace'";
     }
 
     if (!str_contains($content, '<span>Dashboard</span>')) {

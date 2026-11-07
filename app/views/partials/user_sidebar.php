@@ -55,7 +55,6 @@ if (!isset($activeTab) || empty($activeTab)) {
         </div>
         <div class="brand-text-block">
             <span class="brand-title">ClassSpace</span>
-            <span class="brand-subtitle">First City Providential College</span>
         </div>
     </div>
 
