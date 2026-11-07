@@ -75,24 +75,12 @@ foreach ($pages as $filename => $expected) {
         }
     }
 
-    if (!str_contains($content, 'sidebar-bottom')) {
-        $errors[] = "Missing .sidebar-bottom";
-    }
-    if (!str_contains($content, 'sidebar-profile-card')) {
-        $errors[] = "Missing .sidebar-profile-card";
-    }
-    if (!str_contains($content, 'user-avatar-circle')) {
-        $errors[] = "Missing .user-avatar-circle";
-    }
-    if (!str_contains($content, 'sidebar-profile-logout')) {
-        $errors[] = "Missing .sidebar-profile-logout";
-    }
-    if (!str_contains($content, 'about_view.php') || !str_contains($content, 'logout.php')) {
-        $errors[] = "Missing footer route links";
+    if (str_contains($content, 'sidebar-bottom') || str_contains($content, 'sidebar-profile-card')) {
+        $errors[] = "Sidebar should not contain .sidebar-bottom or .sidebar-profile-card";
     }
 
     if (empty($errors)) {
-        echo "  [PASS] $filename: Sidebar structure, brand header, profile card, & active states verified.\n";
+        echo "  [PASS] $filename: Sidebar structure, brand header, & active states verified.\n";
     } else {
         echo "  [FAIL] $filename:\n    - " . implode("\n    - ", $errors) . "\n";
         $allPassed = false;

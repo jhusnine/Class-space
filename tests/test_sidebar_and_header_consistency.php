@@ -78,6 +78,9 @@ if (file_exists($sidebarPartial)) {
     if (str_contains($partialContent, 'College College')) {
         $failures[] = "Sidebar partial contains duplicate 'College College' typo.";
     }
+    if (str_contains($partialContent, 'sidebar-profile-card') || str_contains($partialContent, 'sidebar-bottom')) {
+        $failures[] = "Sidebar partial should NOT contain .sidebar-profile-card or .sidebar-bottom.";
+    }
 }
 
 // 3. Check every view includes the partial, has .page-header and h1, and does not duplicate sidebar

@@ -3,31 +3,12 @@
  * ClassSpace - User / Teacher Unified Sidebar Partial
  * 
  * Single source of truth providing canonical navigation, responsive mobile toggle,
- * brand header, user profile card, and footer links across all portal views.
+ * and brand header across all portal views.
  */
 
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
-
-$rawFname = trim((string)($_SESSION["fname"] ?? "User"));
-if ($rawFname === "") {
-    $rawFname = "User";
-}
-$rawLname = trim((string)($_SESSION["lname"] ?? ""));
-
-$sidebarFname = htmlspecialchars($rawFname, ENT_QUOTES, "UTF-8");
-$sidebarLname = htmlspecialchars($rawLname, ENT_QUOTES, "UTF-8");
-$sidebarFullName = trim($sidebarFname . ($sidebarLname !== "" ? " " . $sidebarLname : ""));
-if ($sidebarFullName === "") {
-    $sidebarFullName = "User";
-}
-
-$sidebarInitial = strtoupper(substr($rawFname, 0, 1));
-if ($sidebarInitial === "") {
-    $sidebarInitial = "U";
-}
-$sidebarInitial = htmlspecialchars($sidebarInitial, ENT_QUOTES, "UTF-8");
 
 // Auto-detect active tab if not explicitly passed
 if (!isset($activeTab) || empty($activeTab)) {
@@ -84,24 +65,5 @@ if (!isset($activeTab) || empty($activeTab)) {
             </a>
         </li>
     </ul>
-
-    <div class="sidebar-bottom">
-        <div class="sidebar-profile-card">
-            <div class="user-avatar-circle"><?= $sidebarInitial ?></div>
-            <div class="sidebar-profile-meta">
-                <div class="sidebar-profile-name" title="<?= $sidebarFullName ?>"><?= $sidebarFullName ?></div>
-                <div class="sidebar-profile-sub">Teacher</div>
-            </div>
-            <a href="logout.php" class="sidebar-profile-logout" id="logout" title="Log out">
-                <i class="fas fa-arrow-right-from-bracket" aria-hidden="true"></i>
-            </a>
-        </div>
-
-        <div class="sidebar-footer">
-            <a href="about_view.php" class="footer-link">About Us</a>
-            <span class="footer-dot">&bull;</span>
-            <a href="logout.php" class="footer-link">Log out</a>
-        </div>
-    </div>
 </aside>
 
