@@ -239,6 +239,14 @@ function initNotificationDropdown() {
     const setOpen = (isOpen) => {
         panel.hidden = !isOpen;
         trigger.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+        if (isOpen) {
+            const profilePanel = document.getElementById('profile-dropdown');
+            const profileTrigger = document.getElementById('profile-dropdown-trigger');
+            if (profilePanel && !profilePanel.hidden) {
+                profilePanel.hidden = true;
+                if (profileTrigger) profileTrigger.setAttribute('aria-expanded', 'false');
+            }
+        }
         if (isOpen && (
             !notificationSnapshotLoaded
             || notificationLoadFailed
@@ -367,12 +375,58 @@ function initSharedMobileMenu() {
     });
 }
 
+function initProfileDropdown() {
+    const trigger = document.getElementById('profile-dropdown-trigger');
+    const panel = document.getElementById('profile-dropdown');
+    if (!trigger || !panel) return;
+
+    const setOpen = (isOpen) => {
+        panel.hidden = !isOpen;
+        trigger.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+        if (isOpen) {
+            const notifPanel = document.getElementById('notification-dropdown');
+            const notifTrigger = document.querySelector('.user-utility-bar .utility-icon-link[href="notifications_view.php"]');
+            if (notifPanel && !notifPanel.hidden) {
+                notifPanel.hidden = true;
+                if (notifTrigger) notifTrigger.setAttribute('aria-expanded', 'false');
+            }
+        }
+    };
+
+    trigger.addEventListener('click', (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        setOpen(panel.hidden);
+    });
+
+    panel.addEventListener('click', (event) => {
+        if (event.target.closest('a')) {
+            setOpen(false);
+        }
+    });
+
+    document.addEventListener('click', (event) => {
+        if (!panel.hidden && !panel.contains(event.target) && !trigger.contains(event.target)) {
+            setOpen(false);
+        }
+    });
+
+    document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape' && !panel.hidden) {
+            setOpen(false);
+            trigger.focus();
+        }
+    });
+}
+
 if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", () => {
         initSharedMobileMenu();
         initNotificationDropdown();
+        initProfileDropdown();
     });
 } else {
     initSharedMobileMenu();
     initNotificationDropdown();
+    initProfileDropdown();
 }
