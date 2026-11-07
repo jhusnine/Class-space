@@ -94,6 +94,9 @@ foreach ($views as $viewFile) {
     if (!str_contains($content, 'partials/user_sidebar.php')) {
         $failures[] = "View $viewFile does not include partials/user_sidebar.php";
     }
+    if (!str_contains($content, 'partials/user_utility_bar.php')) {
+        $failures[] = "View $viewFile does not include partials/user_utility_bar.php";
+    }
     if (str_contains($content, '<aside class="sidebar" id="classspace-sidebar">') && !str_contains($content, 'require __DIR__ . \'/partials/user_sidebar.php\'') && !str_contains($content, 'include __DIR__ . \'/partials/user_sidebar.php\'')) {
         $failures[] = "View $viewFile still contains hardcoded <aside class=\"sidebar\"> markup.";
     }
