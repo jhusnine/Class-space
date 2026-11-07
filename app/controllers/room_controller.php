@@ -17,10 +17,13 @@ $sessionId = intval($_SESSION["id"]);
 
 
 function isAdmin($pdo, $sessionId) {
+    if (!empty($_SESSION["is_admin"])) {
+        return true;
+    }
     $stmt = $pdo->prepare("SELECT account_is_admin FROM account WHERE account_id = ? LIMIT 1");
     $stmt->execute([$sessionId]);
     $row = $stmt->fetch(PDO::FETCH_ASSOC);
-    return $row && $row["account_is_admin"];
+    return $row && (int)$row["account_is_admin"] === 1;
 }
 
 
@@ -67,16 +70,37 @@ if ($action === 'get_rooms') {
         exit;
     }
 
-    $stmt = $pdo->prepare("CALL `spGetRooms`(?)");
-    $stmt->execute([$hallId]);
-    $data = $stmt->fetchAll(PDO::FETCH_ASSOC);
-    $stmt->closeCursor();
+    $isAdminUser = isAdmin($pdo, $sessionId);
+
+    if ($isAdminUser) {
+        $stmt = $pdo->prepare("SELECT * FROM room WHERE hall_id = ? ORDER BY room_name ASC");
+        $stmt->execute([$hallId]);
+        $data = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    } else {
+        $stmt = $pdo->prepare("
+            SELECT * FROM room 
+            WHERE hall_id = ? 
+              AND LOWER(TRIM(room_status)) NOT IN ('maintenance', 'unavailable')
+            ORDER BY room_name ASC
+        ");
+        $stmt->execute([$hallId]);
+        $data = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
 
     $hallStmt = $pdo->prepare("SELECT hall_name FROM hall WHERE hall_id = ? LIMIT 1");
     $hallStmt->execute([$hallId]);
     $hallName = (string) ($hallStmt->fetchColumn() ?: '');
-    $data = array_values(array_filter($data, function ($room) use ($hallName) {
-        return !isExcludedDeanOffice($room, $hallName);
+    $data = array_values(array_filter($data, function ($room) use ($hallName, $isAdminUser) {
+        if (isExcludedDeanOffice($room, $hallName)) {
+            return false;
+        }
+        if (!$isAdminUser) {
+            $status = strtolower(trim((string)($room['room_status'] ?? '')));
+            if ($status === 'maintenance' || $status === 'unavailable') {
+                return false;
+            }
+        }
+        return true;
     }));
 
     echo json_encode(["success" => true, "data" => $data]);
@@ -115,6 +139,9 @@ if ($action === 'get_all_rooms') {
 
 
 if ($action === 'get_all') {
+    $isAdminUser = isAdmin($pdo, $sessionId);
+    $statusWhere = $isAdminUser ? "" : "WHERE LOWER(TRIM(r.room_status)) NOT IN ('maintenance', 'unavailable')";
+
     $stmt = $pdo->prepare("
         SELECT
             r.room_id,
@@ -137,6 +164,7 @@ if ($action === 'get_all') {
                     OR
                     (sched.schedule_day IS NULL
                         AND sched.schedule_day_of_week = DAYNAME(NOW())
+                        AND (sched.schedule_end_date IS NULL OR sched.schedule_end_date >= CURDATE())
                         AND CURTIME() BETWEEN sched.schedule_start AND sched.schedule_end)
                   )
             ) AS is_occupied_now,
@@ -145,7 +173,12 @@ if ($action === 'get_all') {
                 SELECT COUNT(*)
                 FROM schedule sched
                 WHERE sched.room_id = r.room_id
-                  AND sched.account_id = ?) AS is_my_active,
+                  AND sched.account_id = ?
+                  AND (
+                    sched.schedule_day >= CURDATE()
+                    OR (sched.schedule_day IS NULL AND (sched.schedule_end_date IS NULL OR sched.schedule_end_date >= CURDATE()))
+                  )
+            ) AS is_my_active,
 
             (
                 SELECT COUNT(*)
@@ -157,12 +190,22 @@ if ($action === 'get_all') {
 
         FROM room r
         JOIN hall h ON r.hall_id = h.hall_id
+        {$statusWhere}
         ORDER BY r.room_name ASC
     ");
 
     $stmt->execute([$sessionId, $sessionId]);
-    $rooms = array_values(array_filter($stmt->fetchAll(PDO::FETCH_ASSOC), function ($room) {
-        return !isExcludedDeanOffice($room);
+    $rooms = array_values(array_filter($stmt->fetchAll(PDO::FETCH_ASSOC), function ($room) use ($isAdminUser) {
+        if (isExcludedDeanOffice($room)) {
+            return false;
+        }
+        if (!$isAdminUser) {
+            $dbStatus = strtolower(trim((string)($room["room_status"] ?? "")));
+            if ($dbStatus === "unavailable" || $dbStatus === "maintenance") {
+                return false;
+            }
+        }
+        return true;
     }));
 
     foreach ($rooms as $index => $room) {
@@ -177,6 +220,7 @@ if ($action === 'get_all') {
                 OR
                 (schedule_day IS NULL
                     AND schedule_day_of_week = DAYNAME(NOW())
+                    AND (schedule_end_date IS NULL OR schedule_end_date >= CURDATE())
                     AND CURTIME() BETWEEN schedule_start AND schedule_end)
               )
             LIMIT 1
@@ -216,10 +260,16 @@ if ($action === 'get_featured') {
         exit;
     }
 
+    $isAdminUser = isAdmin($pdo, $sessionId);
+
     if ($type === "hall") {
         $whereClause = "r.hall_id = ?";
     } else {
         $whereClause = "r.room_id = ?";
+    }
+
+    if (!$isAdminUser) {
+        $whereClause .= " AND LOWER(TRIM(r.room_status)) NOT IN ('maintenance', 'unavailable')";
     }
 
 
@@ -245,6 +295,7 @@ if ($action === 'get_featured') {
                     OR
                     (sched.schedule_day IS NULL
                         AND sched.schedule_day_of_week = DAYNAME(NOW())
+                        AND (sched.schedule_end_date IS NULL OR sched.schedule_end_date >= CURDATE())
                         AND CURTIME() BETWEEN sched.schedule_start AND sched.schedule_end)
                   )
             ) AS is_occupied_now,
@@ -261,6 +312,7 @@ if ($action === 'get_featured') {
                     OR
                     (sched.schedule_day IS NULL
                         AND sched.schedule_day_of_week = DAYNAME(NOW())
+                        AND (sched.schedule_end_date IS NULL OR sched.schedule_end_date >= CURDATE())
                         AND CURTIME() BETWEEN sched.schedule_start AND sched.schedule_end)
                   )
             ) AS is_my_active,
@@ -280,8 +332,17 @@ if ($action === 'get_featured') {
     ");
 
     $stmt->execute([$sessionId, $sessionId, $id]);
-    $rooms = array_values(array_filter($stmt->fetchAll(PDO::FETCH_ASSOC), function ($room) {
-        return !isExcludedDeanOffice($room);
+    $rooms = array_values(array_filter($stmt->fetchAll(PDO::FETCH_ASSOC), function ($room) use ($isAdminUser) {
+        if (isExcludedDeanOffice($room)) {
+            return false;
+        }
+        if (!$isAdminUser) {
+            $dbStatus = strtolower(trim((string)($room["room_status"] ?? "")));
+            if ($dbStatus === "unavailable" || $dbStatus === "maintenance") {
+                return false;
+            }
+        }
+        return true;
     }));
 
 
@@ -298,6 +359,7 @@ if ($action === 'get_featured') {
                 OR
                 (schedule_day IS NULL
                     AND schedule_day_of_week = DAYNAME(NOW())
+                    AND (schedule_end_date IS NULL OR schedule_end_date >= CURDATE())
                     AND CURTIME() BETWEEN schedule_start AND schedule_end)
               )
             LIMIT 1

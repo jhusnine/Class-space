@@ -1,12 +1,12 @@
 <?php
-
-
-
-
-
-
-
-
+/**
+ * Test: "Find Alternative with AI" End-to-End Redirection & Pre-population Contract
+ * Verifies:
+ * 1. spGetMyPending returns room_id and hall_id.
+ * 2. calendar_script.js produces robust query parameters.
+ * 3. reserve_view.php renders pre-populated values and hidden fields.
+ * 4. ai_suggest_controller returns recommendations for pre-populated parameters.
+ */
 
 require_once __DIR__ . '/../includes/database_include.php';
 
@@ -22,7 +22,7 @@ $pdo = new PDO(
     ]
 );
 
-
+// 1. Verify spGetMyPending returns room_id and hall_id
 $acc = $pdo->query("SELECT account_id FROM account LIMIT 1")->fetch();
 $accId = (int)$acc['account_id'];
 
@@ -31,7 +31,7 @@ $stmt->execute([$accId]);
 $pendingRows = $stmt->fetchAll();
 $stmt->closeCursor();
 
-
+// Check columns in the result set if there are rows, or check procedure definition
 $procRow = $pdo->query("SHOW CREATE PROCEDURE `spGetMyPending`")->fetch();
 $procDef = $procRow['Create Procedure'] ?? '';
 if (!str_contains($procDef, 'r.room_id') || !str_contains($procDef, 'h.hall_id')) {
@@ -39,11 +39,12 @@ if (!str_contains($procDef, 'r.room_id') || !str_contains($procDef, 'h.hall_id')
 }
 echo "PASS: spGetMyPending properly includes r.room_id and h.hall_id in query.\n";
 
-
+// 2. Pick a room and hall from DB for simulation
 $room = $pdo->query("
-    SELECT r.room_id, r.room_name, h.hall_id, h.hall_name
-    FROM room r
-    JOIN hall h ON r.hall_id = h.hall_id
+    SELECT r.room_id, r.room_name, h.hall_id, h.hall_name 
+    FROM room r 
+    JOIN hall h ON r.hall_id = h.hall_id 
+    WHERE LOWER(TRIM(r.room_status)) = 'available'
     LIMIT 1
 ")->fetch();
 
@@ -55,7 +56,7 @@ $testDate = date('Y-m-d', strtotime('+5 days'));
 $start = "14:00";
 $end = "16:00";
 
-
+// 3. Simulate reserve_view.php rendering with query parameters
 $viewRunner = __DIR__ . '/_run_reserve_view_tmp.php';
 file_put_contents($viewRunner, '<?php
 session_start();
@@ -109,7 +110,7 @@ if (!str_contains($htmlOutput, 'id="schedule-end" value="' . $end . '"')) {
 }
 echo "PASS: reserve_view.php successfully rendered pre-populated inputs and hidden parameters.\n";
 
-
+// 4. Verify Weekly Redirection Pre-population
 $weeklyRunner = __DIR__ . '/_run_weekly_view_tmp.php';
 file_put_contents($weeklyRunner, '<?php
 session_start();
@@ -145,7 +146,7 @@ if (!str_contains($weeklyOutput, '<option value="Wednesday" selected>Wednesday</
 }
 echo "PASS: reserve_view.php correctly pre-selected weekly mode and Wednesday day-of-week.\n";
 
-
+// 5. Verify AI suggestions can be retrieved for these parameters
 $suggestRunner = __DIR__ . '/_run_suggest_test_tmp.php';
 file_put_contents($suggestRunner, '<?php
 session_start();

@@ -1,11 +1,11 @@
 <?php
-
-
-
-
-
-
-
+/**
+ * Test: Bidirectional Weekly Conflict Detection & Suggestion Signal
+ * Verifies that:
+ * 1. Weekly reservation request detects overlapping upcoming one-time bookings.
+ * 2. Response payload includes 'has_suggestions' => true on conflict.
+ * 3. Non-conflicting requests return 'has_suggestions' => false.
+ */
 
 require_once __DIR__ . '/../includes/database_include.php';
 
@@ -20,7 +20,7 @@ try {
         ]
     );
 
-
+    // 1. Locate an existing room
     $stmtRoom = $pdo->query("SELECT room_id FROM room WHERE room_status = 'available' LIMIT 1");
     $room = $stmtRoom->fetch();
     if (!$room) {
@@ -28,21 +28,21 @@ try {
     }
     $roomId = (int)$room['room_id'];
 
-
+    // 2. Setup upcoming one-time booking fixture
     $testDate = date('Y-m-d', strtotime('+4 days'));
     $testDow  = strtolower(date('l', strtotime($testDate)));
     $startTime = '13:00:00';
     $endTime   = '15:00:00';
 
-
+    // Clean up
     $pdo->prepare("DELETE FROM schedule WHERE room_id = ? AND schedule_day = ?")->execute([$roomId, $testDate]);
 
-
+    // Account fixture
     $stmtAcc = $pdo->query("SELECT account_id FROM account LIMIT 1");
     $acc = $stmtAcc->fetch();
     $accId = (int)$acc['account_id'];
 
-
+    // Insert one-time reservation on testDate
     $stmtIns = $pdo->prepare("
         INSERT INTO schedule (room_id, account_id, schedule_day, schedule_day_of_week, schedule_start, schedule_end)
         VALUES (?, ?, ?, NULL, ?, ?)
@@ -53,7 +53,7 @@ try {
     echo "=== Test 1: Weekly Check vs One-Time Reservation ===\n";
     echo "Room ID: {$roomId}, Date: {$testDate} ({$testDow}), Time: {$startTime}-{$endTime}\n";
 
-
+    // 3. Query using the new check_conflict logic
     $reqStart = '13:30';
     $reqEnd   = '14:30';
 
@@ -83,7 +83,7 @@ try {
     }
     echo "PASS: Overlap correctly detected with schedule {$conflict['schedule_start']} - {$conflict['schedule_end']}\n";
 
-
+    // 4. Test Non-conflicting Time
     $freeStart = '16:00';
     $freeEnd   = '17:00';
     $stmtCheck->execute([$roomId, $testDow, $freeEnd, $freeStart, $testDow, $freeEnd, $freeStart]);
@@ -94,7 +94,7 @@ try {
     }
     echo "PASS: Non-overlapping slot correctly evaluated as free.\n";
 
-
+    // Cleanup
     $pdo->prepare("DELETE FROM schedule WHERE schedule_id = ?")->execute([$scheduleId]);
     echo "Cleaned up fixture schedule_id: {$scheduleId}\n";
 

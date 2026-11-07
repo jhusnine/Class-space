@@ -184,7 +184,7 @@
             return false;
         }
 
-        setButtonState(signInButton, 'SIGNING IN...', true);
+        setButtonState(signInButton, 'Logging in...', true);
 
         var requestBody = new URLSearchParams({
             email: email,
@@ -206,7 +206,7 @@
                 return response.json();
             })
             .then(function (data) {
-                setButtonState(signInButton, 'SIGN IN', false);
+                setButtonState(signInButton, 'Log In', false);
 
                 if (data && data.success) {
                     window.location.href = Number(data.isadmin) === 1
@@ -227,7 +227,7 @@
                 );
             })
             .catch(function () {
-                setButtonState(signInButton, 'SIGN IN', false);
+                setButtonState(signInButton, 'Log In', false);
                 setText(errorElement, 'Server error. Please try again.');
             });
 

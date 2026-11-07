@@ -39,6 +39,14 @@ function fmt12(timeStr) {
     return `${hour % 12 || 12}:${m}${hour >= 12 ? 'pm' : 'am'}`;
 }
 
+function fmtDate(str) {
+    if (!str) return '';
+    const parts = str.split('-');
+    if (parts.length !== 3) return str;
+    const d = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
+    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+}
+
 function loadAll() {
     const p1 = fetch('../controllers/calendar_controller.php')
         .then(r => r.json())
@@ -173,7 +181,10 @@ function renderWeek() {
             } else if (s.schedule_day_of_week) {
                 const dowIdx = DOW_MAP[s.schedule_day_of_week.toLowerCase()];
                 if (dowIdx !== undefined && days[dowIdx]) {
-                    eventsByDay[dowIdx].push({ ...s, cssClass, calendarDate: dateStr(days[dowIdx]) });
+                    const currentDayStr = dateStr(days[dowIdx]);
+                    if (!s.schedule_end_date || currentDayStr <= s.schedule_end_date) {
+                        eventsByDay[dowIdx].push({ ...s, cssClass, calendarDate: currentDayStr });
+                    }
                 }
             }
         });
@@ -321,7 +332,11 @@ function openInspectorModal(ev) {
     }
 
     if (dateTimeEl) {
-        dateTimeEl.textContent = `${ev.calendarDate || ev.schedule_day || ev.schedule_day_of_week || 'Scheduled Date'} • ${fmt12(ev.schedule_start)} – ${fmt12(ev.schedule_end)}`;
+        if (!ev.schedule_day && ev.schedule_day_of_week && ev.schedule_end_date) {
+            dateTimeEl.textContent = `${ev.calendarDate || ev.schedule_day_of_week} (Weekly until ${fmtDate(ev.schedule_end_date)}) • ${fmt12(ev.schedule_start)} – ${fmt12(ev.schedule_end)}`;
+        } else {
+            dateTimeEl.textContent = `${ev.calendarDate || ev.schedule_day || ev.schedule_day_of_week || 'Scheduled Date'} • ${fmt12(ev.schedule_start)} – ${fmt12(ev.schedule_end)}`;
+        }
     }
 
     if (subjectEl) {
@@ -401,6 +416,9 @@ function openInspectorModal(ev) {
 
         if (isWeekly) {
             q.append('dow', dow);
+            if (ev.schedule_end_date) {
+                q.append('until', ev.schedule_end_date);
+            }
         } else {
             q.append('date', targetDate);
         }

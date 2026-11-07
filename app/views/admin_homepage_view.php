@@ -55,6 +55,13 @@ $lname = htmlspecialchars($_SESSION["lname"] ?? "");
             </li>
 
             <li class="nav-item">
+                <a href="admin_manage_teachers_view.php" class="nav-link ">
+                    <i class="fas fa-chalkboard-teacher"></i>
+                    <span>Teachers</span>
+                </a>
+            </li>
+
+            <li class="nav-item">
                 <a href="admin_reports_view.php" class="nav-link ">
                     <i class="fas fa-file-alt"></i>
                     <span>Reports</span>

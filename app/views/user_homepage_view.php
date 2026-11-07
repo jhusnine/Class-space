@@ -77,7 +77,7 @@
             <div class="stat-card" id="card-active" data-filter="active" tabindex="0" role="button"
                  title="Click to see your active reservations">
                 <div class="stat-card-header">
-                    <h3>Your Bookings</h3>
+                    <h3>Your Reservations</h3>
                     <div class="stat-icon"><i class="fas fa-calendar-check"></i></div>
                 </div>
                 <div class="number" id="stat-active" aria-live="polite">-</div>
@@ -131,22 +131,8 @@
                 </button>
             </div>
 
-            <div style="display:flex; align-items:center; gap:16px; flex-wrap:wrap;">
-                <div class="room-status-legend" aria-label="Room availability status guide">
-                    <div class="legend-item">
-                        <div class="legend-heading"><span class="legend-edge-bar legend-edge-available" aria-hidden="true"></span><strong>Available</strong></div>
-                    </div>
-                    <div class="legend-item">
-                        <div class="legend-heading"><span class="legend-edge-bar legend-edge-unavailable" aria-hidden="true"></span><strong>Unavailable / Reserved</strong></div>
-                    </div>
-                    <div class="legend-item">
-                        <div class="legend-heading"><span class="legend-edge-bar legend-edge-maintenance" aria-hidden="true"></span><strong>Maintenance</strong></div>
-                    </div>
-                </div>
-
-                <div class="quick-filter-toggles">
-                    <button type="button" class="pill-tab" id="toggle-vacant-only"><i class="fas fa-circle-check"></i> Vacant Only</button>
-                </div>
+            <div class="quick-filter-toggles">
+                <button type="button" class="pill-tab" id="toggle-vacant-only"><i class="fas fa-circle-check"></i> Vacant Only</button>
             </div>
         </div>
 

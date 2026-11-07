@@ -178,3 +178,4 @@ Across the user-facing tabs of ClassSpace (`user_homepage_view.php`, `calendar_v
    - Assert `h1` vertical offset (`getBoundingClientRect().top`) is consistent within 2px across pages.
 3. **Functional Navigation:**
    - Verify clicking Dashboard, Calendar, Reserve, and Settings routes accurately and highlights the active item.
+

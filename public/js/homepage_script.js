@@ -2,16 +2,16 @@
     "use strict";
 
 
-    const input      = document.getElementById("search-input");
+    const input = document.getElementById("search-input");
     const resultsBox = document.getElementById("search-results");
-    const searchBtn  = document.querySelector(".search-btn");
+    const searchBtn = document.querySelector(".search-btn");
 
 
-    let allRoomsCache   = [];
-    let currentFilter   = null;
+    let allRoomsCache = [];
+    let currentFilter = null;
     let currentBuilding = "all";
-    let vacantOnly      = false;
-    let statsData       = {};
+    let vacantOnly = false;
+    let statsData = {};
 
     const PLACEHOLDER_IMAGE = "../../public/images/example.jpg";
 
@@ -114,14 +114,14 @@
             .then(res => {
                 if (!res.success) return;
                 statsData = res;
-                const activeEl    = document.getElementById("stat-active");
-                const pendingEl   = document.getElementById("stat-pending");
+                const activeEl = document.getElementById("stat-active");
+                const pendingEl = document.getElementById("stat-pending");
                 const availableEl = document.getElementById("stat-available");
-                if (activeEl)    activeEl.textContent    = res.active;
-                if (pendingEl)   pendingEl.textContent   = res.pending;
+                if (activeEl) activeEl.textContent = res.active;
+                if (pendingEl) pendingEl.textContent = res.pending;
                 if (availableEl) availableEl.textContent = res.available;
             })
-            .catch(() => {});
+            .catch(() => { });
     }
 
     function loadNotifBadge() {
@@ -132,10 +132,10 @@
             .then(r => r.json())
             .then(res => {
                 if (!res.success || !res.unread) return;
-                badge.textContent   = res.unread > 9 ? "9+" : res.unread;
+                badge.textContent = res.unread > 9 ? "9+" : res.unread;
                 badge.style.display = "inline-block";
             })
-            .catch(() => {});
+            .catch(() => { });
     }
 
     const BUILDING_FILTERS = {
@@ -220,21 +220,21 @@
         if (cardTarget) cardTarget.classList.add("active-filter");
 
         let filtered = [];
-        let title    = "";
-        let label    = "";
+        let title = "";
+        let label = "";
 
         if (type === "available") {
             filtered = allRoomsCache.filter(r => r.computed_status === "available" || r.computed_status === "vacant");
-            title    = "Available Rooms";
-            label    = `Showing ${filtered.length} available room(s)`;
+            title = "Available Rooms";
+            label = `Showing ${filtered.length} available room(s)`;
         } else if (type === "active") {
             filtered = allRoomsCache.filter(r => r.is_my_active);
-            title    = "My Active Reservations";
-            label    = `Showing ${filtered.length} room(s) with your active reservations`;
+            title = "My Active Reservations";
+            label = `Showing ${filtered.length} room(s) with your active reservations`;
         } else if (type === "pending") {
             filtered = allRoomsCache.filter(r => r.has_pending);
-            title    = "Rooms with Pending Requests";
-            label    = `Showing ${filtered.length} room(s) with pending requests`;
+            title = "Rooms with Pending Requests";
+            label = `Showing ${filtered.length} room(s) with pending requests`;
         }
 
         updateSectionTitle(title, label);
@@ -244,10 +244,10 @@
     function showRoomsView() {
         const hallsGrid = document.getElementById("halls-grid");
         const roomsGrid = document.getElementById("rooms-grid");
-        const backBtn   = document.getElementById("back-to-halls");
+        const backBtn = document.getElementById("back-to-halls");
         if (hallsGrid) hallsGrid.style.display = "none";
         if (roomsGrid) roomsGrid.style.display = "grid";
-        if (backBtn)   backBtn.style.display   = "none";
+        if (backBtn) backBtn.style.display = "none";
     }
 
     function clearStatFilter() {
@@ -301,6 +301,10 @@
     }
 
     function renderRoomCard(room, target) {
+        const dbStatus = String(room.room_status || '').toLowerCase();
+        if (dbStatus === 'maintenance' || dbStatus === 'unavailable') {
+            return;
+        }
         const status = (room.computed_status || "unknown").toLowerCase();
         const roomType = String(room.room_type || '').toLowerCase();
         const roomName = String(room.room_name || '').toLowerCase();
@@ -336,7 +340,7 @@
 
         const showAvailabilityDetail = isAvailable || isInSession;
         const windowLabel = isAvailable ? "Free until" : "Session ends";
-        const windowTime  = isAvailable
+        const windowTime = isAvailable
             ? (room.next_conflict_start ? formatTime(room.next_conflict_start) : "Open all day")
             : isInSession ? formatTime(room.conflict_end) : "";
 
@@ -370,10 +374,10 @@
                 </div>` : ''}
                 <div class="card-actions-row">
                     ${scheduleDisabled
-                        ? `<button type="button" class="btn-view-schedule btn-disabled" disabled aria-label="Schedule unavailable for ${escapeHtml(room.room_name)}" title="${statusLabel}">
+                ? `<button type="button" class="btn-view-schedule btn-disabled" disabled aria-label="Schedule unavailable for ${escapeHtml(room.room_name)}" title="${statusLabel}">
                             <i class="far fa-calendar-days" aria-hidden="true"></i> Schedule
                         </button>`
-                        : `<a href="${scheduleHref}" class="btn-view-schedule" title="Full schedule and multi-room booking">
+                : `<a href="${scheduleHref}" class="btn-view-schedule" title="Full schedule and multi-room booking">
                             <i class="far fa-calendar-days" aria-hidden="true"></i> Schedule
                         </a>`}
                     <button type="button" class="btn-card-reserve ${!isAvailable ? 'btn-disabled' : ''}"
@@ -518,9 +522,9 @@
         rooms.forEach(room => {
             if (!map.has(room.hall_id)) {
                 map.set(room.hall_id, {
-                    hall_id:   room.hall_id,
+                    hall_id: room.hall_id,
                     hall_name: room.hall_name,
-                    total:     0,
+                    total: 0,
                     available: 0
                 });
             }
@@ -537,11 +541,11 @@
     function renderHallTiles(rooms) {
         const hallsGrid = document.getElementById("halls-grid");
         const roomsGrid = document.getElementById("rooms-grid");
-        const backBtn   = document.getElementById("back-to-halls");
+        const backBtn = document.getElementById("back-to-halls");
 
         if (hallsGrid) hallsGrid.style.display = "grid";
         if (roomsGrid) roomsGrid.style.display = "none";
-        if (backBtn)   backBtn.style.display   = "none";
+        if (backBtn) backBtn.style.display = "none";
         updateSectionTitle("Browse by Building", "");
 
         const halls = summarizeHalls(rooms);
@@ -581,11 +585,11 @@
     function showHallRooms(hallId, hallName) {
         const hallsGrid = document.getElementById("halls-grid");
         const roomsGrid = document.getElementById("rooms-grid");
-        const backBtn   = document.getElementById("back-to-halls");
+        const backBtn = document.getElementById("back-to-halls");
 
         if (hallsGrid) hallsGrid.style.display = "none";
         if (roomsGrid) roomsGrid.style.display = "grid";
-        if (backBtn)   backBtn.style.display   = "inline-flex";
+        if (backBtn) backBtn.style.display = "inline-flex";
 
         const filtered = allRoomsCache.filter(r => r.hall_id === hallId);
         updateSectionTitle(hallName, `${filtered.length} room(s)`);
@@ -623,7 +627,7 @@
                     div.setAttribute("tabindex", "0");
                     div.innerHTML = display;
                     const selectResult = () => {
-                        input.value          = item.type === "hall" ? item.name : item.room_name;
+                        input.value = item.type === "hall" ? item.name : item.room_name;
                         resultsBox.innerHTML = "";
                         loadFeaturedRooms(item.type, item.id);
                     };
@@ -637,7 +641,7 @@
                     resultsBox.appendChild(div);
                 });
             })
-            .catch(() => {});
+            .catch(() => { });
     }
 
     function triggerSearch() {
@@ -668,7 +672,7 @@
                 );
 
                 Promise.all(fetches).then(results => {
-                    const seen   = new Set();
+                    const seen = new Set();
                     const merged = [];
                     results.flat().forEach(room => {
                         if (!seen.has(room.room_id)) {
@@ -694,7 +698,7 @@
     if (input) {
         input.addEventListener("keyup", e => {
             if (e.key === "Enter") { triggerSearch(); }
-            else                   { runSearch(); }
+            else { runSearch(); }
         });
     }
 
@@ -739,7 +743,7 @@
                 );
                 renderRooms(featuredRooms);
             })
-            .catch(() => {});
+            .catch(() => { });
     }
 
 
@@ -751,23 +755,23 @@
         if (roomType.includes('storage') || roomName.includes('storage')) return;
         if (room.has_pending || room.is_my_active) return;
 
-        const drawer   = document.getElementById("quick-reserve-drawer");
+        const drawer = document.getElementById("quick-reserve-drawer");
         const backdrop = document.getElementById("drawer-backdrop");
         if (!drawer || !backdrop) return;
 
-        const titleEl    = document.getElementById("drawer-title");
+        const titleEl = document.getElementById("drawer-title");
         const subtitleEl = document.getElementById("drawer-room-subtitle");
-        const roomIdEl   = document.getElementById("drawer-room-id");
-        const hallIdEl   = document.getElementById("drawer-hall-id");
-        const dateEl     = document.getElementById("drawer-date");
-        const advLink    = document.getElementById("drawer-advanced-link");
+        const roomIdEl = document.getElementById("drawer-room-id");
+        const hallIdEl = document.getElementById("drawer-hall-id");
+        const dateEl = document.getElementById("drawer-date");
+        const advLink = document.getElementById("drawer-advanced-link");
 
-        if (titleEl)    titleEl.textContent    = `Quick Reserve: ${room.room_name || 'Room'}`;
+        if (titleEl) titleEl.textContent = `Quick Reserve: ${room.room_name || 'Room'}`;
         if (subtitleEl) subtitleEl.textContent = `${room.hall_name || 'Campus'} • Capacity: ${room.room_capacity || 0} seats`;
         drawer.dataset.roomName = room.room_name || 'Room';
         drawer.dataset.hallName = room.hall_name || 'Campus';
-        if (roomIdEl)   roomIdEl.value         = room.room_id;
-        if (hallIdEl)   hallIdEl.value         = room.hall_id;
+        if (roomIdEl) roomIdEl.value = room.room_id;
+        if (hallIdEl) hallIdEl.value = room.hall_id;
 
         if (dateEl) {
             const today = new Date().toISOString().split("T")[0];
@@ -788,7 +792,7 @@
     }
 
     function closeQuickReserveDrawer() {
-        const drawer   = document.getElementById("quick-reserve-drawer");
+        const drawer = document.getElementById("quick-reserve-drawer");
         const backdrop = document.getElementById("drawer-backdrop");
         if (!drawer || !backdrop) return;
 
@@ -848,36 +852,36 @@
                 date: draft.date,
             })
         })
-        .then(res => res.json())
-        .then(data => {
-            if (submitBtn) {
-                submitBtn.disabled = false;
-                submitBtn.textContent = "Review Booking Details";
-            }
-            if (data.success) {
-                closeQuickReserveDrawer();
-                document.getElementById("drawer-reserve-form")?.reset();
-                window.toast.show(data.message || "Reservation submitted! Waiting for admin approval.", "success", 4000);
-                if (typeof window.loadNotifBadge === "function") window.loadNotifBadge();
-                loadStats();
-                loadDefaultRooms();
-            } else {
-                window.toast.show(data.message || "Unable to complete reservation due to schedule conflict.", "error", 4500);
-            }
-        })
-        .catch(() => {
-            if (submitBtn) {
-                submitBtn.disabled = false;
-                submitBtn.textContent = "Review Booking Details";
-            }
-            window.toast.show("Server error during booking. Please try again.", "error", 4000);
-        });
+            .then(res => res.json())
+            .then(data => {
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = "Review Booking Details";
+                }
+                if (data.success) {
+                    closeQuickReserveDrawer();
+                    document.getElementById("drawer-reserve-form")?.reset();
+                    window.toast.show(data.message || "Reservation submitted! Waiting for admin approval.", "success", 4000);
+                    if (typeof window.loadNotifBadge === "function") window.loadNotifBadge();
+                    loadStats();
+                    loadDefaultRooms();
+                } else {
+                    window.toast.show(data.message || "Unable to complete reservation due to schedule conflict.", "error", 4500);
+                }
+            })
+            .catch(() => {
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = "Review Booking Details";
+                }
+                window.toast.show("Server error during booking. Please try again.", "error", 4000);
+            });
     }
 
     function initQuickReserveDrawer() {
         const closeBtn = document.getElementById("drawer-close-btn");
         const backdrop = document.getElementById("drawer-backdrop");
-        const form     = document.getElementById("drawer-reserve-form");
+        const form = document.getElementById("drawer-reserve-form");
 
         if (closeBtn) closeBtn.addEventListener("click", closeQuickReserveDrawer);
         if (backdrop) backdrop.addEventListener("click", closeQuickReserveDrawer);
@@ -895,11 +899,11 @@
             form.addEventListener("submit", (e) => {
                 e.preventDefault();
                 const submitBtn = document.getElementById("drawer-submit-btn");
-                const roomId    = document.getElementById("drawer-room-id")?.value;
-                const date      = document.getElementById("drawer-date")?.value;
+                const roomId = document.getElementById("drawer-room-id")?.value;
+                const date = document.getElementById("drawer-date")?.value;
                 const startTime = document.getElementById("drawer-start-time")?.value;
-                const endTime   = document.getElementById("drawer-end-time")?.value;
-                const subject   = document.getElementById("drawer-purpose")?.value.trim();
+                const endTime = document.getElementById("drawer-end-time")?.value;
+                const subject = document.getElementById("drawer-purpose")?.value.trim();
 
                 if (!roomId || !date || !startTime || !endTime || !subject) {
                     window.toast.show("Please fill out all required fields.", "error", 3000);
@@ -1012,9 +1016,9 @@
 
     setInterval(loadStats, 60000);
 
-    window.filterRooms              = filterRooms;
-    window.filterByBuilding         = filterByBuilding;
-    window.showHallsView            = showHallsView;
-    window.openQuickReserveDrawer   = openQuickReserveDrawer;
-    window.closeQuickReserveDrawer  = closeQuickReserveDrawer;
+    window.filterRooms = filterRooms;
+    window.filterByBuilding = filterByBuilding;
+    window.showHallsView = showHallsView;
+    window.openQuickReserveDrawer = openQuickReserveDrawer;
+    window.closeQuickReserveDrawer = closeQuickReserveDrawer;
 })();

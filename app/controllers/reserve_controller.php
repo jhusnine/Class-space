@@ -23,6 +23,7 @@ if (!isset($_SESSION['id'])) {
 }
 
 require '../../includes/database_include.php';
+require_once __DIR__ . '/../../includes/semester_helper.php';
 
 $rawBody = file_get_contents('php://input');
 if (empty($rawBody) && php_sapi_name() === 'cli') {
@@ -190,6 +191,16 @@ if ($type === 'one-time') {
     $date = null;
 }
 
+$untilDate = trim((string) ($data['until'] ?? ($data['until_date'] ?? '')));
+if ($type === 'weekly') {
+    if (empty($untilDate) || !validDate($untilDate)) {
+        $untilDate = getSemesterEndDate();
+    }
+    $scheduledEndDate = $untilDate;
+} else {
+    $scheduledEndDate = $date;
+}
+
 try {
     $pdo = new PDO(
         "mysql:host={$host};dbname={$dbname};charset=utf8mb4",
@@ -278,6 +289,7 @@ try {
                     OR
                     (schedule_day IS NULL
                      AND LOWER(schedule_day_of_week) = ?
+                     AND (schedule_end_date IS NULL OR schedule_end_date >= ?)
                      AND schedule_start < ?
                      AND schedule_end > ?)
                )
@@ -289,6 +301,7 @@ try {
             $end,
             $start,
             $dowOfDate,
+            $date,
             $end,
             $start
         ]);
@@ -296,14 +309,30 @@ try {
         $stmtConflict = $pdo->prepare(
             'SELECT schedule_start, schedule_end FROM schedule
              WHERE room_id = ?
-               AND schedule_day IS NULL
-               AND LOWER(schedule_day_of_week) = ?
-               AND schedule_start < ?
-               AND schedule_end > ?
+               AND (
+                    (schedule_day IS NULL
+                     AND LOWER(schedule_day_of_week) = ?
+                     AND (schedule_end_date IS NULL OR schedule_end_date >= ?)
+                     AND schedule_start < ?
+                     AND schedule_end > ?)
+                    OR
+                    (schedule_day IS NOT NULL
+                     AND schedule_day >= ?
+                     AND schedule_day <= ?
+                     AND LOWER(DAYNAME(schedule_day)) = ?
+                     AND schedule_start < ?
+                     AND schedule_end > ?)
+               )
              LIMIT 1'
         );
         $stmtConflict->execute([
             $roomId,
+            strtolower($dow),
+            date('Y-m-d'),
+            $end,
+            $start,
+            date('Y-m-d'),
+            $untilDate,
             strtolower($dow),
             $end,
             $start
@@ -325,12 +354,13 @@ try {
                         OR
                         (pending_schedule_day IS NULL
                          AND LOWER(pending_schedule_day_of_week) = ?
+                         AND (pending_schedule_end_date IS NULL OR pending_schedule_end_date >= ?)
                          AND pending_schedule_start < ?
                          AND pending_schedule_end > ?)
                    )
                  LIMIT 1'
             );
-            $pendingConflictStmt->execute([$roomId, $pendingId ?: 0, $date, $end, $start, $dowOfDate, $end, $start]);
+            $pendingConflictStmt->execute([$roomId, $pendingId ?: 0, $date, $end, $start, $dowOfDate, $date, $end, $start]);
         } else {
             $pendingConflictStmt = $pdo->prepare(
                 'SELECT pending_schedule_start AS schedule_start, pending_schedule_end AS schedule_end
@@ -341,17 +371,20 @@ try {
                    AND (
                         (pending_schedule_day IS NULL
                          AND LOWER(pending_schedule_day_of_week) = ?
+                         AND (pending_schedule_end_date IS NULL OR pending_schedule_end_date >= ?)
                          AND pending_schedule_start < ?
                          AND pending_schedule_end > ?)
                         OR
                         (pending_schedule_day IS NOT NULL
+                         AND pending_schedule_day >= ?
+                         AND pending_schedule_day <= ?
                          AND LOWER(DAYNAME(pending_schedule_day)) = ?
                          AND pending_schedule_start < ?
                          AND pending_schedule_end > ?)
                    )
                  LIMIT 1'
             );
-            $pendingConflictStmt->execute([$roomId, $pendingId ?: 0, strtolower($dow), $end, $start, strtolower($dow), $end, $start]);
+            $pendingConflictStmt->execute([$roomId, $pendingId ?: 0, strtolower($dow), date('Y-m-d'), $end, $start, date('Y-m-d'), $untilDate, strtolower($dow), $end, $start]);
         }
         $conflictRow = $pendingConflictStmt->fetch();
     }
@@ -403,7 +436,8 @@ try {
                  pending_schedule_day_of_week = ?,
                  pending_schedule_start = ?,
                  pending_schedule_end = ?,
-                 pending_schedule_day = ?
+                 pending_schedule_day = ?,
+                 pending_schedule_end_date = ?
              WHERE pending_id = ? AND account_id = ?'
         );
         $stmtUpdate->execute([
@@ -413,6 +447,7 @@ try {
             $start,
             $end,
             $type === 'one-time' ? $date : null,
+            $scheduledEndDate,
             $pendingId,
             $accountId
         ]);
@@ -444,8 +479,9 @@ try {
             'INSERT INTO pendingschedule
                 (room_id, account_id, pending_schedule_day_of_week,
                  pending_schedule_start, pending_schedule_end,
-                 pending_schedule_day, pending_schedule_status, reserve_id)
-             VALUES (?, ?, ?, ?, ?, ?, \'pending\', ?)'
+                 pending_schedule_day, pending_schedule_end_date,
+                 pending_schedule_status, reserve_id)
+             VALUES (?, ?, ?, ?, ?, ?, ?, \'pending\', ?)'
         );
         $stmtPending->execute([
             $roomId,
@@ -454,6 +490,7 @@ try {
             $start,
             $end,
             $type === 'one-time' ? $date : null,
+            $scheduledEndDate,
             $reserveId
         ]);
 

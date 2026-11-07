@@ -138,3 +138,4 @@ with:
    - Update assertions so it does not look for removed sidebar profile cards or bottom elements in `user_sidebar.php`.
 3. **Browser Runtime Test:**
    - Run browser script to verify clicking `#profile-dropdown-trigger` toggles `#profile-dropdown` visibility, renders username and email, and closes on Escape/click-outside.
+

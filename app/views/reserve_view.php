@@ -5,6 +5,9 @@ if (!isset($_SESSION["id"])) {
     exit;
 }
 
+require_once __DIR__ . '/../../includes/semester_helper.php';
+$currentSemester = getCurrentSemester();
+
 $preHallId   = intval($_GET["hall_id"] ?? 0);
 $preHallName = htmlspecialchars($_GET["hall_name"] ?? "");
 $preRoomId   = intval($_GET["room_id"] ?? 0);
@@ -14,6 +17,7 @@ $preDow      = htmlspecialchars($_GET["dow"] ?? "");
 $preType     = htmlspecialchars($_GET["type"] ?? "one-time");
 $preStart    = htmlspecialchars($_GET["start"] ?? "");
 $preEnd      = htmlspecialchars($_GET["end"] ?? "");
+$preUntil    = htmlspecialchars($_GET["until"] ?? "");
 $autoCheck   = !empty($_GET["auto_check"]) ? 1 : 0;
 $reschedulePendingId = intval($_GET["reschedule_pending_id"] ?? 0);
 
@@ -154,6 +158,19 @@ $themeClass = (isset($_COOKIE['theme']) && $_COOKIE['theme'] === 'light') ? 'lig
                 </select>
             </div>
 
+            <div id="field-semester" class="form-group" style="<?= ($preType === 'weekly') ? 'display:block;' : 'display:none;' ?>">
+                <label for="schedule-until">Semester Duration (Recurring Until)</label>
+                <div class="semester-input-row" style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                    <input type="date" id="schedule-until" name="until_date" min="<?php echo date('Y-m-d'); ?>" max="<?= htmlspecialchars($currentSemester['end_date']) ?>" value="<?= htmlspecialchars(!empty($preUntil) ? $preUntil : $currentSemester['end_date']) ?>" style="max-width: 220px;">
+                    <span class="semester-pill-badge" style="background: rgba(56, 189, 248, 0.15); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.35); padding: 6px 12px; border-radius: 6px; font-size: 13px; font-weight: 600;">
+                        <i class="fas fa-graduation-cap"></i> <?= htmlspecialchars($currentSemester['label']) ?>
+                    </span>
+                </div>
+                <small style="color: var(--text-muted); font-size: 12px; margin-top: 4px; display: block;">
+                    <i class="fas fa-info-circle"></i> Weekly schedule recurs every week until the end of the semester (<?= htmlspecialchars($currentSemester['end_date_formatted']) ?>).
+                </small>
+            </div>
+
             <div class="time-grid">
                 <div class="form-group">
                     <label for="schedule-start">Start Time</label>
@@ -244,6 +261,7 @@ $themeClass = (isset($_COOKIE['theme']) && $_COOKIE['theme'] === 'light') ? 'lig
 <input type="hidden" id="preType" value="<?= $preType ?>">
 <input type="hidden" id="preStart" value="<?= $preStart ?>">
 <input type="hidden" id="preEnd" value="<?= $preEnd ?>">
+<input type="hidden" id="preUntil" value="<?= $preUntil ?>">
 <input type="hidden" id="autoCheck" value="<?= $autoCheck ?>">
 <input type="hidden" id="reschedulePendingId" value="<?= $reschedulePendingId ?>">
 <script src="../../public/js/toast.js?v=<?php echo time(); ?>"></script>

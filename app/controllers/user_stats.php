@@ -49,6 +49,7 @@ try {
                 OR
                 (sched.schedule_day IS NULL
                   AND sched.schedule_day_of_week = DAYNAME(NOW())
+                  AND (sched.schedule_end_date IS NULL OR sched.schedule_end_date >= CURDATE())
                   AND CURTIME() BETWEEN sched.schedule_start AND sched.schedule_end)
               )
           )

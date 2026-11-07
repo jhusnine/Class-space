@@ -38,9 +38,11 @@ if (!isset($_SESSION['id'])) {
 }
 
 require_once __DIR__ . '/../../includes/database_include.php';
+require_once __DIR__ . '/../../includes/semester_helper.php';
 
 date_default_timezone_set('Asia/Manila');
 $todayDate = date('Y-m-d');
+$untilDate = trim((string)($_GET['until'] ?? '')) ?: getSemesterEndDate();
 
 $roomId = filter_var($_GET['room_id'] ?? null, FILTER_VALIDATE_INT);
 $start  = is_string($_GET['start'] ?? null) ? trim($_GET['start']) : '';
@@ -178,35 +180,35 @@ try {
             SELECT schedule_start, schedule_end FROM schedule
             WHERE room_id = ? AND (
                 (schedule_day = ?)
-                OR (schedule_day IS NULL AND LOWER(schedule_day_of_week) = ?)
+                OR (schedule_day IS NULL AND LOWER(schedule_day_of_week) = ? AND (schedule_end_date IS NULL OR schedule_end_date >= ?))
             )
             UNION
             SELECT pending_schedule_start AS schedule_start, pending_schedule_end AS schedule_end
             FROM pendingschedule
             WHERE room_id = ? AND pending_schedule_status = "pending" AND (
                 (pending_schedule_day = ?)
-                OR (pending_schedule_day IS NULL AND LOWER(pending_schedule_day_of_week) = ?)
+                OR (pending_schedule_day IS NULL AND LOWER(pending_schedule_day_of_week) = ? AND (pending_schedule_end_date IS NULL OR pending_schedule_end_date >= ?))
             )
             ORDER BY schedule_start ASC
         ');
-        $stmtBookings->execute([$roomId, $date, $targetDow, $roomId, $date, $targetDow]);
+        $stmtBookings->execute([$roomId, $date, $targetDow, $date, $roomId, $date, $targetDow, $date]);
     } else {
         $stmtBookings = $pdo->prepare('
             SELECT schedule_start, schedule_end FROM schedule
             WHERE room_id = ? AND (
-                (schedule_day IS NULL AND LOWER(schedule_day_of_week) = ?)
-                OR (schedule_day IS NOT NULL AND schedule_day >= ? AND LOWER(DAYNAME(schedule_day)) = ?)
+                (schedule_day IS NULL AND LOWER(schedule_day_of_week) = ? AND (schedule_end_date IS NULL OR schedule_end_date >= ?))
+                OR (schedule_day IS NOT NULL AND schedule_day >= ? AND schedule_day <= ? AND LOWER(DAYNAME(schedule_day)) = ?)
             )
             UNION
             SELECT pending_schedule_start AS schedule_start, pending_schedule_end AS schedule_end
             FROM pendingschedule
             WHERE room_id = ? AND pending_schedule_status = "pending" AND (
-                (pending_schedule_day IS NULL AND LOWER(pending_schedule_day_of_week) = ?)
-                OR (pending_schedule_day IS NOT NULL AND pending_schedule_day >= ? AND LOWER(DAYNAME(pending_schedule_day)) = ?)
+                (pending_schedule_day IS NULL AND LOWER(pending_schedule_day_of_week) = ? AND (pending_schedule_end_date IS NULL OR pending_schedule_end_date >= ?))
+                OR (pending_schedule_day IS NOT NULL AND pending_schedule_day >= ? AND pending_schedule_day <= ? AND LOWER(DAYNAME(pending_schedule_day)) = ?)
             )
             ORDER BY schedule_start ASC
         ');
-        $stmtBookings->execute([$roomId, $targetDow, $todayDate, $targetDow, $roomId, $targetDow, $todayDate, $targetDow]);
+        $stmtBookings->execute([$roomId, $targetDow, $todayDate, $todayDate, $untilDate, $targetDow, $roomId, $targetDow, $todayDate, $todayDate, $untilDate, $targetDow]);
     }
 
     $bookings = $stmtBookings->fetchAll();
@@ -350,38 +352,38 @@ try {
                 SELECT schedule_id FROM schedule
                 WHERE room_id = ? AND (
                     (schedule_day = ? AND schedule_start < ? AND schedule_end > ?)
-                    OR (schedule_day IS NULL AND LOWER(schedule_day_of_week) = ? AND schedule_start < ? AND schedule_end > ?)
+                    OR (schedule_day IS NULL AND LOWER(schedule_day_of_week) = ? AND (schedule_end_date IS NULL OR schedule_end_date >= ?) AND schedule_start < ? AND schedule_end > ?)
                 )
                 UNION
                 SELECT pending_id AS schedule_id FROM pendingschedule
                 WHERE room_id = ? AND pending_schedule_status = "pending" AND (
                     (pending_schedule_day = ? AND pending_schedule_start < ? AND pending_schedule_end > ?)
-                    OR (pending_schedule_day IS NULL AND LOWER(pending_schedule_day_of_week) = ? AND pending_schedule_start < ? AND pending_schedule_end > ?)
+                    OR (pending_schedule_day IS NULL AND LOWER(pending_schedule_day_of_week) = ? AND (pending_schedule_end_date IS NULL OR pending_schedule_end_date >= ?) AND pending_schedule_start < ? AND pending_schedule_end > ?)
                 )
                 LIMIT 1
             ');
             $stmtPeerConflict->execute([
-                $peerId, $date, $end, $start, $targetDow, $end, $start,
-                $peerId, $date, $end, $start, $targetDow, $end, $start
+                $peerId, $date, $end, $start, $targetDow, $date, $end, $start,
+                $peerId, $date, $end, $start, $targetDow, $date, $end, $start
             ]);
         } else {
             $stmtPeerConflict = $pdo->prepare('
                 SELECT schedule_id FROM schedule
                 WHERE room_id = ? AND (
-                    (schedule_day IS NULL AND LOWER(schedule_day_of_week) = ? AND schedule_start < ? AND schedule_end > ?)
-                    OR (schedule_day IS NOT NULL AND schedule_day >= ? AND LOWER(DAYNAME(schedule_day)) = ? AND schedule_start < ? AND schedule_end > ?)
+                    (schedule_day IS NULL AND LOWER(schedule_day_of_week) = ? AND (schedule_end_date IS NULL OR schedule_end_date >= ?) AND schedule_start < ? AND schedule_end > ?)
+                    OR (schedule_day IS NOT NULL AND schedule_day >= ? AND schedule_day <= ? AND LOWER(DAYNAME(schedule_day)) = ? AND schedule_start < ? AND schedule_end > ?)
                 )
                 UNION
                 SELECT pending_id AS schedule_id FROM pendingschedule
                 WHERE room_id = ? AND pending_schedule_status = "pending" AND (
-                    (pending_schedule_day IS NULL AND LOWER(pending_schedule_day_of_week) = ? AND pending_schedule_start < ? AND pending_schedule_end > ?)
-                    OR (pending_schedule_day IS NOT NULL AND pending_schedule_day >= ? AND LOWER(DAYNAME(pending_schedule_day)) = ? AND pending_schedule_start < ? AND pending_schedule_end > ?)
+                    (pending_schedule_day IS NULL AND LOWER(pending_schedule_day_of_week) = ? AND (pending_schedule_end_date IS NULL OR pending_schedule_end_date >= ?) AND pending_schedule_start < ? AND pending_schedule_end > ?)
+                    OR (pending_schedule_day IS NOT NULL AND pending_schedule_day >= ? AND pending_schedule_day <= ? AND LOWER(DAYNAME(pending_schedule_day)) = ? AND pending_schedule_start < ? AND pending_schedule_end > ?)
                 )
                 LIMIT 1
             ');
             $stmtPeerConflict->execute([
-                $peerId, $targetDow, $end, $start, $todayDate, $targetDow, $end, $start,
-                $peerId, $targetDow, $end, $start, $todayDate, $targetDow, $end, $start
+                $peerId, $targetDow, $todayDate, $end, $start, $todayDate, $untilDate, $targetDow, $end, $start,
+                $peerId, $targetDow, $todayDate, $end, $start, $todayDate, $untilDate, $targetDow, $end, $start
             ]);
         }
 

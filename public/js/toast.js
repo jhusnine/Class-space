@@ -342,9 +342,9 @@ loadNotifBadge();
 window.setInterval(loadNotifBadge, 30000);
 
 function initSharedMobileMenu() {
-    const toggle   = document.getElementById("mobile-menu-toggle");
+    const toggle = document.getElementById("mobile-menu-toggle");
     const backdrop = document.getElementById("mobile-menu-backdrop");
-    const sidebar  = document.getElementById("classspace-sidebar");
+    const sidebar = document.getElementById("classspace-sidebar");
     if (!toggle || !backdrop || !sidebar) return;
     if (toggle.dataset.menuBound === "true") return;
     toggle.dataset.menuBound = "true";

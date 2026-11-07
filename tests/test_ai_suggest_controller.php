@@ -1,9 +1,9 @@
 <?php
-
-
-
-
-
+/**
+ * Test: CSP Slot and Room Recommendation Controller
+ * Verifies that ai_suggest_controller.php returns ranked suggestions
+ * satisfying hard constraints and sorted by heuristic score.
+ */
 
 require_once __DIR__ . '/../includes/database_include.php';
 
@@ -18,7 +18,7 @@ try {
         ]
     );
 
-
+    // 1. Locate an existing room
     $stmtRoom = $pdo->query("SELECT room_id, hall_id, room_capacity FROM room WHERE room_status = 'available' LIMIT 1");
     $room = $stmtRoom->fetch();
     if (!$room) {
@@ -26,7 +26,7 @@ try {
     }
     $roomId = (int)$room['room_id'];
 
-
+    // 2. Insert conflicting fixture
     $testDate  = date('Y-m-d', strtotime('+5 days'));
     $startTime = '13:00:00';
     $endTime   = '15:00:00';
@@ -46,7 +46,7 @@ try {
     echo "=== Test CSP Controller Fixture ===\n";
     echo "Room ID: {$roomId}, Date: {$testDate}, Fixture: {$startTime}-{$endTime}\n";
 
-
+    // 3. Invoke controller via isolated PHP CLI process
     $runnerScript = __DIR__ . '/_run_suggest_subrequest.php';
     $code = '<?php
 session_start();
@@ -67,7 +67,7 @@ require __DIR__ . "/../app/controllers/ai_suggest_controller.php";
     $output = shell_exec($cmd);
     @unlink($runnerScript);
 
-
+    // Cleanup DB fixture
     $pdo->prepare("DELETE FROM schedule WHERE schedule_id = ?")->execute([$scheduleId]);
 
     $response = json_decode($output ?? '', true);
@@ -91,7 +91,7 @@ require __DIR__ . "/../app/controllers/ai_suggest_controller.php";
         echo "  [Rank {$sug['rank']}] Type: {$sug['type']}, Room: {$sug['room_name']}, Time: {$sug['formatted_time']}\n";
         echo "    Reason: {$sug['reason']}\n";
 
-
+        // Verification: ensure alternative slots on the same room don't overlap the conflicting fixture (13:00 - 15:00)
         if ($sug['type'] === 'alternative_slot' && (int)$sug['room_id'] === $roomId) {
             $sStart = $sug['start'];
             $sEnd   = $sug['end'];

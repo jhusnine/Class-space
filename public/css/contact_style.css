@@ -58,18 +58,19 @@
 
 
 .contact-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 16px;
-    align-items: center;
-    gap: 32px;
-    padding-top: 120px;
+    display: flex;
+    justify-content: center;
+    max-width: 640px;
+    margin: 0 auto;
+    padding-top: 60px;
+    width: 100%;
 }
 
 .contact-tiles {
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 16px;
+    width: 100%;
 }
 
 
@@ -129,26 +130,60 @@
 
 
 
-.message-dashboard { margin-top: 48px; scroll-margin-top: 24px; }
-
-.dashboard-title {
-    margin-bottom: 14px;
-    font-size: 18px;
-    font-weight: 700;
-    color: var(--text-high);
+/* Chat Modal Pop-up */
+.chat-modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 10000;
+    background: rgba(0, 0, 0, 0.72);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
 }
 
-.dashboard-container-box {
-    background: var(--card-bg);
-    border: 1px solid var(--tile-line);
-    border-radius: 22px;
+.chat-modal-overlay.open {
+    display: flex;
+}
+
+.chat-modal-card {
+    background: var(--card-bg, #0b1528);
+    border: 1px solid var(--border-color, rgba(148, 163, 184, 0.2));
+    border-radius: 20px;
+    box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.65), 0 0 0 1px rgba(255, 255, 255, 0.05);
+    width: 100%;
+    max-width: 760px;
+    max-height: 88vh;
+    display: flex;
+    flex-direction: column;
     overflow: hidden;
+    animation: chatModalPop 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes chatModalPop {
+    from {
+        opacity: 0;
+        transform: scale(0.96) translateY(8px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+body.light-mode .chat-modal-card {
+    background: #ffffff;
+    border-color: rgba(148, 163, 184, 0.28);
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.18), 0 0 0 1px rgba(0, 0, 0, 0.04);
 }
 
 .chat-main-window {
     display: flex;
     flex-direction: column;
-    height: min(70vh, 560px);
+    height: min(72vh, 580px);
+    max-height: 85vh;
 }
 
 .chat-header-user {
@@ -162,7 +197,36 @@
     font-weight: 600;
     color: var(--text-high);
 }
+.chat-header-info {
+    flex: 1;
+    min-width: 0;
+}
 .chat-header-sub { margin-top: 2px; font-size: 12px; font-weight: 400; color: var(--text-low); }
+
+.chat-modal-close {
+    width: 34px;
+    height: 34px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: 8px;
+    color: var(--text-low);
+    font-size: 15px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    margin-left: auto;
+}
+.chat-modal-close:hover {
+    color: var(--text-high);
+    background: color-mix(in srgb, var(--text-high) 8%, transparent);
+    border-color: var(--border-color);
+}
+.chat-modal-close:focus-visible {
+    outline: 2px solid var(--brand-accent);
+    outline-offset: 2px;
+}
 
 .avatar-circle {
     width: 38px;
@@ -240,8 +304,12 @@ body.light-mode .contact-watermark { opacity: 0.045; }
 
 
 @media (max-width: 900px) {
-    .contact-grid { grid-template-columns: 1fr; padding-top: 72px; }
-    .contact-intro h1 { font-size: 32px; }
+    .contact-grid { padding-top: 40px; }
+}
+@media (max-width: 640px) {
+    .chat-modal-overlay { padding: 8px; }
+    .chat-modal-card { max-height: 94vh; border-radius: 16px; }
+    .chat-main-window { height: 78vh; }
 }
 @media (max-width: 480px) {
     .contact-watermark { font-size: 72px; }

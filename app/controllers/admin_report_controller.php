@@ -59,6 +59,7 @@ try {
             report.status,
             report.day_of_week,
             report.specific_date,
+            report.end_date,
             report.start_time,
             report.end_time,
             COALESCE(details.reserve_title, '') AS subject,
@@ -77,6 +78,7 @@ try {
                 sched.account_id             AS account_id,
                 sched.schedule_day_of_week   AS day_of_week,
                 sched.schedule_day           AS specific_date,
+                sched.schedule_end_date      AS end_date,
                 sched.schedule_start         AS start_time,
                 sched.schedule_end           AS end_time,
                 sched.reserve_id             AS reserve_id
@@ -95,6 +97,7 @@ try {
                 pend.account_id                       AS account_id,
                 pend.pending_schedule_day_of_week      AS day_of_week,
                 pend.pending_schedule_day              AS specific_date,
+                pend.pending_schedule_end_date         AS end_date,
                 pend.pending_schedule_start            AS start_time,
                 pend.pending_schedule_end              AS end_time,
                 pend.reserve_id                         AS reserve_id

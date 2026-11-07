@@ -21,6 +21,21 @@ try {
           AND pending_schedule_day < ?
     ")->execute([$today]);
 
+    // Delete expired weekly bookings whose semester has ended
+    $pdo->prepare("
+        DELETE FROM schedule
+        WHERE schedule_day IS NULL
+          AND schedule_end_date IS NOT NULL
+          AND schedule_end_date < ?
+    ")->execute([$today]);
+
+    $pdo->prepare("
+        DELETE FROM pendingschedule
+        WHERE pending_schedule_day IS NULL
+          AND pending_schedule_end_date IS NOT NULL
+          AND pending_schedule_end_date < ?
+    ")->execute([$today]);
+
 } catch (PDOException $e) {
 
     error_log("Cleanup error: " . $e->getMessage());

@@ -42,7 +42,7 @@
 			<div class="page-header">
 				<div>
 					<h1>Contact <span class="highlight">Support</span></h1>
-					<p>Questions about a room reservation or your account? Message ICT Support below.</p>
+					<p>Questions about a room reservation or your account? Reach out to ICT Support or start a chat session.</p>
 				</div>
 			</div>
 
@@ -64,9 +64,9 @@
 							<span class="tile-arrow"><i class="fas fa-arrow-right" aria-hidden="true"></i></span>
 						</a>
 
-						<a class="contact-tile" href="#support-chat">
+						<a class="contact-tile contact-tile-chat" href="#support-chat" id="chat-with-us-btn" role="button" aria-haspopup="dialog" aria-expanded="false">
 							<span class="tile-icon"><i class="far fa-comments" aria-hidden="true"></i></span>
-							<span class="tile-text"><strong>Chat with us</strong><span>Message ICT Support below</span></span>
+							<span class="tile-text"><strong>Chat with us</strong><span>Message ICT Support</span></span>
 							<span class="tile-arrow"><i class="fas fa-arrow-right" aria-hidden="true"></i></span>
 						</a>
 					</div>
@@ -74,17 +74,19 @@
 				</section>
 
 
-				<section class="message-dashboard" id="support-chat">
-					<div class="dashboard-title">Messages with support</div>
-
-					<div class="dashboard-container-box">
+				<!-- Support Chat Pop-up Modal -->
+				<div class="chat-modal-overlay" id="chat-modal" style="display:none;" onclick="handleChatModalBackdropClick(event)">
+					<div class="chat-modal-card" id="support-chat" role="dialog" aria-modal="true" aria-labelledby="active-chat-user">
 						<div class="chat-main-window">
 							<div class="chat-header-user">
 								<div class="avatar-circle">S</div>
-								<div>
+								<div class="chat-header-info">
 									<span id="active-chat-user">ICT Support</span>
 									<div class="chat-header-sub">Replies appear here</div>
 								</div>
+								<button type="button" class="chat-modal-close" onclick="closeChatModal()" aria-label="Close support chat">
+									<i class="fas fa-times" aria-hidden="true"></i>
+								</button>
 							</div>
 
 							<div class="chat-toolbar">
@@ -108,7 +110,7 @@
 
 							<div class="chat-footer-bar">
 								<div class="input-wrapper">
-									<input type="text" id="reply-message-input" placeholder="Type a message"
+									<input type="text" id="reply-message-input" placeholder="Type a message..."
 										   onkeydown="checkEnterKey(event)" maxlength="500" autocomplete="off">
 									<button type="button" class="send-btn-icon" onclick="sendMessageFromInput()" aria-label="Send message">
 										<i class="fas fa-paper-plane" aria-hidden="true"></i>
@@ -117,7 +119,7 @@
 							</div>
 						</div>
 					</div>
-				</section>
+				</div>
 			</div>
 		</main>
 	</div>

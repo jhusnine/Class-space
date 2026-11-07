@@ -131,3 +131,4 @@
   - Navigate to Dashboard, Calendar, Reserve, and Settings.
   - Measure header top bounding box coordinate across all 4 pages to confirm pixel-level alignment.
   - Capture and inspect screenshots for dark and light modes.
+

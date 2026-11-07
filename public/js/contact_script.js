@@ -10,9 +10,84 @@ let threadSig = '';
 
 document.addEventListener('DOMContentLoaded', () => {
     initChat();
-
     setupFilters();
+    setupChatModal();
 });
+
+function setupChatModal() {
+    const chatBtn = document.getElementById('chat-with-us-btn');
+    if (chatBtn) {
+        chatBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            openChatModal();
+        });
+    }
+
+    if (window.location.hash === '#support-chat' || window.location.hash === '#chat') {
+        openChatModal();
+    }
+
+    window.addEventListener('hashchange', () => {
+        if (window.location.hash === '#support-chat' || window.location.hash === '#chat') {
+            openChatModal();
+        }
+    });
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            const modal = document.getElementById('chat-modal');
+            if (modal && (modal.classList.contains('open') || modal.style.display === 'flex')) {
+                closeChatModal();
+            }
+        }
+    });
+}
+
+function openChatModal() {
+    const modal = document.getElementById('chat-modal');
+    if (!modal) return;
+    modal.classList.add('open');
+    modal.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+
+    const trigger = document.getElementById('chat-with-us-btn');
+    if (trigger) trigger.setAttribute('aria-expanded', 'true');
+
+    setTimeout(() => {
+        const input = document.getElementById('reply-message-input');
+        if (input) input.focus();
+        const stream = document.getElementById('chat-stream');
+        if (stream) stream.scrollTop = stream.scrollHeight;
+    }, 60);
+
+    if (!pollInterval) {
+        pollInterval = setInterval(loadMessages, 3000);
+    }
+}
+
+function closeChatModal() {
+    const modal = document.getElementById('chat-modal');
+    if (!modal) return;
+    modal.classList.remove('open');
+    modal.style.display = 'none';
+    document.body.style.overflow = '';
+
+    const trigger = document.getElementById('chat-with-us-btn');
+    if (trigger) {
+        trigger.setAttribute('aria-expanded', 'false');
+        trigger.focus();
+    }
+}
+
+function handleChatModalBackdropClick(event) {
+    if (event.target === event.currentTarget) {
+        closeChatModal();
+    }
+}
+
+window.openChatModal = openChatModal;
+window.closeChatModal = closeChatModal;
+window.handleChatModalBackdropClick = handleChatModalBackdropClick;
 
 async function initChat() {
 

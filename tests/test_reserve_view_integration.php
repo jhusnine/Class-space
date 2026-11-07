@@ -1,15 +1,15 @@
 <?php
-
-
-
-
-
+/**
+ * Test: Reservation View & AI Suggestions Integration
+ * Verifies that the reservation form DOM contains required AI elements,
+ * styles are defined, and the API chain (check_conflict -> ai_suggest) integrates properly.
+ */
 
 require_once __DIR__ . '/../includes/database_include.php';
 
 echo "=== Task 3: Reservation View & AI Integration Test ===\n";
 
-
+// 1. Verify View Markup
 $viewHtml = file_get_contents(__DIR__ . '/../app/views/reserve_view.php');
 if (!str_contains($viewHtml, 'id="ai-suggestions-container"')) {
     throw new RuntimeException("FAILED: reserve_view.php is missing #ai-suggestions-container");
@@ -22,7 +22,7 @@ if (!str_contains($viewHtml, 'id="ai-cards-list"')) {
 }
 echo "PASS: View markup verified with #ai-suggestions-container.\n";
 
-
+// 2. Verify Styles
 $css = file_get_contents(__DIR__ . '/../public/css/reserve_style.css');
 if (!str_contains($css, '.ai-suggestions-container')) {
     throw new RuntimeException("FAILED: reserve_style.css is missing .ai-suggestions-container");
@@ -35,7 +35,7 @@ if (!str_contains($css, '.btn-apply-suggestion')) {
 }
 echo "PASS: CSS styles verified for AI recommendation cards.\n";
 
-
+// 3. Verify JavaScript Handlers
 $js = file_get_contents(__DIR__ . '/../public/js/reserve_script.js');
 if (!str_contains($js, 'fetchAiSuggestions')) {
     throw new RuntimeException("FAILED: reserve_script.js is missing fetchAiSuggestions");
@@ -48,7 +48,7 @@ if (!str_contains($js, 'currentSuggestions')) {
 }
 echo "PASS: JavaScript handlers verified for AI suggestion fetching and 1-click apply.\n";
 
-
+// 4. Verify API Chain Response
 $pdo = new PDO(
     "mysql:host={$host};dbname={$dbname};charset=utf8mb4",
     $db_user,
@@ -64,7 +64,7 @@ $roomId = (int)$room['room_id'];
 $testDate = date('Y-m-d', strtotime('+3 days'));
 $accId = (int)$pdo->query("SELECT account_id FROM account LIMIT 1")->fetchColumn();
 
-
+// Fixture
 $pdo->prepare("DELETE FROM schedule WHERE room_id = ? AND schedule_day = ?")->execute([$roomId, $testDate]);
 $pdo->prepare("
     INSERT INTO schedule (room_id, account_id, schedule_day, schedule_day_of_week, schedule_start, schedule_end)
@@ -72,7 +72,7 @@ $pdo->prepare("
 ")->execute([$roomId, $accId, $testDate]);
 $scheduleId = $pdo->lastInsertId();
 
-
+// Verify conflict check returns has_suggestions = true
 $checkRunner = __DIR__ . '/_run_check_tmp.php';
 file_put_contents($checkRunner, '<?php
 session_start();
@@ -91,7 +91,7 @@ if (empty($checkRes['conflict']) || empty($checkRes['has_suggestions'])) {
 }
 echo "PASS: check_conflict correctly signaled conflict=true and has_suggestions=true.\n";
 
-
+// Verify ai_suggest_controller returns valid suggestions for these parameters
 $suggestRunner = __DIR__ . '/_run_suggest_tmp.php';
 file_put_contents($suggestRunner, '<?php
 session_start();

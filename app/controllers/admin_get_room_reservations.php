@@ -35,6 +35,7 @@ try {
             sched.schedule_start,
             sched.schedule_end,
             sched.schedule_day,
+            sched.schedule_end_date,
             COALESCE(details.reserve_title, '') AS subject,
             acc.account_fname   AS fname,
             acc.account_lname   AS lname,

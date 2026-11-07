@@ -24,23 +24,42 @@ function isExcludedDeanOffice($room, $hallName = '')
     return $isDeanProgramHeadOffice || $isPlaridelDeanRoom;
 }
 
+function isAdmin($pdo, $sessionId) {
+    if (!empty($_SESSION["is_admin"])) {
+        return true;
+    }
+    $stmt = $pdo->prepare("SELECT account_is_admin FROM account WHERE account_id = ? LIMIT 1");
+    $stmt->execute([$sessionId]);
+    $row = $stmt->fetch(PDO::FETCH_ASSOC);
+    return $row && (int)$row["account_is_admin"] === 1;
+}
+
 try {
     $pdo = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8", $db_user, $db_pass);
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
     $accountId = intval($_SESSION["id"]);
 
 
+    $isAdminUser = isAdmin($pdo, $accountId);
+    $statusWhere = $isAdminUser ? "" : "WHERE LOWER(TRIM(r.room_status)) NOT IN ('maintenance', 'unavailable')";
+
     $stmt = $pdo->prepare("
         SELECT r.room_id, r.room_name, r.room_capacity, r.room_type, r.room_has_ac,
                r.room_status, h.hall_id, h.hall_name
         FROM room r
         JOIN hall h ON r.hall_id = h.hall_id
+        {$statusWhere}
         ORDER BY RAND()
         LIMIT 13
     ");
     $stmt->execute();
-    $rooms = array_values(array_filter($stmt->fetchAll(PDO::FETCH_ASSOC), function ($room) {
-        return !isExcludedDeanOffice($room);
+    $rooms = array_values(array_filter($stmt->fetchAll(PDO::FETCH_ASSOC), function ($room) use ($isAdminUser) {
+        if (isExcludedDeanOffice($room)) return false;
+        if (!$isAdminUser) {
+            $st = strtolower(trim((string)($room['room_status'] ?? '')));
+            if ($st === 'maintenance' || $st === 'unavailable') return false;
+        }
+        return true;
     }));
     $rooms = array_slice($rooms, 0, 12);
 
@@ -52,7 +71,7 @@ try {
             SELECT COUNT(*) FROM schedule sched
             WHERE sched.room_id = ? AND (
                 (sched.schedule_day = CURDATE() AND CURTIME() BETWEEN sched.schedule_start AND sched.schedule_end)
-                OR (sched.schedule_day IS NULL AND sched.schedule_day_of_week = DAYNAME(NOW()) AND CURTIME() BETWEEN sched.schedule_start AND sched.schedule_end)
+                OR (sched.schedule_day IS NULL AND sched.schedule_day_of_week = DAYNAME(NOW()) AND (sched.schedule_end_date IS NULL OR sched.schedule_end_date >= CURDATE()) AND CURTIME() BETWEEN sched.schedule_start AND sched.schedule_end)
             )
         ");
         $checkBooking->execute([$room['room_id']]);
@@ -72,7 +91,7 @@ try {
             SELECT COUNT(*) FROM schedule sched
             WHERE sched.room_id = ? AND sched.account_id = ? AND (
                 (sched.schedule_day = CURDATE() AND CURTIME() BETWEEN sched.schedule_start AND sched.schedule_end)
-                OR (sched.schedule_day IS NULL AND sched.schedule_day_of_week = DAYNAME(NOW()) AND CURTIME() BETWEEN sched.schedule_start AND sched.schedule_end)
+                OR (sched.schedule_day IS NULL AND sched.schedule_day_of_week = DAYNAME(NOW()) AND (sched.schedule_end_date IS NULL OR sched.schedule_end_date >= CURDATE()) AND CURTIME() BETWEEN sched.schedule_start AND sched.schedule_end)
             )
         ");
         $checkActive->execute([$room['room_id'], $accountId]);

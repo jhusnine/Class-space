@@ -7,6 +7,7 @@ if (!isset($_SESSION["id"])) {
     exit;
 }
 require "../../includes/database_include.php";
+require_once __DIR__ . '/../../includes/semester_helper.php';
 
 $body   = json_decode(file_get_contents("php://input"), true);
 $pendId = intval($body["pending_id"] ?? 0);
@@ -119,6 +120,8 @@ try {
 
     if ($action === "approve") {
 
+        $scheduledEndDate = $pend['pending_schedule_end_date'] ?: ($pend['pending_schedule_day'] ?: getSemesterEndDate());
+
         if ($pend['pending_schedule_day']) {
             $dowOfDate = strtolower(date('l', strtotime($pend['pending_schedule_day'])));
             $stmtConflict = $pdo->prepare("
@@ -127,26 +130,40 @@ try {
                   AND (
                     (schedule_day = ? AND schedule_start < ? AND schedule_end > ?)
                     OR
-                    (schedule_day IS NULL AND LOWER(schedule_day_of_week) = ? AND schedule_start < ? AND schedule_end > ?)
+                    (schedule_day IS NULL AND LOWER(schedule_day_of_week) = ?
+                     AND (schedule_end_date IS NULL OR schedule_end_date >= ?)
+                     AND schedule_start < ? AND schedule_end > ?)
                   )
                 LIMIT 1
             ");
             $stmtConflict->execute([
                 $pend['room_id'], $pend['pending_schedule_day'],
                 $pend['pending_schedule_end'], $pend['pending_schedule_start'],
-                $dowOfDate, $pend['pending_schedule_end'], $pend['pending_schedule_start']
+                $dowOfDate, $pend['pending_schedule_day'],
+                $pend['pending_schedule_end'], $pend['pending_schedule_start']
             ]);
         } else {
             $stmtConflict = $pdo->prepare("
                 SELECT schedule_start, schedule_end FROM schedule
                 WHERE room_id = ?
-                  AND schedule_day IS NULL
-                  AND LOWER(schedule_day_of_week) = ?
-                  AND schedule_start < ? AND schedule_end > ?
+                  AND (
+                    (schedule_day IS NULL
+                     AND LOWER(schedule_day_of_week) = ?
+                     AND (schedule_end_date IS NULL OR schedule_end_date >= CURDATE())
+                     AND schedule_start < ? AND schedule_end > ?)
+                    OR
+                    (schedule_day IS NOT NULL
+                     AND schedule_day >= CURDATE()
+                     AND schedule_day <= ?
+                     AND LOWER(DAYNAME(schedule_day)) = ?
+                     AND schedule_start < ? AND schedule_end > ?)
+                  )
                 LIMIT 1
             ");
             $stmtConflict->execute([
                 $pend['room_id'], strtolower($pend['pending_schedule_day_of_week']),
+                $pend['pending_schedule_end'], $pend['pending_schedule_start'],
+                $scheduledEndDate, strtolower($pend['pending_schedule_day_of_week']),
                 $pend['pending_schedule_end'], $pend['pending_schedule_start']
             ]);
         }
@@ -167,11 +184,12 @@ try {
 
         $pdo->prepare("
             INSERT INTO schedule
-                (room_id, account_id, schedule_day_of_week, schedule_start, schedule_end, schedule_day, reserve_id)
-            VALUES (?, ?, ?, ?, ?, ?, ?)
+                (room_id, account_id, schedule_day_of_week, schedule_start, schedule_end, schedule_day, schedule_end_date, reserve_id)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
         ")->execute([
             $pend["room_id"], $pend["account_id"], $pend["pending_schedule_day_of_week"],
-            $pend["pending_schedule_start"], $pend["pending_schedule_end"], $pend["pending_schedule_day"], $pend["reserve_id"]
+            $pend["pending_schedule_start"], $pend["pending_schedule_end"], $pend["pending_schedule_day"],
+            $scheduledEndDate, $pend["reserve_id"]
         ]);
 
         $pdo->prepare("DELETE FROM pendingschedule WHERE pending_id = ?")->execute([$pendId]);

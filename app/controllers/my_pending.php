@@ -30,6 +30,7 @@ try {
             pend.pending_schedule_start AS schedule_start,
             pend.pending_schedule_end AS schedule_end,
             pend.pending_schedule_day AS schedule_day,
+            pend.pending_schedule_end_date AS schedule_end_date,
             r.room_id,
             r.room_name,
             r.room_type,

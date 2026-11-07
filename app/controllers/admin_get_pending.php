@@ -30,6 +30,7 @@ try {
             pend.pending_schedule_start,
             pend.pending_schedule_end,
             pend.pending_schedule_day,
+            pend.pending_schedule_end_date,
             pend.pending_schedule_status,
             acc.account_fname AS fname,
             acc.account_lname AS lname,

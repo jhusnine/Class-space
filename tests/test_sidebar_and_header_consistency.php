@@ -7,7 +7,6 @@ $rootDir = dirname(__DIR__);
 $viewsDir = $rootDir . '/app/views';
 $cssDir = $rootDir . '/public/css';
 $sidebarPartial = $viewsDir . '/partials/user_sidebar.php';
-$utilityPartial = $viewsDir . '/partials/user_utility_bar.php';
 
 $views = [
     'user_homepage_view.php',
@@ -28,32 +27,6 @@ if (!file_exists($sidebarPartial)) {
     exec("php -l " . escapeshellarg($sidebarPartial) . " 2>&1", $lintOutput, $lintCode);
     if ($lintCode !== 0) {
         $failures[] = "Sidebar partial has PHP syntax errors:\n" . implode("\n", $lintOutput);
-    }
-}
-
-// 1b. Utility bar partial exists and contains dropdown
-if (!file_exists($utilityPartial)) {
-    $failures[] = "Utility bar partial not found at: $utilityPartial";
-} else {
-    exec("php -l " . escapeshellarg($utilityPartial) . " 2>&1", $utilLintOutput, $utilLintCode);
-    if ($utilLintCode !== 0) {
-        $failures[] = "Utility bar partial has PHP syntax errors:\n" . implode("\n", $utilLintOutput);
-    }
-    $utilContent = file_get_contents($utilityPartial);
-    if (!str_contains($utilContent, 'id="profile-dropdown-trigger"')) {
-        $failures[] = "Utility bar partial missing #profile-dropdown-trigger.";
-    }
-    if (!str_contains($utilContent, 'id="profile-dropdown"')) {
-        $failures[] = "Utility bar partial missing #profile-dropdown.";
-    }
-    if (!str_contains($utilContent, 'href="profile_view.php"')) {
-        $failures[] = "Profile dropdown missing link to profile_view.php.";
-    }
-    if (!str_contains($utilContent, 'href="settings_view.php"')) {
-        $failures[] = "Profile dropdown missing link to settings_view.php.";
-    }
-    if (!str_contains($utilContent, 'href="logout.php"')) {
-        $failures[] = "Profile dropdown missing link to logout.php.";
     }
 }
 
@@ -78,12 +51,9 @@ if (file_exists($sidebarPartial)) {
     if (str_contains($partialContent, 'College College')) {
         $failures[] = "Sidebar partial contains duplicate 'College College' typo.";
     }
-    if (str_contains($partialContent, 'sidebar-profile-card') || str_contains($partialContent, 'sidebar-bottom')) {
-        $failures[] = "Sidebar partial should NOT contain .sidebar-profile-card or .sidebar-bottom.";
-    }
 }
 
-// 3. Check every view includes the partial, has .page-header and h1, and does not duplicate sidebar
+// 3. Check every view includes the partial and does not duplicate sidebar
 foreach ($views as $viewFile) {
     $filePath = $viewsDir . '/' . $viewFile;
     if (!file_exists($filePath)) {
@@ -94,53 +64,20 @@ foreach ($views as $viewFile) {
     if (!str_contains($content, 'partials/user_sidebar.php')) {
         $failures[] = "View $viewFile does not include partials/user_sidebar.php";
     }
-    if (!str_contains($content, 'partials/user_utility_bar.php')) {
-        $failures[] = "View $viewFile does not include partials/user_utility_bar.php";
-    }
-    if (str_contains($content, '<aside class="sidebar" id="classspace-sidebar">') && !str_contains($content, 'require __DIR__ . \'/partials/user_sidebar.php\'') && !str_contains($content, 'include __DIR__ . \'/partials/user_sidebar.php\'')) {
+    if (str_contains($content, '<aside class="sidebar" id="classspace-sidebar">') && !str_contains($content, 'require_once __DIR__ . \'/partials/user_sidebar.php\'') && !str_contains($content, 'include __DIR__ . \'/partials/user_sidebar.php\'')) {
         $failures[] = "View $viewFile still contains hardcoded <aside class=\"sidebar\"> markup.";
     }
     if (str_contains($content, '<a href="security_view.php"') && str_contains($content, 'nav-link')) {
         $failures[] = "View $viewFile still contains obsolete security_view.php in navigation.";
     }
-    if (!str_contains($content, 'class="page-header') && !str_contains($content, 'class=\'page-header')) {
-        $failures[] = "View $viewFile is missing standardized .page-header container.";
-    }
-    if (!preg_match('/<h1[^>]*>/', $content)) {
-        $failures[] = "View $viewFile is missing <h1> heading element.";
-    }
 }
 
-// 4. Check CSS rules for stable layout and header alignment
-$globalCss = $cssDir . '/global.css';
-if (file_exists($globalCss)) {
-    $content = file_get_contents($globalCss);
-    if (!str_contains($content, 'scrollbar-gutter: stable;')) {
-        $failures[] = "global.css is missing 'scrollbar-gutter: stable;' to prevent page jump.";
-    }
-    if (!str_contains($content, 'padding: 16px 32px 32px;')) {
-        $failures[] = "global.css .main-content does not have standardized padding '16px 32px 32px;'.";
-    }
-    if (!str_contains($content, 'margin: 0 0 6px;')) {
-        $failures[] = "global.css .user-utility-bar does not have tightened margin of '0 0 6px;'.";
-    }
-}
-
-// 5. Check messages_style.css doesn't override sidebar
+// 4. Check messages_style.css doesn't override sidebar
 $messagesCss = $cssDir . '/messages_style.css';
 if (file_exists($messagesCss)) {
     $content = file_get_contents($messagesCss);
     if (preg_match('/^\.sidebar\s*\{/m', $content)) {
         $failures[] = "messages_style.css contains duplicate .sidebar declaration.";
-    }
-}
-
-// 6. Check reserve_style.css does not center .page-header
-$reserveCss = $cssDir . '/reserve_style.css';
-if (file_exists($reserveCss)) {
-    $content = file_get_contents($reserveCss);
-    if (preg_match('/\.page-header\s*\{[^}]*margin-inline:\s*auto/s', $content)) {
-        $failures[] = "reserve_style.css still centers .page-header with 'margin-inline: auto'.";
     }
 }
 

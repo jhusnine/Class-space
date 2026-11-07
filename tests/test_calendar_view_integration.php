@@ -1,14 +1,14 @@
 <?php
-
-
-
-
-
-
+/**
+ * Test: Calendar Double-Booking Badges & AI Slot Inspector Integration
+ * Verifies that the calendar DOM contains required modal and conflict legend elements,
+ * CSS rules are defined for conflict badges and modals (including light-mode),
+ * and JavaScript conflict detection and modal handlers execute accurately.
+ */
 
 echo "=== Task 4: Calendar Double-Booking Badges & AI Inspector Integration Test ===\n";
 
-
+// 1. Verify View Markup in calendar_view.php
 $viewHtml = file_get_contents(__DIR__ . '/../app/views/calendar_view.php');
 if (!str_contains($viewHtml, 'id="cal-inspector-modal"')) {
     throw new RuntimeException("FAILED: calendar_view.php is missing #cal-inspector-modal");
@@ -30,7 +30,7 @@ if (!str_contains($viewHtml, 'id="legend-conflict"')) {
 }
 echo "PASS: View markup verified with modal and conflict legend in calendar_view.php.\n";
 
-
+// 2. Verify Styles in calendar_style.css
 $css = file_get_contents(__DIR__ . '/../public/css/calendar_style.css');
 if (!str_contains($css, '.cal-event.has-conflict')) {
     throw new RuntimeException("FAILED: calendar_style.css is missing .cal-event.has-conflict");
@@ -58,7 +58,7 @@ if (!str_contains($css, 'body.light-mode .cal-modal-card')) {
 }
 echo "PASS: CSS styles verified for conflict badges, inspector modal, and light-mode.\n";
 
-
+// 3. Verify JavaScript Logic in calendar_script.js
 $js = file_get_contents(__DIR__ . '/../public/js/calendar_script.js');
 if (!str_contains($js, 'detectDayConflicts')) {
     throw new RuntimeException("FAILED: calendar_script.js is missing detectDayConflicts");
@@ -77,11 +77,11 @@ if (!str_contains($js, 'reserve_view.php')) {
 }
 echo "PASS: JavaScript structure verified for conflict detection and inspector modal.\n";
 
-
+// 4. Algorithmic Execution Verification (Testing detectDayConflicts via Node.js)
 $testScript = <<<NODE
 const assert = require('assert');
 
-
+// Extract function or re-evaluate detectDayConflicts
 function detectDayConflicts(events) {
     if (!events || events.length < 2) return;
     for (let i = 0; i < events.length; i++) {
@@ -114,7 +114,7 @@ function detectDayConflicts(events) {
     }
 }
 
-
+// Case 1: Overlapping slots in Room 101
 const day1 = [
     { schedule_id: 1, room_name: 'Room 101', schedule_start: '09:00:00', schedule_end: '10:30:00' },
     { schedule_id: 2, room_name: 'Room 101', schedule_start: '10:00:00', schedule_end: '11:30:00' }
@@ -124,7 +124,7 @@ assert.strictEqual(day1[0].isConflict, true, 'day1[0] should be conflict');
 assert.strictEqual(day1[1].isConflict, true, 'day1[1] should be conflict');
 assert.strictEqual(day1[0].conflictsWith.length, 1);
 
-
+// Case 2: Adjacent slots in Room 101 (touching boundary at 10:00) -> Not a conflict
 const day2 = [
     { schedule_id: 3, room_name: 'Room 101', schedule_start: '09:00:00', schedule_end: '10:00:00' },
     { schedule_id: 4, room_name: 'Room 101', schedule_start: '10:00:00', schedule_end: '11:00:00' }
@@ -133,7 +133,7 @@ detectDayConflicts(day2);
 assert.strictEqual(day2[0].isConflict, undefined, 'Adjacent slots should not conflict');
 assert.strictEqual(day2[1].isConflict, undefined, 'Adjacent slots should not conflict');
 
-
+// Case 3: Overlapping slots in DIFFERENT rooms -> Not a conflict
 const day3 = [
     { schedule_id: 5, room_name: 'Room 101', schedule_start: '09:00:00', schedule_end: '10:30:00' },
     { schedule_id: 6, room_name: 'Room 102', schedule_start: '09:30:00', schedule_end: '10:30:00' }

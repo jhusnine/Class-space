@@ -39,22 +39,23 @@ fetch("../controllers/room_controller.php?action=get_halls")
         const sel = document.getElementById("hall-select");
         if (!res.success || !res.data.length) return;
         res.data.forEach(hall => {
-            const opt       = document.createElement("option");
-            opt.value       = hall.hall_id;
+            const opt = document.createElement("option");
+            opt.value = hall.hall_id;
             opt.textContent = hall.hall_name;
             sel.appendChild(opt);
         });
 
-        const preHallId   = parseInt(document.getElementById("preHallId")?.value, 10) || 0;
+        const preHallId = parseInt(document.getElementById("preHallId")?.value, 10) || 0;
         const preHallName = (document.getElementById("preHallName")?.value || '').trim().toLowerCase();
-        const preRoomId   = parseInt(document.getElementById("preRoomId")?.value, 10) || 0;
+        const preRoomId = parseInt(document.getElementById("preRoomId")?.value, 10) || 0;
         const preRoomName = (document.getElementById("preRoomName")?.value || '').trim().toLowerCase();
-        const preDate     = document.getElementById("preDate")?.value;
-        const preDow      = document.getElementById("preDow")?.value;
-        const preType     = document.getElementById("preType")?.value;
-        const preStart    = document.getElementById("preStart")?.value;
-        const preEnd      = document.getElementById("preEnd")?.value;
-        const autoCheck   = document.getElementById("autoCheck")?.value === "1";
+        const preDate = document.getElementById("preDate")?.value;
+        const preDow = document.getElementById("preDow")?.value;
+        const preType = document.getElementById("preType")?.value;
+        const preStart = document.getElementById("preStart")?.value;
+        const preEnd = document.getElementById("preEnd")?.value;
+        const preUntil = document.getElementById("preUntil")?.value;
+        const autoCheck = document.getElementById("autoCheck")?.value === "1";
 
         if (preType === 'weekly' || preDow) {
             const weeklyRadio = document.querySelector('input[name="res-type"][value="weekly"]');
@@ -72,6 +73,10 @@ fetch("../controllers/room_controller.php?action=get_halls")
                         }
                     }
                 }
+            }
+            if (preUntil) {
+                const untilInput = document.getElementById("schedule-until");
+                if (untilInput) untilInput.value = preUntil;
             }
         } else {
             if (preDate) {
@@ -111,10 +116,10 @@ fetch("../controllers/room_controller.php?action=get_halls")
     });
 
 function loadRooms(preselectRoomId = 0, preselectRoomName = '', autoCheck = false) {
-    const hallId  = document.getElementById("hall-select").value;
+    const hallId = document.getElementById("hall-select").value;
     const roomSel = document.getElementById("room-select");
     roomSel.innerHTML = `<option value="">— Loading... —</option>`;
-    roomSel.disabled  = true;
+    roomSel.disabled = true;
     document.getElementById("room-preview").style.display = "none";
 
     if (!hallId) {
@@ -131,14 +136,17 @@ function loadRooms(preselectRoomId = 0, preselectRoomName = '', autoCheck = fals
                 return;
             }
             res.data.forEach(room => {
-                const opt               = document.createElement("option");
-                opt.value               = room.room_id;
-                opt.textContent         = room.room_name;
-                opt.dataset.room_capacity = room.room_capacity;
-                opt.dataset.type        = room.room_type;
-                opt.dataset.ac          = room.room_has_ac;
-                opt.dataset.status      = room.room_status;
                 const roomStatus = String(room.room_status || '').toLowerCase();
+                if (roomStatus === 'maintenance' || roomStatus === 'unavailable') {
+                    return;
+                }
+                const opt = document.createElement("option");
+                opt.value = room.room_id;
+                opt.textContent = room.room_name;
+                opt.dataset.room_capacity = room.room_capacity;
+                opt.dataset.type = room.room_type;
+                opt.dataset.ac = room.room_has_ac;
+                opt.dataset.status = room.room_status;
                 const roomType = String(room.room_type || '').toLowerCase();
                 const roomName = String(room.room_name || '').toLowerCase();
                 const isStorage = roomType.includes('storage') || roomName.includes('storage');
@@ -147,7 +155,11 @@ function loadRooms(preselectRoomId = 0, preselectRoomName = '', autoCheck = fals
                 if (!isReservable) opt.textContent += ' — Not available for reservation';
                 roomSel.appendChild(opt);
             });
-            roomSel.disabled  = false;
+            if (roomSel.options.length <= 1) {
+                roomSel.innerHTML = `<option value="">No rooms available</option>`;
+                return;
+            }
+            roomSel.disabled = false;
             roomSel.addEventListener("change", showRoomPreview);
 
             let roomMatched = false;
@@ -176,8 +188,8 @@ function loadRooms(preselectRoomId = 0, preselectRoomName = '', autoCheck = fals
 }
 
 function showRoomPreview() {
-    const sel     = document.getElementById("room-select");
-    const opt     = sel.options[sel.selectedIndex];
+    const sel = document.getElementById("room-select");
+    const opt = sel.options[sel.selectedIndex];
     const preview = document.getElementById("room-preview");
 
     if (!sel.value) { preview.style.display = "none"; return; }
@@ -188,7 +200,7 @@ function showRoomPreview() {
     const isStorage = roomType.includes('storage') || roomName.includes('storage');
 
     const statusClass = {
-        available:   "preview-status-available",
+        available: "preview-status-available",
         unavailable: "preview-status-unavailable",
         maintenance: "preview-status-maintenance"
     }[roomStatus] ?? "preview-status-unknown";
@@ -227,7 +239,9 @@ function showRoomPreview() {
 function toggleType() {
     const type = document.querySelector('input[name="res-type"]:checked').value;
     document.getElementById("field-date").style.display = type === "one-time" ? "block" : "none";
-    document.getElementById("field-dow").style.display  = type === "weekly"   ? "block" : "none";
+    document.getElementById("field-dow").style.display = type === "weekly" ? "block" : "none";
+    const semEl = document.getElementById("field-semester");
+    if (semEl) semEl.style.display = type === "weekly" ? "block" : "none";
     checkConflicts();
 }
 
@@ -248,13 +262,13 @@ function escapeHtml(str) {
 }
 
 function checkConflicts(forceAiFetch = false) {
-    const roomId      = document.getElementById("room-select").value;
-    const type        = document.querySelector('input[name="res-type"]:checked').value;
-    const start       = document.getElementById("schedule-start").value;
-    const end         = document.getElementById("schedule-end").value;
-    const date        = document.getElementById("schedule-date").value;
-    const dow         = document.getElementById("schedule-dow").value;
-    const warning     = document.getElementById("conflict-warning");
+    const roomId = document.getElementById("room-select").value;
+    const type = document.querySelector('input[name="res-type"]:checked').value;
+    const start = document.getElementById("schedule-start").value;
+    const end = document.getElementById("schedule-end").value;
+    const date = document.getElementById("schedule-date").value;
+    const dow = document.getElementById("schedule-dow").value;
+    const warning = document.getElementById("conflict-warning");
     const aiContainer = document.getElementById("ai-suggestions-container");
 
     if (conflictAbortController) {
@@ -269,7 +283,7 @@ function checkConflicts(forceAiFetch = false) {
 
     if (!roomId || !start || !end) return;
     if (type === "one-time" && !date) return;
-    if (type === "weekly"   && !dow)  return;
+    if (type === "weekly" && !dow) return;
 
     const selectedRoom = document.getElementById("room-select")?.selectedOptions?.[0];
     const selectedStatus = String(selectedRoom?.dataset.status || '').toLowerCase();
@@ -285,8 +299,13 @@ function checkConflicts(forceAiFetch = false) {
     }
 
     const params = new URLSearchParams({ room_id: roomId, start, end, type });
-    if (type === "one-time") params.append("date", date);
-    else                     params.append("dow",  dow);
+    if (type === "one-time") {
+        params.append("date", date);
+    } else {
+        params.append("dow", dow);
+        const until = document.getElementById("schedule-until")?.value;
+        if (until) params.append("until", until);
+    }
     const pendingId = parseInt(document.getElementById("reschedulePendingId")?.value, 10) || 0;
     if (pendingId > 0) params.append("pending_id", String(pendingId));
 
@@ -326,7 +345,7 @@ function checkConflicts(forceAiFetch = false) {
 
 function fetchAiSuggestions(params) {
     const aiContainer = document.getElementById("ai-suggestions-container");
-    const cardsList   = document.getElementById("ai-cards-list");
+    const cardsList = document.getElementById("ai-cards-list");
     const summaryText = document.getElementById("ai-summary-text");
     if (!aiContainer || !cardsList) return;
 
@@ -416,6 +435,10 @@ function applySuggestion(index) {
                     if (res.success) {
                         roomSelect.innerHTML = '<option value="">-- Choose a Room --</option>';
                         res.data.forEach(room => {
+                            const roomStatus = String(room.room_status || '').toLowerCase();
+                            if (roomStatus === 'maintenance' || roomStatus === 'unavailable') {
+                                return;
+                            }
                             const opt = document.createElement("option");
                             opt.value = room.room_id;
                             opt.textContent = room.room_name;
@@ -423,7 +446,6 @@ function applySuggestion(index) {
                             opt.dataset.ac = room.room_has_ac;
                             opt.dataset.status = room.room_status;
                             opt.dataset.room_capacity = room.room_capacity;
-                            const roomStatus = String(room.room_status || '').toLowerCase();
                             const roomType = String(room.room_type || '').toLowerCase();
                             const roomName = String(room.room_name || '').toLowerCase();
                             const isStorage = roomType.includes('storage') || roomName.includes('storage');
@@ -448,7 +470,7 @@ function applySuggestion(index) {
         }
     } else if (sug.type === 'alternative_slot') {
         document.getElementById("schedule-start").value = sug.start;
-        document.getElementById("schedule-end").value   = sug.end;
+        document.getElementById("schedule-end").value = sug.end;
     }
 
     const msg = reschedulePendingId > 0
@@ -464,32 +486,32 @@ function applyAndSaveSuggestion(index) {
 }
 
 document.getElementById("schedule-start").addEventListener("change", checkConflicts);
-document.getElementById("schedule-end").addEventListener("change",   checkConflicts);
-document.getElementById("schedule-date").addEventListener("change",   checkConflicts);
-document.getElementById("schedule-dow").addEventListener("change",    checkConflicts);
+document.getElementById("schedule-end").addEventListener("change", checkConflicts);
+document.getElementById("schedule-date").addEventListener("change", checkConflicts);
+document.getElementById("schedule-dow").addEventListener("change", checkConflicts);
 
 function getReservationReviewData() {
     const subject = document.getElementById("reservation-subject")?.value.trim() || "";
     const roomId = document.getElementById("room-select").value;
-    const type   = document.querySelector('input[name="res-type"]:checked').value;
-    const start  = document.getElementById("schedule-start").value;
-    const end    = document.getElementById("schedule-end").value;
-    const date   = document.getElementById("schedule-date").value;
-    const dow    = document.getElementById("schedule-dow").value;
+    const type = document.querySelector('input[name="res-type"]:checked').value;
+    const start = document.getElementById("schedule-start").value;
+    const end = document.getElementById("schedule-end").value;
+    const date = document.getElementById("schedule-date").value;
+    const dow = document.getElementById("schedule-dow").value;
     const reschedulePendingId = parseInt(document.getElementById("reschedulePendingId")?.value, 10) || 0;
     const selectedRoom = document.getElementById("room-select")?.selectedOptions?.[0];
     const selectedStatus = String(selectedRoom?.dataset.status || '').toLowerCase();
     const selectedType = String(selectedRoom?.dataset.type || '').toLowerCase();
     const selectedName = String(selectedRoom?.textContent || '').toLowerCase();
 
-    if (!subject)                   return toast.show("Please enter the reservation subject.", "error", 2500);
-    if (!roomId)                    return toast.show("Please select a room.", "error", 2500);
+    if (!subject) return toast.show("Please enter the reservation subject.", "error", 2500);
+    if (!roomId) return toast.show("Please select a room.", "error", 2500);
     if (selectedStatus !== "available" || selectedType.includes("storage") || selectedName.includes("storage"))
         return toast.show("This room is not available for reservation.", "error", 2500);
-    if (!start || !end)             return toast.show("Please set start and end time.", "error", 2500);
-    if (start >= end)               return toast.show("End time must be after start time.", "error", 2500);
+    if (!start || !end) return toast.show("Please set start and end time.", "error", 2500);
+    if (start >= end) return toast.show("End time must be after start time.", "error", 2500);
     if (type === "one-time" && !date) return toast.show("Please select a date.", "error", 2500);
-    if (type === "weekly"   && !dow)  return toast.show("Please select a day of the week.", "error", 2500);
+    if (type === "weekly" && !dow) return toast.show("Please select a day of the week.", "error", 2500);
     if (document.getElementById("conflict-warning").style.display !== "none")
         return toast.show("Please resolve the scheduling conflict first.", "error", 2500);
 
@@ -497,11 +519,15 @@ function getReservationReviewData() {
     const roomSelect = document.getElementById("room-select");
     const hallName = hallSelect.selectedOptions[0]?.textContent?.trim() || "—";
     const roomName = roomSelect.selectedOptions[0]?.textContent?.replace(/\s+—\s+Not available for reservation$/i, '').trim() || "—";
+    const until = document.getElementById("schedule-until")?.value || "";
+    const untilFormatted = until
+        ? new Date(`${until}T00:00:00`).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" })
+        : "";
     const schedule = type === "one-time"
-        ? new Date(`${date}T00:00:00`).toLocaleDateString(undefined, {year: "numeric", month: "long", day: "numeric"})
-        : `Every ${dow}`;
+        ? new Date(`${date}T00:00:00`).toLocaleDateString(undefined, { year: "numeric", month: "long", day: "numeric" })
+        : (untilFormatted ? `Every ${dow} (until ${untilFormatted})` : `Every ${dow}`);
 
-    return { subject, roomId, type, start, end, date, dow, reschedulePendingId, hallName, roomName, schedule };
+    return { subject, roomId, type, start, end, date, dow, until, reschedulePendingId, hallName, roomName, schedule };
 }
 
 function openBookingReview() {
@@ -544,21 +570,22 @@ function submitReservationRequest() {
     const reviewData = getReservationReviewData();
     if (!reviewData || typeof reviewData !== "object") return;
 
-    const { subject, roomId, type, start, end, date, dow, reschedulePendingId } = reviewData;
+    const { subject, roomId, type, start, end, date, dow, until, reschedulePendingId } = reviewData;
 
-    const btn     = document.getElementById("submit-btn");
+    const btn = document.getElementById("submit-btn");
     closeBookingReview();
-    btn.disabled  = true;
+    btn.disabled = true;
     btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> ${reschedulePendingId > 0 ? 'Updating...' : 'Submitting...'}`;
 
     const payload = {
         subject: subject,
         room_id: roomId,
-        type:    type,
-        start:   start,
-        end:     end,
-        date:    type === "one-time" ? date : null,
-        dow:     type === "weekly"   ? dow  : null
+        type: type,
+        start: start,
+        end: end,
+        date: type === "one-time" ? date : null,
+        dow: type === "weekly" ? dow : null,
+        until: type === "weekly" ? until : null
     };
 
     if (reschedulePendingId > 0) {
@@ -566,35 +593,35 @@ function submitReservationRequest() {
     }
 
     fetch("../controllers/reserve_controller.php", {
-        method:  "POST",
+        method: "POST",
         headers: { "Content-Type": "application/json" },
-        body:    JSON.stringify(payload)
+        body: JSON.stringify(payload)
     })
-    .then(r => r.json())
-    .then(res => {
-        if (res.success) {
-            if (res.action === 'updated' || reschedulePendingId > 0) {
-                toast.show(res.message || "Reservation updated! Redirecting to calendar...", "success", 2500);
-                setTimeout(() => window.location.href = "calendar_view.php?rescheduled=1", 1200);
+        .then(r => r.json())
+        .then(res => {
+            if (res.success) {
+                if (res.action === 'updated' || reschedulePendingId > 0) {
+                    toast.show(res.message || "Reservation updated! Redirecting to calendar...", "success", 2500);
+                    setTimeout(() => window.location.href = "calendar_view.php?rescheduled=1", 1200);
+                } else {
+                    toast.show("Reservation submitted! Waiting for admin approval.", "success", 3000);
+                    setTimeout(() => window.location.href = "user_homepage_view.php?submitted=1", 1500);
+                }
             } else {
-                toast.show("Reservation submitted! Waiting for admin approval.", "success", 3000);
-                setTimeout(() => window.location.href = "user_homepage_view.php?submitted=1", 1500);
+                toast.show(res.message ?? "Something went wrong.", "error", 3000);
+                btn.disabled = false;
+                btn.innerHTML = reschedulePendingId > 0
+                    ? `<i class="fas fa-clipboard-check"></i> Review Updated Reservation`
+                    : `<i class="fas fa-clipboard-check"></i> Review Reservation Details`;
             }
-        } else {
-            toast.show(res.message ?? "Something went wrong.", "error", 3000);
-            btn.disabled  = false;
+        })
+        .catch(() => {
+            toast.show("Network error. Please try again.", "error", 3000);
+            btn.disabled = false;
             btn.innerHTML = reschedulePendingId > 0
                 ? `<i class="fas fa-clipboard-check"></i> Review Updated Reservation`
                 : `<i class="fas fa-clipboard-check"></i> Review Reservation Details`;
-        }
-    })
-    .catch(() => {
-        toast.show("Network error. Please try again.", "error", 3000);
-        btn.disabled = false;
-        btn.innerHTML = reschedulePendingId > 0
-            ? `<i class="fas fa-clipboard-check"></i> Review Updated Reservation`
-            : `<i class="fas fa-clipboard-check"></i> Review Reservation Details`;
-    });
+        });
 }
 
 function submitReservation() {
@@ -606,6 +633,7 @@ initSharedMobileMenu();
 
 
 document.getElementById("hall-select")?.addEventListener("change", () => loadRooms());
+document.getElementById("schedule-until")?.addEventListener("change", checkConflicts);
 document.querySelectorAll('input[name="res-type"]').forEach(input => {
     input.addEventListener("change", toggleType);
 });

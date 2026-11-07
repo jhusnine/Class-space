@@ -51,9 +51,11 @@ function loadPending(){
             rows.forEach((row,i)=>{
                 const isRecurring = String(row.pending_schedule_day_of_week ?? "").trim() !== "";
 
-                const dayDisplay = isRecurring
-                    ? `<span class="pending-recurring">Every ${escapeHtml(row.pending_schedule_day_of_week)}</span>`
-                    : `<span>${escapeHtml(row.pending_schedule_day || "—")}</span>`;
+                let dayDisplay = `<span>${escapeHtml(row.pending_schedule_day || "—")}</span>`;
+                if (isRecurring) {
+                    const untilText = row.pending_schedule_end_date ? ` <span class="pending-until" style="font-size:0.85em; opacity:0.8;">(until ${escapeHtml(row.pending_schedule_end_date)})</span>` : '';
+                    dayDisplay = `<span class="pending-recurring">Every ${escapeHtml(row.pending_schedule_day_of_week)}</span>${untilText}`;
+                }
 
                 const tr=document.createElement("tr");
 

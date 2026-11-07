@@ -281,8 +281,9 @@ function openModal(roomId, roomName, hallName) {
             body.innerHTML = "";
             res.data.forEach(r => {
                 const isRecurring = !r.schedule_day;
+                const untilText   = r.schedule_end_date ? ` (until ${r.schedule_end_date})` : '';
                 const dayLabel    = isRecurring
-                    ? `Every ${r.schedule_day_of_week}`
+                    ? `Every ${r.schedule_day_of_week}${untilText}`
                     : new Date(r.schedule_day + "T00:00:00").toLocaleDateString("en-US", {
                         month: "short", day: "numeric", year: "numeric"
                     });

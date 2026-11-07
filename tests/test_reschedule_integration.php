@@ -1,12 +1,12 @@
 <?php
-
-
-
-
-
-
-
-
+/**
+ * Test: Reschedule and In-Modal Conflict Resolution API Integration
+ * Verifies:
+ * 1. reserve_controller.php can update an existing pending reservation to a new room/time.
+ * 2. reserve_controller.php rejects unauthorized updates.
+ * 3. reserve_controller.php can cancel/withdraw a pending reservation.
+ * 4. DOM and JS structures exist for modal AI alternatives and withdraw buttons.
+ */
 
 require_once __DIR__ . '/../includes/database_include.php';
 
@@ -22,19 +22,20 @@ $pdo = new PDO(
     ]
 );
 
-$accId = 3;
+$accId = 3; // Account from database
 
-
+// 1. Create a temporary fixture pending reservation
 $pdo->prepare("
     INSERT INTO pendingschedule (room_id, account_id, pending_schedule_day_of_week, pending_schedule_start, pending_schedule_end, pending_schedule_day, pending_schedule_status)
     VALUES (67, ?, 'Monday', '08:00:00', '10:00:00', NULL, 'pending')
 ")->execute([$accId]);
 $fixturePendingId = (int)$pdo->lastInsertId();
 
-
+// 2. Test updating this pending reservation to room 2 (PH102)
 $postJson = json_encode([
     'pending_id' => $fixturePendingId,
     'room_id' => 2,
+    'subject' => 'Integration Reschedule',
     'type' => 'weekly',
     'dow' => 'Monday',
     'start' => '08:00',
@@ -75,7 +76,7 @@ if (empty($res['success']) || ($res['action'] ?? '') !== 'updated') {
     throw new RuntimeException("FAILED: Updating pending reservation failed. Output: $out, Err: $err");
 }
 
-
+// Verify in DB that room_id was updated to 2
 $updatedRow = $pdo->query("SELECT room_id FROM pendingschedule WHERE pending_id = $fixturePendingId")->fetch();
 if ((int)$updatedRow['room_id'] !== 2) {
     $pdo->prepare("DELETE FROM pendingschedule WHERE pending_id = ?")->execute([$fixturePendingId]);
@@ -83,7 +84,7 @@ if ((int)$updatedRow['room_id'] !== 2) {
 }
 echo "PASS: Pending reservation successfully updated to Room 2 in database.\n";
 
-
+// 3. Test cancel/withdraw action
 $cancelJson = json_encode([
     'action' => 'cancel',
     'pending_id' => $fixturePendingId
@@ -111,7 +112,7 @@ if ($checkDeleted) {
 @unlink($runnerFile);
 echo "PASS: Pending reservation successfully cancelled and deleted from database.\n";
 
-
+// 4. Verify calendar_view.php markup and calendar_script.js functions
 $calHtml = file_get_contents(__DIR__ . '/../app/views/calendar_view.php');
 if (!str_contains($calHtml, 'id="modal-ai-recommendations"')) {
     throw new RuntimeException("FAILED: calendar_view.php is missing #modal-ai-recommendations");
@@ -130,7 +131,7 @@ if (!str_contains($calJs, 'cancelPendingFromModal')) {
 }
 echo "PASS: calendar_script.js verified with applyModalAlternative and cancelPendingFromModal handlers.\n";
 
-
+// 5. Verify reserve_view.php and reserve_script.js
 $resHtml = file_get_contents(__DIR__ . '/../app/views/reserve_view.php');
 if (!str_contains($resHtml, 'id="reschedulePendingId"')) {
     throw new RuntimeException("FAILED: reserve_view.php is missing #reschedulePendingId");

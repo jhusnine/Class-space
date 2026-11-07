@@ -13,7 +13,7 @@ function formatDayDate(row) {
         return d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
     }
     if (row.day_of_week) {
-        return `Every ${row.day_of_week}`;
+        return `Every ${row.day_of_week}${row.end_date ? ` (until ${row.end_date})` : ''}`;
     }
     return "—";
 }
