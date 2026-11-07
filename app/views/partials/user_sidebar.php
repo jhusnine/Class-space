@@ -10,11 +10,20 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-$sidebarFname = htmlspecialchars($_SESSION["fname"] ?? "User", ENT_QUOTES, "UTF-8");
-$sidebarLname = htmlspecialchars($_SESSION["lname"] ?? "", ENT_QUOTES, "UTF-8");
-$sidebarFullName = trim($sidebarFname . ($sidebarLname !== "" ? " " . $sidebarLname : ""));
+$rawFname = trim((string)($_SESSION["fname"] ?? "User"));
+if ($rawFname === "") {
+    $rawFname = "User";
+}
+$rawLname = trim((string)($_SESSION["lname"] ?? ""));
 
-$sidebarInitial = strtoupper(substr(trim((string)($_SESSION["fname"] ?? "U")), 0, 1));
+$sidebarFname = htmlspecialchars($rawFname, ENT_QUOTES, "UTF-8");
+$sidebarLname = htmlspecialchars($rawLname, ENT_QUOTES, "UTF-8");
+$sidebarFullName = trim($sidebarFname . ($sidebarLname !== "" ? " " . $sidebarLname : ""));
+if ($sidebarFullName === "") {
+    $sidebarFullName = "User";
+}
+
+$sidebarInitial = strtoupper(substr($rawFname, 0, 1));
 if ($sidebarInitial === "") {
     $sidebarInitial = "U";
 }

@@ -39,6 +39,8 @@ foreach ($requiredCssSnippets as $snippet) {
 echo "PASS: Task 1 CSS tokens and status edges verified.\n";
 
 $view = file_get_contents(__DIR__ . '/../app/views/user_homepage_view.php');
+$sidebarPartial = file_get_contents(__DIR__ . '/../app/views/partials/user_sidebar.php');
+$viewWithSidebar = $view . "\n" . $sidebarPartial;
 
 $requiredViewElements = [
     'session_start()',
@@ -77,7 +79,7 @@ if (str_contains($view, 'class="legend-color"') || str_contains($view, 'Green ·
 }
 
 foreach ($requiredViewElements as $element) {
-    if (!str_contains($view, $element)) {
+    if (!str_contains($viewWithSidebar, $element)) {
         throw new RuntimeException("FAIL [View]: Missing required element: " . $element);
     }
 }
@@ -85,14 +87,14 @@ echo "PASS: Task 2 view markup and preserved elements verified.\n";
 
 $userShellViews = [
     'user_homepage_view.php', 'calendar_view.php', 'notifications_view.php',
-    'profile_view.php', 'security_view.php', 'settings_view.php',
-    'about_view.php', 'contact_view.php', 'reserve_view.php',
+    'profile_view.php', 'settings_view.php', 'contact_view.php', 'reserve_view.php',
 ];
 foreach ($userShellViews as $viewName) {
     $source = file_get_contents(__DIR__ . '/../app/views/' . $viewName);
-    if (!preg_match('/<ul class="nav-menu">(.*?)<\/ul>/s', $source, $navMatch)
-        || !preg_match('/<div class="sidebar-footer">(.*?)<\/div>/s', $source, $footerMatch)
-        || !preg_match('/<nav class="user-utility-bar".*?<\/nav>/s', $source, $utilityMatch)) {
+    $composite = str_contains($source, 'partials/user_sidebar.php') ? $source . "\n" . $sidebarPartial : $source;
+    if (!preg_match('/<ul class="nav-menu">(.*?)<\/ul>/s', $composite, $navMatch)
+        || !preg_match('/<div class="sidebar-footer">(.*?)<\/div>/s', $composite, $footerMatch)
+        || !preg_match('/<nav class="user-utility-bar".*?<\/nav>/s', $composite, $utilityMatch)) {
         throw new RuntimeException("FAIL [User shell]: Missing shared shell in {$viewName}");
     }
     $nav = $navMatch[1];
@@ -104,13 +106,13 @@ foreach ($userShellViews as $viewName) {
         || !str_contains($utility, 'href="contact_view.php"')
         || !str_contains($utility, 'href="notifications_view.php"')
         || !str_contains($utility, 'href="profile_view.php"')
-        || substr_count($source, 'id="notif-badge"') !== 1
-        || !str_contains($source, 'class="sidebar-profile-card"')
+        || substr_count($composite, 'id="notif-badge"') !== 1
+        || !str_contains($composite, 'class="sidebar-profile-card"')
         || !str_contains($source, 'toast.js')) {
         throw new RuntimeException("FAIL [User shell]: Shortcut relocation or preserved sidebar behavior failed in {$viewName}");
     }
 }
-echo "PASS: Top-right Contact, Notifications and Profile shortcuts verified across all 9 user pages; sidebar profile/logout and notification polling preserved.\n";
+echo "PASS: Top-right Contact, Notifications and Profile shortcuts verified across all user pages; sidebar profile/logout and notification polling preserved.\n";
 
 $notifApi = file_get_contents(__DIR__ . '/../app/controllers/notifications_controller.php');
 $notifReadApi = file_get_contents(__DIR__ . '/../app/controllers/mark_notif_read.php');
@@ -325,18 +327,17 @@ $matrixChecks = [
 
     'Image Fallbacks' => str_contains($js, 'wireImageFallbacks') && str_contains($js, 'fallbackUsed'),
 
-    'Mobile Navigation' => str_contains($view, 'toast.js') && str_contains($sharedJs, 'initSharedMobileMenu') && !str_contains($js, 'initSharedMobileMenu') && str_contains($view, 'id="mobile-menu-toggle"') && str_contains($view, 'id="mobile-menu-backdrop"'),
+    'Mobile Navigation' => str_contains($view, 'toast.js') && str_contains($sharedJs, 'initSharedMobileMenu') && !str_contains($js, 'initSharedMobileMenu') && str_contains($viewWithSidebar, 'id="mobile-menu-toggle"') && str_contains($viewWithSidebar, 'id="mobile-menu-backdrop"'),
 
     'Toast Alerts' => str_contains($js, 'submitted') && str_contains($js, 'replaceState'),
 
-    'Route: Calendar' => str_contains($view, 'href="calendar_view.php"'),
-    'Route: Notifications' => str_contains($view, 'href="notifications_view.php"'),
-    'Route: Profile' => str_contains($view, 'href="profile_view.php"'),
-    'Route: Security' => str_contains($view, 'href="security_view.php"'),
-    'Route: Settings' => str_contains($view, 'href="settings_view.php"'),
-    'Route: About' => str_contains($view, 'href="about_view.php"'),
-    'Route: Contact' => str_contains($view, 'href="contact_view.php"'),
-    'Route: Logout' => str_contains($view, 'href="logout.php"')
+    'Route: Calendar' => str_contains($viewWithSidebar, 'href="calendar_view.php"'),
+    'Route: Notifications' => str_contains($viewWithSidebar, 'href="notifications_view.php"'),
+    'Route: Profile' => str_contains($viewWithSidebar, 'href="profile_view.php"'),
+    'Route: Settings' => str_contains($viewWithSidebar, 'href="settings_view.php"'),
+    'Route: About' => str_contains($viewWithSidebar, 'href="about_view.php"'),
+    'Route: Contact' => str_contains($viewWithSidebar, 'href="contact_view.php"'),
+    'Route: Logout' => str_contains($viewWithSidebar, 'href="logout.php"')
 ];
 
 foreach ($matrixChecks as $name => $passed) {

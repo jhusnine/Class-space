@@ -48,13 +48,6 @@ body {
 
 /* Nav and footer link colors managed by global.css */
 
-.settings-eyebrow {
-    margin: 0 0 6px;
-    color: var(--brand-accent);
-    font-size: 11px;
-    font-weight: 800;
-    letter-spacing: .14em;
-}
 
 .settings-intro {
     margin: 8px 0 0;

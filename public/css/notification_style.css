@@ -7,19 +7,6 @@
     margin-bottom: 20px;
 }
 
-.notif-title-main {
-    font-size: 24px;
-    font-weight: 700;
-    margin-bottom: 4px;
-    color: var(--text-high);
-    transition: color 0.3s ease;
-}
-
-.notif-subtitle {
-    color: var(--text-low);
-    font-size: 13px;
-    transition: color 0.3s ease;
-}
 
 
 

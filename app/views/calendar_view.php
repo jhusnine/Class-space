@@ -35,7 +35,7 @@ $themeClass = (isset($_COOKIE['theme']) && $_COOKIE['theme'] === 'light') ? 'lig
 
     <?php
     $activeTab = 'calendar';
-    require_once __DIR__ . '/partials/user_sidebar.php';
+    require __DIR__ . '/partials/user_sidebar.php';
     ?>
 
     <main class="main-content">

@@ -35,7 +35,7 @@
 
     <?php
     $activeTab = 'dashboard';
-    require_once __DIR__ . '/partials/user_sidebar.php';
+    require __DIR__ . '/partials/user_sidebar.php';
     ?>
 
 

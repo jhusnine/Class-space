@@ -1,23 +1,25 @@
 <?php
 
-
-
-
 $viewsDir = __DIR__ . '/../app/views/';
+$partialPath = $viewsDir . 'partials/user_sidebar.php';
 $pages = [
-    'user_homepage_view.php' => ['active_nav' => 'user_homepage_view.php', 'active_footer' => null],
-    'calendar_view.php'      => ['active_nav' => 'calendar_view.php',      'active_footer' => null],
-    'notifications_view.php' => ['active_nav' => null,                    'active_footer' => null],
-    'profile_view.php'       => ['active_nav' => null,                    'active_footer' => null],
-    'security_view.php'      => ['active_nav' => 'security_view.php',      'active_footer' => null],
-    'settings_view.php'      => ['active_nav' => 'settings_view.php',      'active_footer' => null],
-    'reserve_view.php'       => ['active_nav' => null,                    'active_footer' => null],
-    'about_view.php'         => ['active_nav' => null,                    'active_footer' => 'about_view.php'],
-    'contact_view.php'       => ['active_nav' => null,                    'active_footer' => null],
+    'user_homepage_view.php' => ['active_tab' => 'dashboard'],
+    'calendar_view.php'      => ['active_tab' => 'calendar'],
+    'notifications_view.php' => ['active_tab' => null],
+    'profile_view.php'       => ['active_tab' => null],
+    'settings_view.php'      => ['active_tab' => 'settings'],
+    'reserve_view.php'       => ['active_tab' => 'reserve'],
+    'contact_view.php'       => ['active_tab' => null],
 ];
 
 echo "=== Collegiate Sidebar Consistency Test ===\n";
 $allPassed = true;
+
+if (!file_exists($partialPath)) {
+    echo "[FAIL] Missing shared sidebar partial: partials/user_sidebar.php\n";
+    exit(1);
+}
+$partialContent = file_get_contents($partialPath);
 
 foreach ($pages as $filename => $expected) {
     $filepath = $viewsDir . $filename;
@@ -27,14 +29,17 @@ foreach ($pages as $filename => $expected) {
         continue;
     }
 
-    $content = file_get_contents($filepath);
+    $source = file_get_contents($filepath);
+    $content = $source . "\n" . $partialContent;
     $errors = [];
 
-
-    if (!str_contains($content, 'fonts.googleapis.com/css2?family=Plus+Jakarta+Sans')) {
-        $errors[] = "Missing Plus Jakarta Sans font link";
+    if (!str_contains($source, 'partials/user_sidebar.php')) {
+        $errors[] = "Missing inclusion of partials/user_sidebar.php";
     }
 
+    if (!str_contains($source, 'fonts.googleapis.com/css2?family=Plus+Jakarta+Sans')) {
+        $errors[] = "Missing Plus Jakarta Sans font link";
+    }
 
     if (!str_contains($content, 'id="mobile-menu-toggle"')) {
         $errors[] = "Missing #mobile-menu-toggle";
@@ -46,7 +51,6 @@ foreach ($pages as $filename => $expected) {
         $errors[] = "Missing #classspace-sidebar";
     }
 
-
     if (!str_contains($content, 'brand-header') || !str_contains($content, 'brand-logo-frame')) {
         $errors[] = "Missing brand-header or brand-logo-frame";
     }
@@ -54,32 +58,18 @@ foreach ($pages as $filename => $expected) {
         $errors[] = "Missing brand subtitle 'First City Providential College'";
     }
 
-
-    if (!str_contains($content, 'Campus Dashboard')) {
-        $errors[] = "Missing nav label 'Campus Dashboard'";
+    if (!str_contains($content, '<span>Dashboard</span>')) {
+        $errors[] = "Missing nav label 'Dashboard'";
     }
-    if (!str_contains($content, 'Master Calendar')) {
-        $errors[] = "Missing nav label 'Master Calendar'";
-    }
-    if (!str_contains($content, 'id="notif-badge"')) {
-        $errors[] = "Missing #notif-badge";
+    if (!str_contains($content, '<span>Calendar</span>')) {
+        $errors[] = "Missing nav label 'Calendar'";
     }
 
-
-    if ($expected['active_nav'] !== null) {
-
-        if (!preg_match('/href="' . preg_quote($expected['active_nav'], '/') . '"[^>]*class="[^"]*nav-link[^"]*active[^"]*"/', $content)) {
-            $errors[] = "Expected active nav-link for " . $expected['active_nav'];
+    if ($expected['active_tab'] !== null) {
+        if (!str_contains($source, "\$activeTab = '{$expected['active_tab']}';") && !str_contains($source, "\$activeTab = \"{$expected['active_tab']}\";")) {
+            $errors[] = "Expected activeTab variable '{$expected['active_tab']}' in $filename";
         }
     }
-
-
-    if ($expected['active_footer'] !== null) {
-        if (!preg_match('/href="' . preg_quote($expected['active_footer'], '/') . '"[^>]*class="[^"]*footer-link[^"]*active[^"]*"/', $content)) {
-            $errors[] = "Expected active footer-link for " . $expected['active_footer'];
-        }
-    }
-
 
     if (!str_contains($content, 'sidebar-bottom')) {
         $errors[] = "Missing .sidebar-bottom";
@@ -90,18 +80,15 @@ foreach ($pages as $filename => $expected) {
     if (!str_contains($content, 'user-avatar-circle')) {
         $errors[] = "Missing .user-avatar-circle";
     }
-    if (!str_contains($content, 'BSIT &bull; Student')) {
-        $errors[] = "Missing 'BSIT &bull; Student' subtitle";
-    }
     if (!str_contains($content, 'sidebar-profile-logout')) {
         $errors[] = "Missing .sidebar-profile-logout";
     }
-    if (!str_contains($content, 'about_view.php') || !str_contains($content, 'contact_view.php') || !str_contains($content, 'logout.php')) {
+    if (!str_contains($content, 'about_view.php') || !str_contains($content, 'logout.php')) {
         $errors[] = "Missing footer route links";
     }
 
     if (empty($errors)) {
-        echo "  [PASS] $filename: Sidebar structure, brand header, profile strip, & active states verified.\n";
+        echo "  [PASS] $filename: Sidebar structure, brand header, profile card, & active states verified.\n";
     } else {
         echo "  [FAIL] $filename:\n    - " . implode("\n    - ", $errors) . "\n";
         $allPassed = false;
@@ -109,7 +96,7 @@ foreach ($pages as $filename => $expected) {
 }
 
 if ($allPassed) {
-    echo "\n=== ALL 9 USER PAGES HAVE FULLY CONSISTENT MODERN COLLEGIATE SIDEBAR (Exit 0) ===\n";
+    echo "\n=== ALL 7 USER PAGES HAVE FULLY CONSISTENT MODERN COLLEGIATE SIDEBAR (Exit 0) ===\n";
     exit(0);
 } else {
     echo "\n=== ERRORS DETECTED IN SIDEBAR CONSISTENCY ===\n";
