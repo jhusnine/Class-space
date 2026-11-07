@@ -7,6 +7,7 @@ $rootDir = dirname(__DIR__);
 $viewsDir = $rootDir . '/app/views';
 $cssDir = $rootDir . '/public/css';
 $sidebarPartial = $viewsDir . '/partials/user_sidebar.php';
+$utilityPartial = $viewsDir . '/partials/user_utility_bar.php';
 
 $views = [
     'user_homepage_view.php',
@@ -27,6 +28,32 @@ if (!file_exists($sidebarPartial)) {
     exec("php -l " . escapeshellarg($sidebarPartial) . " 2>&1", $lintOutput, $lintCode);
     if ($lintCode !== 0) {
         $failures[] = "Sidebar partial has PHP syntax errors:\n" . implode("\n", $lintOutput);
+    }
+}
+
+// 1b. Utility bar partial exists and contains dropdown
+if (!file_exists($utilityPartial)) {
+    $failures[] = "Utility bar partial not found at: $utilityPartial";
+} else {
+    exec("php -l " . escapeshellarg($utilityPartial) . " 2>&1", $utilLintOutput, $utilLintCode);
+    if ($utilLintCode !== 0) {
+        $failures[] = "Utility bar partial has PHP syntax errors:\n" . implode("\n", $utilLintOutput);
+    }
+    $utilContent = file_get_contents($utilityPartial);
+    if (!str_contains($utilContent, 'id="profile-dropdown-trigger"')) {
+        $failures[] = "Utility bar partial missing #profile-dropdown-trigger.";
+    }
+    if (!str_contains($utilContent, 'id="profile-dropdown"')) {
+        $failures[] = "Utility bar partial missing #profile-dropdown.";
+    }
+    if (!str_contains($utilContent, 'href="profile_view.php"')) {
+        $failures[] = "Profile dropdown missing link to profile_view.php.";
+    }
+    if (!str_contains($utilContent, 'href="settings_view.php"')) {
+        $failures[] = "Profile dropdown missing link to settings_view.php.";
+    }
+    if (!str_contains($utilContent, 'href="logout.php"')) {
+        $failures[] = "Profile dropdown missing link to logout.php.";
     }
 }
 
