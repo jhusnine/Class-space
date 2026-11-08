@@ -222,12 +222,29 @@ function showRoomPreview() {
     const displayStatus = isStorage ? "STORAGE" : (opt?.dataset.status || "Unknown");
 
     if (preview) {
+        const hallSelect = document.getElementById("hall-select");
+        const hallName = hallSelect?.selectedOptions?.[0]?.textContent?.trim() || "";
+        const bannerUrl = getBuildingImage(hallName);
+        const cleanName = opt?.textContent?.replace(/\s+—\s+Not available for reservation$/i, '') || '';
+
         preview.innerHTML = `
-            <strong class="preview-name">${escapeHtml(opt?.textContent)}</strong> &nbsp;|&nbsp;
-            Capacity: ${escapeHtml(opt?.dataset.room_capacity)} &nbsp;|&nbsp;
-            ${escapeHtml(opt?.dataset.type)} &nbsp;|&nbsp;
-            ${opt?.dataset.ac == 1 ? "AC" : "No AC"} &nbsp;|&nbsp;
-            <span class="${displayStatusClass}">${displayStatus}</span>
+            <div class="room-preview-card-inner">
+                <div class="room-preview-thumb">
+                    <img src="${bannerUrl}" alt="${escapeHtml(hallName)}" class="room-preview-img">
+                </div>
+                <div class="room-preview-content">
+                    <div class="room-preview-title-row">
+                        <strong class="room-preview-name">${escapeHtml(cleanName)}</strong>
+                        <span class="${displayStatusClass}">${displayStatus}</span>
+                    </div>
+                    <div class="room-preview-meta-row">
+                        ${hallName ? `<span class="room-preview-tag"><i class="fas fa-building"></i> ${escapeHtml(hallName)}</span>` : ''}
+                        <span class="room-preview-tag"><i class="fas fa-users"></i> ${escapeHtml(opt?.dataset.room_capacity)} seats</span>
+                        <span class="room-preview-tag"><i class="fas fa-tag"></i> ${escapeHtml(opt?.dataset.type)}</span>
+                        ${opt?.dataset.ac == 1 ? '<span class="room-preview-tag ac-tag"><i class="fas fa-snowflake"></i> AC</span>' : '<span class="room-preview-tag">No AC</span>'}
+                    </div>
+                </div>
+            </div>
         `;
         preview.style.display = "block";
     }
@@ -506,7 +523,7 @@ function applySuggestion(index, onComplete) {
                         showRoomPreview();
                         checkConflicts();
                         const msg = reschedulePendingId > 0
-                            ? `Selected ${sug.room_name}! Click "Update & Resolve" below to save.`
+                            ? `Selected ${sug.room_name}! Click "Proceed to Review" to confirm.`
                             : `Switched to recommended room: ${sug.room_name} (${sug.formatted_time})`;
                         toast.show(msg, "success", 3500);
                         if (typeof onComplete === 'function') onComplete();
@@ -525,7 +542,7 @@ function applySuggestion(index, onComplete) {
     }
 
     const msg = reschedulePendingId > 0
-        ? `Selected slot! Click "Update & Resolve" below to save.`
+        ? `Selected slot! Click "Proceed to Review" to confirm.`
         : `Applied recommendation: ${sug.room_name} (${sug.formatted_time})`;
     toast.show(msg, "success", 3500);
     checkConflicts();
@@ -667,6 +684,8 @@ function updateStepper(stepNumber) {
         progressBar.style.width = widths[stepNumber] || "0%";
     }
 
+    const stepIcons = { 1: "fa-door-open", 2: "fa-calendar-days", 3: "fa-clipboard-check" };
+
     document.querySelectorAll(".wizard-stepper .step-item").forEach(item => {
         const step = parseInt(item.dataset.step, 10);
         const circle = item.querySelector(".step-circle");
@@ -681,11 +700,11 @@ function updateStepper(stepNumber) {
             item.classList.add("active");
             item.classList.remove("completed");
             item.setAttribute("aria-current", "step");
-            if (circle) circle.innerHTML = String(step);
+            if (circle) circle.innerHTML = `<i class="fas ${stepIcons[step] || 'fa-circle'}"></i>`;
         } else {
             item.classList.remove("active", "completed");
             item.removeAttribute("aria-current");
-            if (circle) circle.innerHTML = String(step);
+            if (circle) circle.innerHTML = `<i class="fas ${stepIcons[step] || 'fa-circle'}"></i>`;
         }
     });
 }
@@ -848,6 +867,19 @@ function goToStep(stepNumber) {
 
     currentWizardStep = stepNumber;
     window.currentWizardStep = currentWizardStep;
+
+    if (stepNumber === 1) {
+        document.getElementById("reservation-subject")?.focus();
+    } else if (stepNumber === 2) {
+        const type = document.querySelector('input[name="res-type"]:checked')?.value;
+        if (type === "weekly") {
+            document.getElementById("schedule-dow")?.focus();
+        } else {
+            document.getElementById("schedule-date")?.focus();
+        }
+    } else if (stepNumber === 3) {
+        document.getElementById("submit-btn")?.focus();
+    }
 
     const card = document.querySelector(".reservation-card");
     if (card && typeof card.scrollIntoView === "function") {
