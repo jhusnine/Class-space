@@ -142,11 +142,11 @@ $themeClass = (isset($_COOKIE['theme']) && $_COOKIE['theme'] === 'light') ? 'lig
                 </div>
                 <p id="modal-conflict-details" class="conflict-box-desc"></p>
                 <div class="conflict-box-hint">
-                    <i class="fas fa-robot"></i> Use ClassSpace's CSP engine to find optimal non-conflicting slots or alternative rooms.
+                    <i class="fas fa-info-circle"></i> View alternative rooms and open schedule slots to resolve this conflict.
                 </div>
                 <div id="modal-ai-recommendations" class="modal-ai-recommendations" style="display:none;">
                     <div class="ai-rec-header">
-                        <span><i class="fas fa-wand-magic-sparkles"></i> <strong>AI Recommended Alternative Rooms</strong></span>
+                        <span><strong>Recommended Alternative Rooms</strong></span>
                         <span class="ai-rec-subtitle">Click to immediately switch your reservation and resolve the calendar conflict.</span>
                     </div>
                     <div id="modal-ai-cards" class="modal-ai-cards"></div>

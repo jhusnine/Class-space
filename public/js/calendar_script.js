@@ -448,18 +448,18 @@ function openInspectorModal(ev) {
                         <div class="modal-ai-card">
                             <div class="modal-ai-card-info">
                                 <div class="modal-ai-card-title">
-                                    <span class="ai-rank-badge" style="font-size:10px; padding:2px 6px; border-radius:4px; background:#0ea5e9; color:#fff;">#${sug.rank}</span>
+                                    <span class="ai-rank-badge" style="font-size:10px; padding:2px 6px; border-radius:4px; background:rgba(56,189,248,0.15); color:var(--accent-sky,#38bdf8); border:1px solid rgba(56,189,248,0.3);">Option ${sug.rank}</span>
                                     <strong>${escapeHtml(sug.room_name)}</strong>
                                     <span style="font-size:11px; color:var(--text-low);">(${escapeHtml(sug.hall_name)})</span>
                                 </div>
                                 <div class="modal-ai-card-meta">
-                                    <span><i class="fas fa-clock"></i> ${escapeHtml(sug.formatted_time)}</span>
-                                    <span><i class="fas fa-users"></i> ${sug.room_capacity} seats</span>
-                                    ${sug.room_has_ac == 1 ? '<span style="color:#38bdf8;"><i class="fas fa-snowflake"></i> AC</span>' : ''}
+                                    <span>${escapeHtml(sug.formatted_time)}</span>
+                                    <span>${sug.room_capacity} seats</span>
+                                    ${sug.room_has_ac == 1 ? '<span style="color:#38bdf8;">Air Conditioned</span>' : ''}
                                 </div>
                             </div>
                             <button type="button" class="btn-apply-modal-alt" onclick="applyModalAlternative(${targetPendingEv.pending_id}, ${sug.room_id}, '${sug.start}', '${sug.end}', '${resType}', '${dow}', '${targetDate}', '${escapeHtml(sug.room_name)}')">
-                                <i class="fas fa-check-circle"></i> Switch to ${escapeHtml(sug.room_name)}
+                                Switch to ${escapeHtml(sug.room_name)}
                             </button>
                         </div>
                     `).join('');

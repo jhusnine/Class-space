@@ -238,10 +238,10 @@ function showRoomPreview() {
                         <span class="${displayStatusClass}">${displayStatus}</span>
                     </div>
                     <div class="room-preview-meta-row">
-                        ${hallName ? `<span class="room-preview-tag"><i class="fas fa-building"></i> ${escapeHtml(hallName)}</span>` : ''}
-                        <span class="room-preview-tag"><i class="fas fa-users"></i> ${escapeHtml(opt?.dataset.room_capacity)} seats</span>
-                        <span class="room-preview-tag"><i class="fas fa-tag"></i> ${escapeHtml(opt?.dataset.type)}</span>
-                        ${opt?.dataset.ac == 1 ? '<span class="room-preview-tag ac-tag"><i class="fas fa-snowflake"></i> AC</span>' : '<span class="room-preview-tag">No AC</span>'}
+                        ${hallName ? `<span class="room-preview-tag">${escapeHtml(hallName)}</span>` : ''}
+                        ${opt?.dataset.room_capacity ? `<span class="room-preview-tag">${escapeHtml(opt.dataset.room_capacity)} seats</span>` : ''}
+                        ${opt?.dataset.type ? `<span class="room-preview-tag">${escapeHtml(opt.dataset.type)}</span>` : ''}
+                        ${opt?.dataset.ac == 1 ? '<span class="room-preview-tag ac-tag">Air Conditioned</span>' : '<span class="room-preview-tag">Standard Ventilation</span>'}
                     </div>
                 </div>
             </div>
@@ -445,30 +445,30 @@ function fetchAiSuggestions(params) {
                 <div class="ai-suggestion-card ${sug.type === 'alternative_room' ? 'alt-room' : 'alt-slot'}">
                     <div class="ai-card-header">
                         <div class="ai-card-title">
-                            <span class="ai-rank-badge">#${sug.rank}</span>
+                            <span class="ai-rank-badge">Option ${sug.rank}</span>
                             <strong>${escapeHtml(sug.room_name)}</strong>
                             <span class="ai-hall-name">(${escapeHtml(sug.hall_name)})</span>
                         </div>
                         <span class="ai-type-pill ${sug.type}">
-                            ${sug.type === 'alternative_room' ? '<i class="fas fa-door-open"></i> Alternative Room' : '<i class="fas fa-clock"></i> Alternative Time'}
+                            ${sug.type === 'alternative_room' ? 'Alternative Room' : 'Alternative Time'}
                         </span>
                     </div>
                     <div class="ai-card-body">
                         <div class="ai-meta-row">
-                            <span class="ai-meta-item"><i class="fas fa-calendar-day"></i> ${escapeHtml(sug.formatted_time)}</span>
-                            <span class="ai-meta-item"><i class="fas fa-users"></i> ${sug.room_capacity} seats</span>
-                            ${sug.room_has_ac == 1 ? '<span class="ai-meta-item ac-item"><i class="fas fa-snowflake"></i> AC</span>' : ''}
-                            ${sug.room_type ? `<span class="ai-meta-item"><i class="fas fa-tag"></i> ${escapeHtml(sug.room_type)}</span>` : ''}
+                            <span class="ai-meta-item">${escapeHtml(sug.formatted_time)}</span>
+                            <span class="ai-meta-item">${sug.room_capacity} seats</span>
+                            ${sug.room_has_ac == 1 ? '<span class="ai-meta-item ac-item">Air Conditioned</span>' : ''}
+                            ${sug.room_type ? `<span class="ai-meta-item">${escapeHtml(sug.room_type)}</span>` : ''}
                         </div>
-                        <p class="ai-reason-text"><i class="fas fa-lightbulb"></i> ${escapeHtml(sug.reason)}</p>
+                        <p class="ai-reason-text">${escapeHtml(sug.reason)}</p>
                     </div>
                     <div class="ai-card-actions" style="display:flex; gap:8px; flex-wrap:wrap;">
                         <button type="button" class="btn-apply-suggestion" onclick="applySuggestion(${idx})">
-                            <i class="fas fa-check-circle"></i> Use This ${sug.type === 'alternative_room' ? 'Room' : 'Time'}
+                            Use This ${sug.type === 'alternative_room' ? 'Room' : 'Time'}
                         </button>
                         ${reschedulePendingId > 0 ? `
-                            <button type="button" class="btn-apply-suggestion btn-apply-instant" onclick="applyAndSaveSuggestion(${idx})" style="background: linear-gradient(135deg, #059669, #10b981); border:1px solid #34d399; color:#fff;">
-                                <i class="fas fa-bolt"></i> Instant Resolve #${reschedulePendingId}
+                            <button type="button" class="btn-apply-suggestion btn-apply-instant" onclick="applyAndSaveSuggestion(${idx})">
+                                Update Reservation #${reschedulePendingId}
                             </button>
                         ` : ''}
                     </div>
@@ -684,8 +684,6 @@ function updateStepper(stepNumber) {
         progressBar.style.width = widths[stepNumber] || "0%";
     }
 
-    const stepIcons = { 1: "fa-door-open", 2: "fa-calendar-days", 3: "fa-clipboard-check" };
-
     document.querySelectorAll(".wizard-stepper .step-item").forEach(item => {
         const step = parseInt(item.dataset.step, 10);
         const circle = item.querySelector(".step-circle");
@@ -700,11 +698,11 @@ function updateStepper(stepNumber) {
             item.classList.add("active");
             item.classList.remove("completed");
             item.setAttribute("aria-current", "step");
-            if (circle) circle.innerHTML = `<i class="fas ${stepIcons[step] || 'fa-circle'}"></i>`;
+            if (circle) circle.textContent = String(step);
         } else {
             item.classList.remove("active", "completed");
             item.removeAttribute("aria-current");
-            if (circle) circle.innerHTML = `<i class="fas ${stepIcons[step] || 'fa-circle'}"></i>`;
+            if (circle) circle.textContent = String(step);
         }
     });
 }
@@ -820,7 +818,7 @@ function populateReviewSummary() {
     if (capBadge) {
         const acText = hasAc ? " • AC" : "";
         const capText = capacity ? `${capacity} Seats${acText}` : "Seating Capacity";
-        capBadge.innerHTML = `<i class="fas fa-users"></i> ${escapeHtml(capText)}`;
+        capBadge.textContent = capText;
     }
 
     const capEl = document.getElementById("summary-capacity");

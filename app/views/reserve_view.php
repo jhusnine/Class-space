@@ -77,21 +77,21 @@ $themeClass = (isset($_COOKIE['theme']) && $_COOKIE['theme'] === 'light') ? 'lig
                     <div class="stepper-progress-bar" id="stepper-progress-bar" style="width: 0%;"></div>
                 </div>
                 <div class="step-item active" data-step="1" role="button" tabindex="0" aria-current="step">
-                    <div class="step-circle"><i class="fas fa-door-open"></i></div>
+                    <div class="step-circle">1</div>
                     <div class="step-details">
                         <span class="step-number">Step 1</span>
                         <span class="step-label">Space & Purpose</span>
                     </div>
                 </div>
                 <div class="step-item" data-step="2" role="button" tabindex="0">
-                    <div class="step-circle"><i class="fas fa-calendar-days"></i></div>
+                    <div class="step-circle">2</div>
                     <div class="step-details">
                         <span class="step-number">Step 2</span>
                         <span class="step-label">Date & Schedule</span>
                     </div>
                 </div>
                 <div class="step-item" data-step="3" role="button" tabindex="0">
-                    <div class="step-circle"><i class="fas fa-clipboard-check"></i></div>
+                    <div class="step-circle">3</div>
                     <div class="step-details">
                         <span class="step-number">Step 3</span>
                         <span class="step-label">Review & Confirm</span>
@@ -230,12 +230,11 @@ $themeClass = (isset($_COOKIE['theme']) && $_COOKIE['theme'] === 'light') ? 'lig
                     <div class="ai-header">
                         <div class="ai-title-row">
                             <div class="ai-title">
-                                <i class="fas fa-wand-magic-sparkles ai-sparkle-icon" aria-hidden="true"></i>
-                                <span>ClassSpace AI Assistant</span>
+                                <span>Suggested Alternatives</span>
                             </div>
-                            <span class="ai-badge-chip">CSP Engine</span>
+                            <span class="ai-badge-chip">Available Options</span>
                         </div>
-                        <p id="ai-summary-text" class="ai-summary-text">Analyzing campus rooms and open slots...</p>
+                        <p id="ai-summary-text" class="ai-summary-text">Searching campus rooms and schedule openings...</p>
                     </div>
                     <div id="ai-cards-list" class="ai-cards-list"></div>
                 </div>
@@ -264,16 +263,16 @@ $themeClass = (isset($_COOKIE['theme']) && $_COOKIE['theme'] === 'light') ? 'lig
                     <div class="summary-banner" id="summary-banner">
                         <div class="summary-banner-overlay"></div>
                         <div class="summary-banner-content">
-                            <span class="summary-pill" id="summary-building-badge"><i class="fas fa-building"></i> Building</span>
+                            <span class="summary-pill" id="summary-building-badge">Building</span>
                             <h3 id="summary-room-title">Room Name</h3>
-                            <span class="summary-capacity-chip" id="summary-capacity-badge"><i class="fas fa-users"></i> Seating Capacity</span>
+                            <span class="summary-capacity-chip" id="summary-capacity-badge">Seating Capacity</span>
                         </div>
                     </div>
 
                     <div class="summary-details-grid">
                         <div class="summary-item">
                             <div class="summary-item-header">
-                                <span class="summary-label"><i class="fas fa-heading"></i> Subject</span>
+                                <span class="summary-label">Subject</span>
                                 <button type="button" class="summary-edit-btn" data-target-step="1" title="Edit subject">
                                     <i class="fas fa-pen"></i> Edit
                                 </button>
@@ -283,7 +282,7 @@ $themeClass = (isset($_COOKIE['theme']) && $_COOKIE['theme'] === 'light') ? 'lig
 
                         <div class="summary-item">
                             <div class="summary-item-header">
-                                <span class="summary-label"><i class="fas fa-building"></i> Building</span>
+                                <span class="summary-label">Building</span>
                                 <button type="button" class="summary-edit-btn" data-target-step="1" title="Edit building">
                                     <i class="fas fa-pen"></i> Edit
                                 </button>
@@ -293,7 +292,7 @@ $themeClass = (isset($_COOKIE['theme']) && $_COOKIE['theme'] === 'light') ? 'lig
 
                         <div class="summary-item">
                             <div class="summary-item-header">
-                                <span class="summary-label"><i class="fas fa-door-open"></i> Room</span>
+                                <span class="summary-label">Room</span>
                                 <button type="button" class="summary-edit-btn" data-target-step="1" title="Edit room">
                                     <i class="fas fa-pen"></i> Edit
                                 </button>
@@ -303,7 +302,7 @@ $themeClass = (isset($_COOKIE['theme']) && $_COOKIE['theme'] === 'light') ? 'lig
 
                         <div class="summary-item">
                             <div class="summary-item-header">
-                                <span class="summary-label"><i class="fas fa-calendar"></i> Schedule</span>
+                                <span class="summary-label">Schedule</span>
                                 <button type="button" class="summary-edit-btn" data-target-step="2" title="Edit schedule">
                                     <i class="fas fa-pen"></i> Edit
                                 </button>
@@ -313,7 +312,7 @@ $themeClass = (isset($_COOKIE['theme']) && $_COOKIE['theme'] === 'light') ? 'lig
 
                         <div class="summary-item">
                             <div class="summary-item-header">
-                                <span class="summary-label"><i class="fas fa-clock"></i> Time Slot</span>
+                                <span class="summary-label">Time Slot</span>
                                 <button type="button" class="summary-edit-btn" data-target-step="2" title="Edit time">
                                     <i class="fas fa-pen"></i> Edit
                                 </button>
