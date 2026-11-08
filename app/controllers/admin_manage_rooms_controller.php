@@ -86,6 +86,7 @@ $mutationActions = [
 ];
 
 if (in_array($action, $mutationActions, true) && $_SERVER['REQUEST_METHOD'] !== 'POST') {
+    header('Allow: POST');
     http_response_code(405);
     echo json_encode([
         "success" => false,
@@ -208,9 +209,9 @@ function handleCreateRoom(PDO $pdo, array $payload): void {
         return;
     }
 
-    if ($roomCapacity <= 0) {
+    if ($roomCapacity <= 0 || $roomCapacity > 999) {
         http_response_code(400);
-        echo json_encode(["success" => false, "error" => "invalid_capacity", "message" => "Room capacity must be greater than zero."]);
+        echo json_encode(["success" => false, "error" => "invalid_capacity", "message" => "Room capacity must be between 1 and 999."]);
         return;
     }
 
@@ -318,9 +319,9 @@ function handleUpdateRoom(PDO $pdo, array $payload): void {
         return;
     }
 
-    if ($roomCapacity <= 0) {
+    if ($roomCapacity <= 0 || $roomCapacity > 999) {
         http_response_code(400);
-        echo json_encode(["success" => false, "error" => "invalid_capacity", "message" => "Room capacity must be greater than zero."]);
+        echo json_encode(["success" => false, "error" => "invalid_capacity", "message" => "Room capacity must be between 1 and 999."]);
         return;
     }
 

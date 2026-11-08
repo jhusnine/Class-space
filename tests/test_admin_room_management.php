@@ -431,6 +431,22 @@ if (!empty($invalidCapRes['error']) && ($invalidCapRes['_http_code'] ?? 0) === 4
     $allPassed = false;
 }
 
+$excessCapRes = invokeRoomController($adminSession, 'POST', 'create_room', [
+    'action' => 'create_room',
+    'hall_id' => $createdHallId,
+    'room_name' => 'ValidName',
+    'room_capacity' => 1000,
+    'room_type' => 'LECTURE',
+    'room_has_ac' => 1,
+    'room_status' => 'available'
+]);
+if (!empty($excessCapRes['error']) && ($excessCapRes['_http_code'] ?? 0) === 400) {
+    echo "[PASS] Excessive room capacity (>999) correctly rejected.\n";
+} else {
+    echo "[FAIL] Excessive room capacity was not rejected with 400: " . json_encode($excessCapRes) . "\n";
+    $allPassed = false;
+}
+
 // E. Update Room
 if ($createdRoomId) {
     $updatedRoomName = 'UR_' . substr(uniqid(), 0, 8);
