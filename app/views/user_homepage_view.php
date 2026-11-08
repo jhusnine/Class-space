@@ -55,10 +55,6 @@
             </div>
 
             <div class="header-actions">
-                <a href="reserve_view.php" class="btn-primary dashboard-primary-action">
-                    <i class="fas fa-calendar-plus" aria-hidden="true"></i>
-                    <span>Reserve a Room</span>
-                </a>
                 <div class="search-bar">
                     <i class="fas fa-search search-icon-inside" aria-hidden="true"></i>
                     <input type="text" id="search-input" class="search-input"

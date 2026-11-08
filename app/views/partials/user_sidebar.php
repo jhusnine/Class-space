@@ -47,15 +47,15 @@ if (!isset($activeTab) || empty($activeTab)) {
             </a>
         </li>
         <li class="nav-item">
-            <a href="calendar_view.php" class="nav-link <?= $activeTab === 'calendar' ? 'active' : '' ?>">
-                <i class="fas fa-calendar" aria-hidden="true"></i>
-                <span>Calendar</span>
-            </a>
-        </li>
-        <li class="nav-item">
             <a href="reserve_view.php" class="nav-link <?= $activeTab === 'reserve' ? 'active' : '' ?>">
                 <i class="fas fa-calendar-plus" aria-hidden="true"></i>
                 <span>Reserve</span>
+            </a>
+        </li>
+        <li class="nav-item">
+            <a href="calendar_view.php" class="nav-link <?= $activeTab === 'calendar' ? 'active' : '' ?>">
+                <i class="fas fa-calendar" aria-hidden="true"></i>
+                <span>Calendar</span>
             </a>
         </li>
         <li class="nav-item">
