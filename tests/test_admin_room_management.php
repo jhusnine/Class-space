@@ -28,9 +28,10 @@ try {
 }
 
 // ----------------------------------------------------
-// 1. File existence & PHP syntax checks
+// 1. File existence & syntax checks
 // ----------------------------------------------------
 $controllerFile = $rootDir . '/app/controllers/admin_manage_rooms_controller.php';
+$jsScriptFile   = $rootDir . '/public/js/admin_manage_rooms_script.js';
 
 if (!file_exists($controllerFile)) {
     echo "[FAIL] Controller file does not exist: $controllerFile\n";
@@ -42,6 +43,36 @@ if (!file_exists($controllerFile)) {
         $allPassed = false;
     } else {
         echo "[PASS] Controller file exists with valid PHP syntax.\n";
+    }
+}
+
+if (!file_exists($jsScriptFile)) {
+    echo "[FAIL] Admin manage rooms JS script does not exist: $jsScriptFile\n";
+    $allPassed = false;
+} else {
+    exec("node -c " . escapeshellarg($jsScriptFile) . " 2>&1", $jsLintOutput, $jsLintCode);
+    if ($jsLintCode !== 0) {
+        echo "[FAIL] Syntax error in $jsScriptFile: " . implode("\n", $jsLintOutput) . "\n";
+        $allPassed = false;
+    } else {
+        echo "[PASS] Admin manage rooms JS script exists with valid JavaScript syntax.\n";
+    }
+
+    $jsContent = file_get_contents($jsScriptFile);
+    // Verify openModal inline handler uses only roomId to avoid breaking on names with apostrophes
+    if (strpos($jsContent, 'onclick="openModal(${room.room_id})"') !== false) {
+        echo "[PASS] `renderTable` uses safe openModal(\${room.room_id}) attribute binding.\n";
+    } else {
+        echo "[FAIL] `renderTable` does not use simplified safe openModal(\${room.room_id}) binding.\n";
+        $allPassed = false;
+    }
+
+    // Verify deleteReservation uses only scheduleId, this, roomId
+    if (strpos($jsContent, 'onclick="deleteReservation(${r.schedule_id}, this, ${roomId})"') !== false) {
+        echo "[PASS] `openModal` uses safe deleteReservation(\${r.schedule_id}, this, \${roomId}) binding.\n";
+    } else {
+        echo "[FAIL] `openModal` does not use simplified deleteReservation binding.\n";
+        $allPassed = false;
     }
 }
 

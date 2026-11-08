@@ -362,7 +362,7 @@ function renderTable() {
                     <button type="button" class="action-btn action-edit btn-edit-room" title="Edit Room" onclick="openEditRoomModal(${room.room_id})">
                         <i class="fas fa-pen"></i>
                     </button>
-                    <button type="button" class="btn-view-res" onclick="openModal(${room.room_id}, '${escAttr(room.room_name)}', '${escAttr(room.hall_name || '')}')" title="View Reservations">
+                    <button type="button" class="btn-view-res" onclick="openModal(${room.room_id})" title="View Reservations">
                         <i class="fas fa-calendar-alt btn-icon"></i> Reservations
                     </button>
                     <button type="button" class="action-btn action-delete btn-delete-room" title="Delete Room" onclick="openDeleteRoomModal(${room.room_id})">
@@ -800,14 +800,10 @@ function closeModal() {
 // Reservations History Modal
 // ==========================================
 
-function openModal(roomId, roomName, hallName) {
-    if (!roomName) {
-        const found = allRooms.find(r => r.room_id == roomId);
-        if (found) {
-            roomName = found.room_name;
-            hallName = found.hall_name || "";
-        }
-    }
+function openModal(roomId, fallbackRoomName, fallbackHallName) {
+    const room = allRooms.find(r => r.room_id == roomId);
+    const roomName = room?.room_name || fallbackRoomName || "Room";
+    const hallName = room?.hall_name || fallbackHallName || "";
 
     const modalTitle = document.getElementById("modal-title");
     if (modalTitle) {
@@ -856,7 +852,7 @@ function openModal(roomId, roomName, hallName) {
                     </div>
                     <span class="res-type-badge ${isRecurring ? "weekly" : "onetime"}">${isRecurring ? "Weekly" : "One-time"}</span>
                     <button type="button" class="btn-del-res"
-                        onclick="deleteReservation(${r.schedule_id}, this, ${roomId}, '${escAttr(roomName)}', '${escAttr(hallName)}')">
+                        onclick="deleteReservation(${r.schedule_id}, this, ${roomId})">
                         <i class="fas fa-trash-alt"></i> Delete
                     </button>
                 `;
@@ -871,7 +867,7 @@ function openModal(roomId, roomName, hallName) {
         });
 }
 
-function deleteReservation(scheduleId, btn, roomId, roomName, hallName) {
+function deleteReservation(scheduleId, btn, roomId) {
     if (!confirm("Delete this reservation? This cannot be undone.")) return;
     btn.disabled     = true;
     btn.textContent  = "…";
@@ -885,7 +881,7 @@ function deleteReservation(scheduleId, btn, roomId, roomName, hallName) {
     .then(res => {
         if (res.success) {
             if (window.toast) toast.show("Reservation deleted.", "success", 2200);
-            openModal(roomId, roomName, hallName);
+            openModal(roomId);
         } else {
             if (window.toast) toast.show(res.message ?? "Failed to delete.", "error", 2500);
             btn.disabled  = false;
