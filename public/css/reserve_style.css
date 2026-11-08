@@ -956,8 +956,7 @@ body.light-mode .reservation-card {
 }
 
 /* Horizontal track connecting step pills */
-.wizard-stepper > .stepper-track,
-.stepper-track-wrapper {
+.wizard-stepper > .stepper-track {
     position: absolute;
     top: 50%;
     left: 28px;
@@ -966,30 +965,8 @@ body.light-mode .reservation-card {
     transform: translateY(-50%);
     background: var(--border-slate, #263941);
     border-radius: 999px;
-    z-index: 1;
+    z-index: 0;
     overflow: hidden;
-}
-
-.stepper-track-wrapper {
-    position: relative;
-    width: 100%;
-    height: 4px;
-    background: var(--border-slate, #263941);
-    border-radius: 999px;
-    margin: 24px 0 18px;
-    transform: none;
-    left: auto;
-    right: auto;
-}
-
-.stepper-steps {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    position: relative;
-    z-index: 2;
-    margin-top: -18px;
-    width: 100%;
 }
 
 /* Active colored fill with cyan glow and smooth cubic-bezier transition */
@@ -1022,6 +999,8 @@ body.light-mode .reservation-card {
 }
 
 .step-circle {
+    position: relative;
+    z-index: 2;
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -1062,14 +1041,17 @@ body.light-mode .reservation-card {
 
 /* Step State: Active */
 .step-item.active {
+    z-index: 3;
     border-color: var(--accent-sky, #38bdf8);
-    background: rgba(56, 189, 248, 0.08);
+    background: linear-gradient(rgba(56, 189, 248, 0.10), rgba(56, 189, 248, 0.10)), var(--surface-slate, #0B171E);
     box-shadow: 0 4px 16px rgba(56, 189, 248, 0.15);
 }
 
 .step-item.active .step-circle {
+    position: relative;
+    z-index: 2;
     border-color: var(--accent-sky, #38bdf8);
-    background: rgba(56, 189, 248, 0.15);
+    background: linear-gradient(rgba(56, 189, 248, 0.20), rgba(56, 189, 248, 0.20)), var(--surface-slate, #0B171E);
     color: var(--accent-sky, #38bdf8);
     box-shadow: 0 0 14px rgba(56, 189, 248, 0.35);
 }
@@ -1085,14 +1067,15 @@ body.light-mode .reservation-card {
 
 /* Step State: Completed */
 .step-item.completed {
+    z-index: 2;
     cursor: pointer;
     border-color: rgba(16, 185, 129, 0.4);
-    background: rgba(16, 185, 129, 0.05);
+    background: linear-gradient(rgba(16, 185, 129, 0.08), rgba(16, 185, 129, 0.08)), var(--surface-slate, #0B171E);
 }
 
 .step-item.completed:hover {
     border-color: #10b981;
-    background: rgba(16, 185, 129, 0.12);
+    background: linear-gradient(rgba(16, 185, 129, 0.15), rgba(16, 185, 129, 0.15)), var(--surface-slate, #0B171E);
     transform: translateY(-1px);
     box-shadow: 0 4px 12px rgba(16, 185, 129, 0.15);
 }
@@ -1102,8 +1085,10 @@ body.light-mode .reservation-card {
 }
 
 .step-item.completed .step-circle {
+    position: relative;
+    z-index: 2;
     border-color: #10b981;
-    background: rgba(16, 185, 129, 0.15);
+    background: linear-gradient(rgba(16, 185, 129, 0.20), rgba(16, 185, 129, 0.20)), var(--surface-slate, #0B171E);
     color: #10b981;
 }
 
@@ -1120,8 +1105,7 @@ body.light-mode .reservation-card {
 }
 
 /* Light Mode Overrides for Stepper */
-body.light-mode .wizard-stepper > .stepper-track,
-body.light-mode .stepper-track-wrapper {
+body.light-mode .wizard-stepper > .stepper-track {
     background: var(--border-slate, #e2e8f0);
 }
 
@@ -1136,20 +1120,25 @@ body.light-mode .step-item {
 }
 
 body.light-mode .step-circle {
+    position: relative;
+    z-index: 2;
     border-color: var(--border-slate, #e2e8f0);
-    background: #f8fafc;
+    background: #ffffff;
     color: var(--text-low, #64748b);
 }
 
 body.light-mode .step-item.active {
+    z-index: 3;
     border-color: var(--accent-sky, #0284c7);
-    background: rgba(2, 132, 199, 0.06);
+    background: linear-gradient(rgba(2, 132, 199, 0.07), rgba(2, 132, 199, 0.07)), #ffffff;
     box-shadow: 0 4px 16px rgba(2, 132, 199, 0.12);
 }
 
 body.light-mode .step-item.active .step-circle {
+    position: relative;
+    z-index: 2;
     border-color: var(--accent-sky, #0284c7);
-    background: rgba(2, 132, 199, 0.12);
+    background: linear-gradient(rgba(2, 132, 199, 0.14), rgba(2, 132, 199, 0.14)), #ffffff;
     color: var(--accent-sky, #0284c7);
     box-shadow: 0 0 12px rgba(2, 132, 199, 0.25);
 }
@@ -1163,18 +1152,21 @@ body.light-mode .step-item.active .step-label {
 }
 
 body.light-mode .step-item.completed {
+    z-index: 2;
     border-color: rgba(16, 185, 129, 0.35);
-    background: rgba(16, 185, 129, 0.06);
+    background: linear-gradient(rgba(16, 185, 129, 0.07), rgba(16, 185, 129, 0.07)), #ffffff;
 }
 
 body.light-mode .step-item.completed:hover {
     border-color: #10b981;
-    background: rgba(16, 185, 129, 0.12);
+    background: linear-gradient(rgba(16, 185, 129, 0.14), rgba(16, 185, 129, 0.14)), #ffffff;
 }
 
 body.light-mode .step-item.completed .step-circle {
+    position: relative;
+    z-index: 2;
     border-color: #10b981;
-    background: rgba(16, 185, 129, 0.12);
+    background: linear-gradient(rgba(16, 185, 129, 0.14), rgba(16, 185, 129, 0.14)), #ffffff;
     color: #10b981;
 }
 
@@ -1650,8 +1642,7 @@ body.light-mode .reschedule-banner {
         margin-bottom: 24px;
     }
 
-    .wizard-stepper > .stepper-track,
-    .stepper-track-wrapper {
+    .wizard-stepper > .stepper-track {
         left: 20px;
         right: 20px;
     }
