@@ -9,7 +9,7 @@ require_once __DIR__ . '/../includes/database_include.php';
 
 echo "=== Task 3: Reservation View & AI Integration Test ===\n";
 
-// 1. Verify View Markup
+// 1. Verify View Markup & AI Suggestions Container
 $viewHtml = file_get_contents(__DIR__ . '/../app/views/reserve_view.php');
 if (!str_contains($viewHtml, 'id="ai-suggestions-container"')) {
     throw new RuntimeException("FAILED: reserve_view.php is missing #ai-suggestions-container");
@@ -21,6 +21,113 @@ if (!str_contains($viewHtml, 'id="ai-cards-list"')) {
     throw new RuntimeException("FAILED: reserve_view.php is missing #ai-cards-list");
 }
 echo "PASS: View markup verified with #ai-suggestions-container.\n";
+
+// 1b. Verify 3-Step Wizard & Stepper Skeleton Markup
+if (!str_contains($viewHtml, 'id="wizard-stepper"')) {
+    throw new RuntimeException("FAILED: reserve_view.php is missing #wizard-stepper");
+}
+if (!str_contains($viewHtml, 'stepper-progress-bar')) {
+    throw new RuntimeException("FAILED: reserve_view.php is missing .stepper-progress-bar");
+}
+foreach ([1, 2, 3] as $step) {
+    if (!preg_match('/class="[^"]*step-item[^"]*"[^>]*data-step="' . $step . '"|data-step="' . $step . '"[^>]*class="[^"]*step-item[^"]*"/s', $viewHtml)) {
+        throw new RuntimeException("FAILED: reserve_view.php is missing .step-item with data-step=\"$step\"");
+    }
+}
+
+$step1Pos = strpos($viewHtml, 'id="wizard-step-1"');
+$step2Pos = strpos($viewHtml, 'id="wizard-step-2"');
+$step3Pos = strpos($viewHtml, 'id="wizard-step-3"');
+if ($step1Pos === false) {
+    throw new RuntimeException("FAILED: reserve_view.php is missing #wizard-step-1");
+}
+if ($step2Pos === false) {
+    throw new RuntimeException("FAILED: reserve_view.php is missing #wizard-step-2");
+}
+if ($step3Pos === false) {
+    throw new RuntimeException("FAILED: reserve_view.php is missing #wizard-step-3");
+}
+if (!($step1Pos < $step2Pos && $step2Pos < $step3Pos)) {
+    throw new RuntimeException("FAILED: Wizard steps are not in sequential order (1 -> 2 -> 3)");
+}
+
+$step1Html = substr($viewHtml, $step1Pos, $step2Pos - $step1Pos);
+$step2Html = substr($viewHtml, $step2Pos, $step3Pos - $step2Pos);
+$step3Html = substr($viewHtml, $step3Pos);
+$preHallPos = strpos($step3Html, 'id="preHallId"');
+if ($preHallPos !== false) {
+    $step3Html = substr($step3Html, 0, $preHallPos);
+}
+
+// Step 1 required elements
+$step1Required = [
+    'id="reservation-subject"',
+    'id="hall-select"',
+    'id="room-select"',
+    'id="room-preview"',
+    'id="btn-step1-next"'
+];
+foreach ($step1Required as $req) {
+    if (!str_contains($step1Html, $req)) {
+        throw new RuntimeException("FAILED: #wizard-step-1 is missing $req");
+    }
+}
+
+// Step 2 required elements
+$step2Required = [
+    'id="schedule-date"',
+    'id="schedule-dow"',
+    'id="schedule-until"',
+    'id="schedule-start"',
+    'id="schedule-end"',
+    'id="conflict-warning"',
+    'id="ai-suggestions-container"',
+    'id="btn-step2-back"',
+    'id="btn-step2-next"'
+];
+if (!preg_match('/<input[^>]+name="res-type"/s', $step2Html)) {
+    throw new RuntimeException("FAILED: #wizard-step-2 is missing input[name=\"res-type\"]");
+}
+foreach ($step2Required as $req) {
+    if (!str_contains($step2Html, $req)) {
+        throw new RuntimeException("FAILED: #wizard-step-2 is missing $req");
+    }
+}
+
+// Step 3 required elements
+$step3Required = [
+    'id="reservation-summary-card"',
+    'id="summary-subject"',
+    'id="summary-building"',
+    'id="summary-room"',
+    'id="summary-schedule"',
+    'id="summary-time"',
+    'id="btn-step3-back"',
+    'id="submit-btn"'
+];
+foreach ($step3Required as $req) {
+    if (!str_contains($step3Html, $req)) {
+        throw new RuntimeException("FAILED: #wizard-step-3 is missing $req");
+    }
+}
+
+// Legacy modal removal verification
+if (str_contains($viewHtml, 'id="booking-review"')) {
+    throw new RuntimeException("FAILED: Legacy modal #booking-review was not removed from reserve_view.php");
+}
+
+// Hidden parameters verification
+$hiddenParams = [
+    'preHallId', 'preHallName', 'preRoomId', 'preRoomName',
+    'preDate', 'preDow', 'preType', 'preStart', 'preEnd', 'preUntil',
+    'autoCheck', 'reschedulePendingId'
+];
+foreach ($hiddenParams as $param) {
+    if (!str_contains($viewHtml, 'id="' . $param . '"')) {
+        throw new RuntimeException("FAILED: reserve_view.php is missing hidden parameter #$param");
+    }
+}
+echo "PASS: 3-step wizard markup and progress stepper skeleton verified.\n";
 
 // 2. Verify Styles
 $css = file_get_contents(__DIR__ . '/../public/css/reserve_style.css');
