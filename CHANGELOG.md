@@ -8,6 +8,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 ## [Unreleased] - 2026-11-08
 
 ### Added
+- **3-Step Room Reservation Wizard (`reserve_view.php`):**
+  - Re-architected room reservation flow from a single long form with an overlay review popup into a 3-step wizard with an animated progress stepper, fluid step transitions, and an integrated in-page review receipt card adhering to `/ui-ux-pro-max` standards.
+  - **Progress Stepper Component**: Features a dynamic progress fill line ($0\% \rightarrow 50\% \rightarrow 100\%$) and step pills with status states (`active` with glowing sky accent, `completed` with emerald checkmark, and `upcoming`). Completed steps are clickable to jump back directly without losing entered inputs.
+  - **Step 1 (Space & Purpose)**: Houses the reservation subject input, building dropdown, room selector, and live dynamic room preview card with building photo banner, capacity chip, and AC amenity badge.
+  - **Step 2 (Date & Schedule)**: Manages one-time vs. weekly recurring reservation modes, date/dow pickers, semester duration countdown, start/end time inputs, real-time conflict checking, and ClassSpace AI CSP alternative suggestions with 1-click apply.
+  - **Step 3 (Integrated In-Page Review & Confirmation)**: Replaces the disruptive modal popup with a summary receipt card displaying building thumbnail banner, room details, subject with direct edit shortcuts, formatted schedule and time slot duration, conflict-free verification badge, and final submission button.
+  - **Full Backward Compatibility**: Retains all URL pre-fill parameters (`hall_id`, `room_id`, `date`, `dow`, `start`, `end`, `until`, `auto_check`, `reschedule_pending_id`), conflict checking, AI suggestions, and calendar reschedule workflows.
+  - **Strict Color Tokens**: Maintained ClassSpace's established color scheme across both dark and light modes (`#000C12`, `#0B171E`, `#263941`, `#38bdf8`, `#10b981`, `#0284c7`).
+
 - **Admin Expanded Room & Campus Hall Management Module:**
   - Expanded admin room management controls with **zero new database columns**, operating strictly on existing columns in `room` (`room_id`, `hall_id`, `room_name`, `room_capacity`, `room_type`, `room_has_ac`, `room_status`) and `hall` (`hall_id`, `hall_name`, `hall_desc`).
   - Added dedicated backend controller (`app/controllers/admin_manage_rooms_controller.php`) implementing session authentication, administrative verification (`account_is_admin = 1`), HTTP 405 Method Not Allowed enforcement for mutation endpoints, CWE-209 internal error logging and generic sanitized responses, boundary validation, and atomic transaction safeguards.
