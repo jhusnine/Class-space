@@ -8,6 +8,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 ## [Unreleased] - 2026-11-08
 
 ### Added
+- **Admin Expanded Room & Campus Hall Management Module:**
+  - Expanded admin room management controls with **zero new database columns**, operating strictly on existing columns in `room` (`room_id`, `hall_id`, `room_name`, `room_capacity`, `room_type`, `room_has_ac`, `room_status`) and `hall` (`hall_id`, `hall_name`, `hall_desc`).
+  - Added dedicated backend controller (`app/controllers/admin_manage_rooms_controller.php`) implementing session authentication, administrative verification (`account_is_admin = 1`), HTTP 405 Method Not Allowed enforcement for mutation endpoints, CWE-209 internal error logging and generic sanitized responses, boundary validation, and atomic transaction safeguards.
+  - Implemented relational safety protections: blocked hall deletion when assigned rooms exist, and cleanly purged child records in `schedule`, `pendingschedule`, and `history` prior to room deletion.
+  - Added segmented tab switcher (`[ Rooms Directory ]` and `[ Campus Buildings & Halls ]`) on `app/views/admin_manage_rooms_view.php` with real-time badge counts and seamless switching.
+  - Built Tab 1 (Rooms Directory): Multi-dimensional filtering by search query, building dropdown, and status chips; updated table with room thumbnails, building pills, classification badges, seating capacity & AC amenity chips, quick-status switcher, and action buttons.
+  - Built Tab 2 (Campus Buildings & Halls): Responsive grid of building cards displaying dynamic campus banner photos (`plaridel.jpeg`, `melchora.jpg`, `rizal.jpg`, `balagtas.jpg`, `gym.png`, `hotel.jpeg`, `ople.jpg`, and campus fallback `login_background.jpg`), assigned room counts, descriptions, real-time search, and Create/Edit/Delete actions.
+  - Built accessible modal dialogs (`#modal-room`, `#modal-hall`, `#modal-delete-confirm`) featuring a live dynamic room preview card that updates banner image, name, building badge, classification, capacity, AC, and status in real-time as the administrator modifies form fields.
+  - Added comprehensive integration test suite (`tests/test_admin_room_management.php`) running 24 subrequest assertions covering authorization, HTTP 405 enforcement, room CRUD (with and without hall assignments), hall CRUD, length boundaries, and relational safety checks.
+
 - **Admin Teacher Account Creation & Management Module:**
   - Added dedicated backend controller (`app/controllers/admin_teachers_controller.php`) handling `get_teachers`, `create_teacher`, `update_teacher`, `reset_password`, and `delete_teacher`.
   - Implemented multi-table transactional database integrity during teacher account creation, populating `account` (login credentials, role `0`, profile), `settings` (dark mode & language preferences), and `notification` (automatic system welcome notification) so no relational columns are left empty.
