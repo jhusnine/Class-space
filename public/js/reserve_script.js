@@ -1,3 +1,5 @@
+// public/js/reserve_script.js
+// ClassSpace 3-Step Room Reservation Wizard & Client-Side Engine
 
 function initSharedMobileMenu() {
     const toggle = document.getElementById("mobile-menu-toggle");
@@ -33,6 +35,15 @@ function initSharedMobileMenu() {
     });
 }
 
+// -----------------------------------------------------------------------------
+// Global Wizard State
+// -----------------------------------------------------------------------------
+let currentWizardStep = 1;
+window.currentWizardStep = currentWizardStep;
+
+// -----------------------------------------------------------------------------
+// Hall & Room Data Fetching + URL Pre-fill Handling
+// -----------------------------------------------------------------------------
 fetch("../controllers/room_controller.php?action=get_halls")
     .then(r => r.json())
     .then(res => {
@@ -94,7 +105,6 @@ fetch("../controllers/room_controller.php?action=get_halls")
             if (endInput && !endInput.value) endInput.value = preEnd;
         }
 
-
         let hallMatched = false;
         if (preHallId > 0) {
             sel.value = preHallId;
@@ -120,7 +130,8 @@ function loadRooms(preselectRoomId = 0, preselectRoomName = '', autoCheck = fals
     const roomSel = document.getElementById("room-select");
     roomSel.innerHTML = `<option value="">— Loading... —</option>`;
     roomSel.disabled = true;
-    document.getElementById("room-preview").style.display = "none";
+    const roomPreview = document.getElementById("room-preview");
+    if (roomPreview) roomPreview.style.display = "none";
 
     if (!hallId) {
         roomSel.innerHTML = `<option value="">— Select a building first —</option>`;
@@ -189,14 +200,17 @@ function loadRooms(preselectRoomId = 0, preselectRoomName = '', autoCheck = fals
 
 function showRoomPreview() {
     const sel = document.getElementById("room-select");
-    const opt = sel.options[sel.selectedIndex];
+    const opt = sel?.options[sel.selectedIndex];
     const preview = document.getElementById("room-preview");
 
-    if (!sel.value) { preview.style.display = "none"; return; }
+    if (!sel || !sel.value) {
+        if (preview) preview.style.display = "none";
+        return;
+    }
 
-    const roomStatus = String(opt.dataset.status || '').toLowerCase();
-    const roomType = String(opt.dataset.type || '').toLowerCase();
-    const roomName = String(opt.textContent || '').toLowerCase();
+    const roomStatus = String(opt?.dataset.status || '').toLowerCase();
+    const roomType = String(opt?.dataset.type || '').toLowerCase();
+    const roomName = String(opt?.textContent || '').toLowerCase();
     const isStorage = roomType.includes('storage') || roomName.includes('storage');
 
     const statusClass = {
@@ -205,16 +219,18 @@ function showRoomPreview() {
         maintenance: "preview-status-maintenance"
     }[roomStatus] ?? "preview-status-unknown";
     const displayStatusClass = isStorage ? "preview-status-storage" : statusClass;
-    const displayStatus = isStorage ? "STORAGE" : (opt.dataset.status || "Unknown");
+    const displayStatus = isStorage ? "STORAGE" : (opt?.dataset.status || "Unknown");
 
-    preview.innerHTML = `
-        <strong class="preview-name">${opt.textContent}</strong> &nbsp;|&nbsp;
-        Capacity: ${opt.dataset.room_capacity} &nbsp;|&nbsp;
-        ${opt.dataset.type} &nbsp;|&nbsp;
-        ${opt.dataset.ac == 1 ? "AC" : "No AC"} &nbsp;|&nbsp;
-        <span class="${displayStatusClass}">${displayStatus}</span>
-    `;
-    preview.style.display = "block";
+    if (preview) {
+        preview.innerHTML = `
+            <strong class="preview-name">${escapeHtml(opt?.textContent)}</strong> &nbsp;|&nbsp;
+            Capacity: ${escapeHtml(opt?.dataset.room_capacity)} &nbsp;|&nbsp;
+            ${escapeHtml(opt?.dataset.type)} &nbsp;|&nbsp;
+            ${opt?.dataset.ac == 1 ? "AC" : "No AC"} &nbsp;|&nbsp;
+            <span class="${displayStatusClass}">${displayStatus}</span>
+        `;
+        preview.style.display = "block";
+    }
 
     const isReservable = roomStatus === 'available' && !isStorage;
     const submitButton = document.getElementById("submit-btn");
@@ -224,9 +240,12 @@ function showRoomPreview() {
     if (submitButton) submitButton.disabled = !isReservable;
     if (!isReservable) {
         if (warning) {
-            document.getElementById("conflict-msg").textContent = isStorage
-                ? "Storage rooms cannot be reserved. Please select an available room."
-                : "This room is unavailable for reservation. Please select an available room.";
+            const conflictMsg = document.getElementById("conflict-msg");
+            if (conflictMsg) {
+                conflictMsg.textContent = isStorage
+                    ? "Storage rooms cannot be reserved. Please select an available room."
+                    : "This room is unavailable for reservation. Please select an available room.";
+            }
             warning.style.display = "block";
         }
         if (aiContainer) aiContainer.style.display = "none";
@@ -237,14 +256,21 @@ function showRoomPreview() {
 }
 
 function toggleType() {
-    const type = document.querySelector('input[name="res-type"]:checked').value;
-    document.getElementById("field-date").style.display = type === "one-time" ? "block" : "none";
-    document.getElementById("field-dow").style.display = type === "weekly" ? "block" : "none";
+    const type = document.querySelector('input[name="res-type"]:checked')?.value || "one-time";
+    const fieldDate = document.getElementById("field-date");
+    const fieldDow = document.getElementById("field-dow");
     const semEl = document.getElementById("field-semester");
+
+    if (fieldDate) fieldDate.style.display = type === "one-time" ? "block" : "none";
+    if (fieldDow) fieldDow.style.display = type === "weekly" ? "block" : "none";
     if (semEl) semEl.style.display = type === "weekly" ? "block" : "none";
+
     checkConflicts();
 }
 
+// -----------------------------------------------------------------------------
+// Real-Time Conflict & AI Suggestions Engine
+// -----------------------------------------------------------------------------
 let currentSuggestions = [];
 let conflictAbortController = null;
 let aiAbortController = null;
@@ -262,12 +288,19 @@ function escapeHtml(str) {
 }
 
 function checkConflicts(forceAiFetch = false) {
-    const roomId = document.getElementById("room-select").value;
-    const type = document.querySelector('input[name="res-type"]:checked').value;
-    const start = document.getElementById("schedule-start").value;
-    const end = document.getElementById("schedule-end").value;
-    const date = document.getElementById("schedule-date").value;
-    const dow = document.getElementById("schedule-dow").value;
+    const roomSelect = document.getElementById("room-select");
+    const roomId = roomSelect ? roomSelect.value : "";
+    const typeRadio = document.querySelector('input[name="res-type"]:checked');
+    const type = typeRadio ? typeRadio.value : "one-time";
+    const startInput = document.getElementById("schedule-start");
+    const endInput = document.getElementById("schedule-end");
+    const dateInput = document.getElementById("schedule-date");
+    const dowSelect = document.getElementById("schedule-dow");
+
+    const start = startInput ? startInput.value : "";
+    const end = endInput ? endInput.value : "";
+    const date = dateInput ? dateInput.value : "";
+    const dow = dowSelect ? dowSelect.value : "";
     const warning = document.getElementById("conflict-warning");
     const aiContainer = document.getElementById("ai-suggestions-container");
 
@@ -278,22 +311,27 @@ function checkConflicts(forceAiFetch = false) {
         aiAbortController.abort();
     }
 
-    warning.style.display = "none";
+    if (warning) warning.style.display = "none";
     if (aiContainer && !forceAiFetch) aiContainer.style.display = "none";
 
     if (!roomId || !start || !end) return;
     if (type === "one-time" && !date) return;
     if (type === "weekly" && !dow) return;
 
-    const selectedRoom = document.getElementById("room-select")?.selectedOptions?.[0];
+    const selectedRoom = roomSelect?.selectedOptions?.[0];
     const selectedStatus = String(selectedRoom?.dataset.status || '').toLowerCase();
     const selectedType = String(selectedRoom?.dataset.type || '').toLowerCase();
     const selectedName = String(selectedRoom?.textContent || '').toLowerCase();
     if (selectedStatus !== "available" || selectedType.includes("storage") || selectedName.includes("storage")) {
-        warning.style.display = "block";
-        document.getElementById("conflict-msg").textContent = selectedType.includes("storage") || selectedName.includes("storage")
-            ? "Storage rooms cannot be reserved. Please select an available room."
-            : "This room is unavailable for reservation. Please select an available room.";
+        if (warning) {
+            warning.style.display = "block";
+            const conflictMsg = document.getElementById("conflict-msg");
+            if (conflictMsg) {
+                conflictMsg.textContent = selectedType.includes("storage") || selectedName.includes("storage")
+                    ? "Storage rooms cannot be reserved. Please select an available room."
+                    : "This room is unavailable for reservation. Please select an available room.";
+            }
+        }
         if (aiContainer) aiContainer.style.display = "none";
         return;
     }
@@ -321,14 +359,20 @@ function checkConflicts(forceAiFetch = false) {
         .then(res => {
             if (reqId !== lastConflictReqId) return;
             if (res.error === "room_unavailable" || res.available === false) {
-                warning.style.display = "block";
-                document.getElementById("conflict-msg").textContent = res.message || "This room is unavailable for reservation.";
+                if (warning) {
+                    warning.style.display = "block";
+                    const conflictMsg = document.getElementById("conflict-msg");
+                    if (conflictMsg) conflictMsg.textContent = res.message || "This room is unavailable for reservation.";
+                }
                 if (aiContainer) aiContainer.style.display = "none";
                 return;
             }
             if (res.conflict) {
-                document.getElementById("conflict-msg").textContent = res.message;
-                warning.style.display = "block";
+                if (warning) {
+                    const conflictMsg = document.getElementById("conflict-msg");
+                    if (conflictMsg) conflictMsg.textContent = res.message;
+                    warning.style.display = "block";
+                }
                 if (res.has_suggestions || forceAiFetch) {
                     fetchAiSuggestions(params);
                 }
@@ -356,7 +400,9 @@ function fetchAiSuggestions(params) {
     const aiReqId = ++lastAiReqId;
 
     aiContainer.style.display = "block";
-    summaryText.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Analyzing campus facilities & open intervals via CSP engine...';
+    if (summaryText) {
+        summaryText.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Analyzing campus facilities & open intervals via CSP engine...';
+    }
     cardsList.innerHTML = '';
 
     fetch(`../controllers/ai_suggest_controller.php?${params}`, { signal: aiAbortController.signal })
@@ -367,12 +413,14 @@ function fetchAiSuggestions(params) {
                 if (res.error === "room_unavailable") {
                     aiContainer.style.display = "none";
                 }
-                summaryText.textContent = res.ai_summary || "No immediate alternative slots found for this date. Please consider adjusting the day or time window.";
+                if (summaryText) {
+                    summaryText.textContent = res.ai_summary || "No immediate alternative slots found for this date. Please consider adjusting the day or time window.";
+                }
                 return;
             }
 
             currentSuggestions = res.suggestions;
-            summaryText.textContent = res.ai_summary;
+            if (summaryText) summaryText.textContent = res.ai_summary;
 
             const reschedulePendingId = parseInt(document.getElementById("reschedulePendingId")?.value, 10) || 0;
 
@@ -412,12 +460,12 @@ function fetchAiSuggestions(params) {
         })
         .catch(err => {
             if (err.name !== 'AbortError') {
-                summaryText.textContent = "Could not fetch automated suggestions right now.";
+                if (summaryText) summaryText.textContent = "Could not fetch automated suggestions right now.";
             }
         });
 }
 
-function applySuggestion(index) {
+function applySuggestion(index, onComplete) {
     const sug = currentSuggestions[index];
     if (!sug) return;
 
@@ -427,12 +475,12 @@ function applySuggestion(index) {
         const hallSelect = document.getElementById("hall-select");
         const roomSelect = document.getElementById("room-select");
 
-        if (hallSelect.value != sug.hall_id) {
+        if (hallSelect && hallSelect.value != sug.hall_id) {
             hallSelect.value = sug.hall_id;
             fetch(`../controllers/room_controller.php?hall_id=${sug.hall_id}&action=get_rooms`)
                 .then(r => r.json())
                 .then(res => {
-                    if (res.success) {
+                    if (res.success && roomSelect) {
                         roomSelect.innerHTML = '<option value="">-- Choose a Room --</option>';
                         res.data.forEach(room => {
                             const roomStatus = String(room.room_status || '').toLowerCase();
@@ -461,16 +509,19 @@ function applySuggestion(index) {
                             ? `Selected ${sug.room_name}! Click "Update & Resolve" below to save.`
                             : `Switched to recommended room: ${sug.room_name} (${sug.formatted_time})`;
                         toast.show(msg, "success", 3500);
+                        if (typeof onComplete === 'function') onComplete();
                     }
                 });
             return;
-        } else {
+        } else if (roomSelect) {
             roomSelect.value = sug.room_id;
             showRoomPreview();
         }
     } else if (sug.type === 'alternative_slot') {
-        document.getElementById("schedule-start").value = sug.start;
-        document.getElementById("schedule-end").value = sug.end;
+        const startInput = document.getElementById("schedule-start");
+        const endInput = document.getElementById("schedule-end");
+        if (startInput) startInput.value = sug.start;
+        if (endInput) endInput.value = sug.end;
     }
 
     const msg = reschedulePendingId > 0
@@ -478,92 +529,383 @@ function applySuggestion(index) {
         : `Applied recommendation: ${sug.room_name} (${sug.formatted_time})`;
     toast.show(msg, "success", 3500);
     checkConflicts();
+    if (typeof onComplete === 'function') onComplete();
 }
 
 function applyAndSaveSuggestion(index) {
-    applySuggestion(index);
-    setTimeout(() => submitReservation(), 350);
+    applySuggestion(index, () => {
+        setTimeout(() => {
+            const subjectInput = document.getElementById("reservation-subject");
+            if (subjectInput && !subjectInput.value.trim()) {
+                subjectInput.value = "Rescheduled Class/Activity";
+            }
+            submitReservationRequest();
+        }, 300);
+    });
 }
 
-document.getElementById("schedule-start").addEventListener("change", checkConflicts);
-document.getElementById("schedule-end").addEventListener("change", checkConflicts);
-document.getElementById("schedule-date").addEventListener("change", checkConflicts);
-document.getElementById("schedule-dow").addEventListener("change", checkConflicts);
+// -----------------------------------------------------------------------------
+// Helper Utilities: Building Banner Image & Time Formatting
+// -----------------------------------------------------------------------------
+function getBuildingImage(hallName) {
+    const name = String(hallName || '').toLowerCase();
+    if (name.includes('plaridel')) return '../../public/images/plaridel.jpeg';
+    if (name.includes('melchora')) return '../../public/images/melchora.jpg';
+    if (name.includes('rizal')) return '../../public/images/rizal.jpg';
+    if (name.includes('balagtas')) return '../../public/images/balagtas.jpg';
+    if (name.includes('gym')) return '../../public/images/gym.png';
+    if (name.includes('hotel')) return '../../public/images/hotel.jpeg';
+    if (name.includes('ople')) return '../../public/images/ople.jpg';
+    return '../../public/images/login_background.jpg';
+}
 
+function formatTime(timeStr) {
+    if (!timeStr) return '';
+    const parts = timeStr.split(':');
+    if (parts.length < 2) return timeStr;
+    let hour = parseInt(parts[0], 10);
+    const minute = parts[1].padStart(2, '0');
+    if (isNaN(hour)) return timeStr;
+    const period = hour >= 12 ? 'PM' : 'AM';
+    hour = hour % 12;
+    if (hour === 0) hour = 12;
+    return `${hour}:${minute} ${period}`;
+}
+
+// -----------------------------------------------------------------------------
+// Step Validations
+// -----------------------------------------------------------------------------
+function validateStep1() {
+    const subjectInput = document.getElementById("reservation-subject");
+    const subject = (subjectInput?.value || "").trim();
+    if (!subject) {
+        toast.show("Please enter the reservation subject.", "error", 2500);
+        subjectInput?.focus();
+        return false;
+    }
+
+    const roomSelect = document.getElementById("room-select");
+    const roomId = roomSelect?.value || "";
+    if (!roomId) {
+        toast.show("Please select a room.", "error", 2500);
+        roomSelect?.focus();
+        return false;
+    }
+
+    const opt = roomSelect.selectedOptions?.[0];
+    const roomStatus = String(opt?.dataset?.status || "").toLowerCase();
+    const roomType = String(opt?.dataset?.type || "").toLowerCase();
+    const roomName = String(opt?.textContent || "").toLowerCase();
+    const isStorage = roomType.includes("storage") || roomName.includes("storage");
+
+    if (opt?.disabled || roomStatus === "maintenance" || roomStatus === "unavailable" || isStorage) {
+        toast.show("This room is not available for reservation.", "error", 2500);
+        return false;
+    }
+
+    return true;
+}
+
+function validateStep2() {
+    const typeRadio = document.querySelector('input[name="res-type"]:checked');
+    const type = typeRadio ? typeRadio.value : "one-time";
+    const dateInput = document.getElementById("schedule-date");
+    const dowSelect = document.getElementById("schedule-dow");
+    const startInput = document.getElementById("schedule-start");
+    const endInput = document.getElementById("schedule-end");
+
+    const date = dateInput?.value || "";
+    const dow = dowSelect?.value || "";
+    const start = startInput?.value || "";
+    const end = endInput?.value || "";
+
+    if (type === "one-time" && !date) {
+        toast.show("Please select a date.", "error", 2500);
+        dateInput?.focus();
+        return false;
+    }
+
+    if (type === "weekly" && !dow) {
+        toast.show("Please select a day of the week.", "error", 2500);
+        dowSelect?.focus();
+        return false;
+    }
+
+    if (!start || !end) {
+        toast.show("Please set start and end time.", "error", 2500);
+        if (!start) startInput?.focus();
+        else endInput?.focus();
+        return false;
+    }
+
+    if (start >= end) {
+        toast.show("End time must be after start time.", "error", 2500);
+        endInput?.focus();
+        return false;
+    }
+
+    const warning = document.getElementById("conflict-warning");
+    const isConflictVisible = warning && (
+        warning.style.display === "block" ||
+        (warning.style.display !== "none" && typeof window !== "undefined" && window.getComputedStyle && window.getComputedStyle(warning).display !== "none")
+    );
+    if (isConflictVisible) {
+        toast.show("Please resolve the scheduling conflict before proceeding.", "error", 2500);
+        return false;
+    }
+
+    return true;
+}
+
+// -----------------------------------------------------------------------------
+// Stepper UI Updater
+// -----------------------------------------------------------------------------
+function updateStepper(stepNumber) {
+    const progressBar = document.getElementById("stepper-progress-bar");
+    if (progressBar) {
+        const widths = { 1: "0%", 2: "50%", 3: "100%" };
+        progressBar.style.width = widths[stepNumber] || "0%";
+    }
+
+    document.querySelectorAll(".wizard-stepper .step-item").forEach(item => {
+        const step = parseInt(item.dataset.step, 10);
+        const circle = item.querySelector(".step-circle");
+        if (!step) return;
+
+        if (step < stepNumber) {
+            item.classList.add("completed");
+            item.classList.remove("active");
+            item.removeAttribute("aria-current");
+            if (circle) circle.innerHTML = '<i class="fas fa-check"></i>';
+        } else if (step === stepNumber) {
+            item.classList.add("active");
+            item.classList.remove("completed");
+            item.setAttribute("aria-current", "step");
+            if (circle) circle.innerHTML = String(step);
+        } else {
+            item.classList.remove("active", "completed");
+            item.removeAttribute("aria-current");
+            if (circle) circle.innerHTML = String(step);
+        }
+    });
+}
+
+// -----------------------------------------------------------------------------
+// Step 3 In-Page Summary Population
+// -----------------------------------------------------------------------------
+function populateReviewSummary() {
+    const subject = document.getElementById("reservation-subject")?.value?.trim() || "—";
+    const hallSelect = document.getElementById("hall-select");
+    const roomSelect = document.getElementById("room-select");
+
+    const hallName = hallSelect?.selectedOptions?.[0]?.textContent?.trim() || "—";
+    const selectedOption = roomSelect?.selectedOptions?.[0];
+    const roomName = selectedOption?.textContent?.replace(/\s+—\s+Not available for reservation$/i, '')?.trim() || "—";
+    const capacity = selectedOption?.dataset?.room_capacity || selectedOption?.dataset?.capacity || "";
+    const roomType = selectedOption?.dataset?.type || "";
+    const hasAc = selectedOption?.dataset?.ac == 1;
+
+    const type = document.querySelector('input[name="res-type"]:checked')?.value || "one-time";
+    const date = document.getElementById("schedule-date")?.value || "";
+    const dow = document.getElementById("schedule-dow")?.value || "";
+    const until = document.getElementById("schedule-until")?.value || "";
+    const start = document.getElementById("schedule-start")?.value || "";
+    const end = document.getElementById("schedule-end")?.value || "";
+
+    // Banner image resolution
+    const bannerUrl = getBuildingImage(hallName);
+    const banner = document.getElementById("summary-banner");
+    let bannerImg = document.getElementById("summary-banner-img");
+    if (!bannerImg && banner) {
+        bannerImg = document.createElement("img");
+        bannerImg.id = "summary-banner-img";
+        bannerImg.className = "summary-banner-img";
+        bannerImg.alt = hallName || "Building Banner";
+        banner.insertBefore(bannerImg, banner.firstChild);
+    }
+    if (bannerImg) {
+        bannerImg.src = bannerUrl;
+        bannerImg.alt = hallName || "Building Banner";
+    }
+    if (banner) {
+        banner.style.backgroundImage = `url("${bannerUrl}")`;
+    }
+
+    // Format schedule
+    let scheduleText = "—";
+    if (type === "one-time") {
+        if (date) {
+            scheduleText = new Date(date + 'T00:00:00').toLocaleDateString(undefined, {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+        }
+    } else if (type === "weekly") {
+        if (until) {
+            const untilFormatted = new Date(until + 'T00:00:00').toLocaleDateString(undefined, {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric'
+            });
+            scheduleText = `Every ${dow} (until ${untilFormatted})`;
+        } else {
+            scheduleText = `Every ${dow}`;
+        }
+    }
+
+    // Format time slot
+    let timeText = "—";
+    if (start && end) {
+        let durationStr = "";
+        const [sH, sM] = start.split(':').map(Number);
+        const [eH, eM] = end.split(':').map(Number);
+        if (!isNaN(sH) && !isNaN(eH)) {
+            const diffMins = (eH * 60 + eM) - (sH * 60 + sM);
+            if (diffMins > 0) {
+                const hrs = diffMins / 60;
+                durationStr = ` (${hrs % 1 === 0 ? hrs : hrs.toFixed(1)} ${hrs === 1 ? 'hr' : 'hrs'})`;
+            }
+        }
+        timeText = `${formatTime(start)} – ${formatTime(end)}${durationStr}`;
+    }
+
+    // Populate all summary elements
+    const subjectEl = document.getElementById("summary-subject");
+    if (subjectEl) subjectEl.textContent = subject;
+
+    const buildingEl = document.getElementById("summary-building");
+    if (buildingEl) buildingEl.textContent = hallName;
+
+    const roomEl = document.getElementById("summary-room");
+    if (roomEl) roomEl.textContent = roomName;
+
+    const scheduleEl = document.getElementById("summary-schedule");
+    if (scheduleEl) scheduleEl.textContent = scheduleText;
+
+    const timeEl = document.getElementById("summary-time");
+    if (timeEl) timeEl.textContent = timeText;
+
+    const buildingBadge = document.getElementById("summary-building-badge");
+    if (buildingBadge) {
+        buildingBadge.innerHTML = `<i class="fas fa-building"></i> ${escapeHtml(hallName)}`;
+    }
+
+    const roomTitle = document.getElementById("summary-room-title");
+    if (roomTitle) {
+        roomTitle.textContent = roomName;
+    }
+
+    const capBadge = document.getElementById("summary-capacity-badge");
+    if (capBadge) {
+        const acText = hasAc ? " • AC" : "";
+        const capText = capacity ? `${capacity} Seats${acText}` : "Seating Capacity";
+        capBadge.innerHTML = `<i class="fas fa-users"></i> ${escapeHtml(capText)}`;
+    }
+
+    const capEl = document.getElementById("summary-capacity");
+    if (capEl) {
+        capEl.textContent = capacity ? `${capacity} seats` : "—";
+    }
+
+    const typeEl = document.getElementById("summary-type");
+    if (typeEl) {
+        typeEl.textContent = type === "weekly" ? "Weekly (recurring)" : "One-time";
+    }
+}
+
+// -----------------------------------------------------------------------------
+// Wizard State Machine: Step Navigation
+// -----------------------------------------------------------------------------
+function goToStep(stepNumber) {
+    if (stepNumber === 2 && currentWizardStep < 2) {
+        if (!validateStep1()) return;
+    }
+    if (stepNumber === 3) {
+        if (!validateStep1()) return;
+        if (!validateStep2()) return;
+    }
+
+    const steps = [1, 2, 3];
+    steps.forEach(num => {
+        const stepEl = document.getElementById(`wizard-step-${num}`);
+        if (!stepEl) return;
+        if (num === stepNumber) {
+            stepEl.classList.add("active");
+            stepEl.style.display = "block";
+        } else {
+            stepEl.classList.remove("active");
+            stepEl.style.display = "none";
+        }
+    });
+
+    updateStepper(stepNumber);
+
+    if (stepNumber === 3) {
+        populateReviewSummary();
+    }
+
+    currentWizardStep = stepNumber;
+    window.currentWizardStep = currentWizardStep;
+
+    const card = document.querySelector(".reservation-card");
+    if (card && typeof card.scrollIntoView === "function") {
+        card.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+}
+
+// -----------------------------------------------------------------------------
+// Data Packaging & Direct Async Submission
+// -----------------------------------------------------------------------------
 function getReservationReviewData() {
-    const subject = document.getElementById("reservation-subject")?.value.trim() || "";
-    const roomId = document.getElementById("room-select").value;
-    const type = document.querySelector('input[name="res-type"]:checked').value;
-    const start = document.getElementById("schedule-start").value;
-    const end = document.getElementById("schedule-end").value;
-    const date = document.getElementById("schedule-date").value;
-    const dow = document.getElementById("schedule-dow").value;
-    const reschedulePendingId = parseInt(document.getElementById("reschedulePendingId")?.value, 10) || 0;
-    const selectedRoom = document.getElementById("room-select")?.selectedOptions?.[0];
-    const selectedStatus = String(selectedRoom?.dataset.status || '').toLowerCase();
-    const selectedType = String(selectedRoom?.dataset.type || '').toLowerCase();
-    const selectedName = String(selectedRoom?.textContent || '').toLowerCase();
+    if (!validateStep1() || !validateStep2()) {
+        return null;
+    }
 
-    if (!subject) return toast.show("Please enter the reservation subject.", "error", 2500);
-    if (!roomId) return toast.show("Please select a room.", "error", 2500);
-    if (selectedStatus !== "available" || selectedType.includes("storage") || selectedName.includes("storage"))
-        return toast.show("This room is not available for reservation.", "error", 2500);
-    if (!start || !end) return toast.show("Please set start and end time.", "error", 2500);
-    if (start >= end) return toast.show("End time must be after start time.", "error", 2500);
-    if (type === "one-time" && !date) return toast.show("Please select a date.", "error", 2500);
-    if (type === "weekly" && !dow) return toast.show("Please select a day of the week.", "error", 2500);
-    if (document.getElementById("conflict-warning").style.display !== "none")
-        return toast.show("Please resolve the scheduling conflict first.", "error", 2500);
+    const subject = document.getElementById("reservation-subject")?.value?.trim() || "";
+    const roomId = document.getElementById("room-select")?.value || "";
+    const type = document.querySelector('input[name="res-type"]:checked')?.value || "one-time";
+    const start = document.getElementById("schedule-start")?.value || "";
+    const end = document.getElementById("schedule-end")?.value || "";
+    const date = document.getElementById("schedule-date")?.value || "";
+    const dow = document.getElementById("schedule-dow")?.value || "";
+    const until = document.getElementById("schedule-until")?.value || "";
+    const reschedulePendingId = parseInt(document.getElementById("reschedulePendingId")?.value, 10) || 0;
 
     const hallSelect = document.getElementById("hall-select");
     const roomSelect = document.getElementById("room-select");
-    const hallName = hallSelect.selectedOptions[0]?.textContent?.trim() || "—";
-    const roomName = roomSelect.selectedOptions[0]?.textContent?.replace(/\s+—\s+Not available for reservation$/i, '').trim() || "—";
-    const until = document.getElementById("schedule-until")?.value || "";
+    const hallName = hallSelect?.selectedOptions?.[0]?.textContent?.trim() || "—";
+    const selectedRoom = roomSelect?.selectedOptions?.[0];
+    const roomName = selectedRoom?.textContent?.replace(/\s+—\s+Not available for reservation$/i, '')?.trim() || "—";
+    const capacity = selectedRoom?.dataset?.room_capacity || selectedRoom?.dataset?.capacity || "";
+    const roomType = selectedRoom?.dataset?.type || "";
+    const hasAc = selectedRoom?.dataset?.ac == 1;
+
     const untilFormatted = until
         ? new Date(`${until}T00:00:00`).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" })
         : "";
     const schedule = type === "one-time"
-        ? new Date(`${date}T00:00:00`).toLocaleDateString(undefined, { year: "numeric", month: "long", day: "numeric" })
+        ? new Date(`${date}T00:00:00`).toLocaleDateString(undefined, { weekday: "long", year: "numeric", month: "long", day: "numeric" })
         : (untilFormatted ? `Every ${dow} (until ${untilFormatted})` : `Every ${dow}`);
 
-    return { subject, roomId, type, start, end, date, dow, until, reschedulePendingId, hallName, roomName, schedule };
-}
-
-function openBookingReview() {
-    const reviewData = getReservationReviewData();
-    if (!reviewData || typeof reviewData !== "object") return;
-
-    document.getElementById("review-subject").textContent = reviewData.subject;
-    document.getElementById("review-building").textContent = reviewData.hallName;
-    document.getElementById("review-room").textContent = reviewData.roomName;
-    document.getElementById("review-schedule").textContent = reviewData.schedule;
-    document.getElementById("review-time").textContent = `${reviewData.start} – ${reviewData.end}`;
-
-    const review = document.getElementById("booking-review");
-    const mainContent = document.querySelector(".main-content");
-    review._returnFocus = document.activeElement;
-    review._mainContent = mainContent;
-    review._mainScrollTop = mainContent ? mainContent.scrollTop : 0;
-    review.hidden = false;
-    review.setAttribute("aria-hidden", "false");
-    document.body.style.overflow = "hidden";
-    if (mainContent) mainContent.style.overflow = "hidden";
-    review.querySelector(".booking-review-dialog")?.focus();
-    document.getElementById("review-confirm")?.focus();
-}
-
-function closeBookingReview() {
-    const review = document.getElementById("booking-review");
-    if (!review) return;
-    review.hidden = true;
-    review.setAttribute("aria-hidden", "true");
-    if (review._mainContent) {
-        review._mainContent.style.overflow = "";
-        review._mainContent.scrollTop = review._mainScrollTop || 0;
-    }
-    document.body.style.overflow = "";
-    review._returnFocus?.focus?.({ preventScroll: true });
+    return {
+        subject,
+        roomId,
+        type,
+        start,
+        end,
+        date,
+        dow,
+        until,
+        reschedulePendingId,
+        hallName,
+        roomName,
+        capacity,
+        roomType,
+        hasAc,
+        schedule
+    };
 }
 
 function submitReservationRequest() {
@@ -573,9 +915,10 @@ function submitReservationRequest() {
     const { subject, roomId, type, start, end, date, dow, until, reschedulePendingId } = reviewData;
 
     const btn = document.getElementById("submit-btn");
-    closeBookingReview();
-    btn.disabled = true;
-    btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> ${reschedulePendingId > 0 ? 'Updating...' : 'Submitting...'}`;
+    if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> ${reschedulePendingId > 0 ? 'Updating...' : 'Submitting...'}`;
+    }
 
     const payload = {
         subject: subject,
@@ -609,40 +952,109 @@ function submitReservationRequest() {
                 }
             } else {
                 toast.show(res.message ?? "Something went wrong.", "error", 3000);
-                btn.disabled = false;
-                btn.innerHTML = reschedulePendingId > 0
-                    ? `<i class="fas fa-clipboard-check"></i> Review Updated Reservation`
-                    : `<i class="fas fa-clipboard-check"></i> Review Reservation Details`;
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = reschedulePendingId > 0
+                        ? `<i class="fas fa-paper-plane"></i> Confirm & Update Reservation`
+                        : `<i class="fas fa-paper-plane"></i> Confirm & Submit Reservation`;
+                }
             }
         })
         .catch(() => {
             toast.show("Network error. Please try again.", "error", 3000);
-            btn.disabled = false;
-            btn.innerHTML = reschedulePendingId > 0
-                ? `<i class="fas fa-clipboard-check"></i> Review Updated Reservation`
-                : `<i class="fas fa-clipboard-check"></i> Review Reservation Details`;
+            if (btn) {
+                btn.disabled = false;
+                btn.innerHTML = reschedulePendingId > 0
+                    ? `<i class="fas fa-paper-plane"></i> Confirm & Update Reservation`
+                    : `<i class="fas fa-paper-plane"></i> Confirm & Submit Reservation`;
+            }
         });
 }
 
 function submitReservation() {
-    openBookingReview();
+    submitReservationRequest();
 }
+
+function openBookingReview() {
+    goToStep(3);
+}
+
+function closeBookingReview() {
+    // Stub for backward compatibility
+}
+
+// -----------------------------------------------------------------------------
+// Global Window Exports
+// -----------------------------------------------------------------------------
+window.goToStep = goToStep;
+window.validateStep1 = validateStep1;
+window.validateStep2 = validateStep2;
+window.updateStepper = updateStepper;
+window.populateReviewSummary = populateReviewSummary;
+window.submitReservation = submitReservation;
+window.submitReservationRequest = submitReservationRequest;
+window.openBookingReview = openBookingReview;
+window.closeBookingReview = closeBookingReview;
 window.applySuggestion = applySuggestion;
 window.applyAndSaveSuggestion = applyAndSaveSuggestion;
+window.getBuildingImage = getBuildingImage;
+window.formatTime = formatTime;
+
+// -----------------------------------------------------------------------------
+// Event Listeners & Initialization
+// -----------------------------------------------------------------------------
 initSharedMobileMenu();
 
+// Step navigation buttons
+document.getElementById("btn-step1-next")?.addEventListener("click", () => goToStep(2));
+document.getElementById("btn-step2-back")?.addEventListener("click", () => goToStep(1));
+document.getElementById("btn-step2-next")?.addEventListener("click", () => goToStep(3));
+document.getElementById("btn-step3-back")?.addEventListener("click", () => goToStep(2));
 
+// Quick edit buttons on Step 3 Summary Card
+document.querySelectorAll(".summary-edit-btn[data-target-step]").forEach(btn => {
+    btn.addEventListener("click", () => {
+        const targetStep = parseInt(btn.dataset.targetStep, 10);
+        if (targetStep) goToStep(targetStep);
+    });
+});
+
+// Stepper items click & keyboard listener
+document.querySelectorAll(".wizard-stepper .step-item").forEach(item => {
+    item.addEventListener("click", () => {
+        const targetStep = parseInt(item.dataset.step, 10);
+        if (!targetStep || targetStep === currentWizardStep) return;
+        goToStep(targetStep);
+    });
+    item.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            item.click();
+        }
+    });
+});
+
+// Step 3 final submission button
+document.getElementById("submit-btn")?.addEventListener("click", submitReservationRequest);
+
+// Form input change listeners for dynamic conflict re-checks
 document.getElementById("hall-select")?.addEventListener("change", () => loadRooms());
+document.getElementById("schedule-start")?.addEventListener("change", checkConflicts);
+document.getElementById("schedule-end")?.addEventListener("change", checkConflicts);
+document.getElementById("schedule-date")?.addEventListener("change", checkConflicts);
+document.getElementById("schedule-dow")?.addEventListener("change", checkConflicts);
 document.getElementById("schedule-until")?.addEventListener("change", checkConflicts);
 document.querySelectorAll('input[name="res-type"]').forEach(input => {
     input.addEventListener("change", toggleType);
 });
-document.getElementById("submit-btn")?.addEventListener("click", submitReservation);
-document.getElementById("review-confirm")?.addEventListener("click", submitReservationRequest);
-document.getElementById("review-edit")?.addEventListener("click", closeBookingReview);
-document.getElementById("review-close")?.addEventListener("click", closeBookingReview);
-document.querySelector('[data-review-close="true"]')?.addEventListener("click", closeBookingReview);
-document.addEventListener("keydown", event => {
-    if (event.key === "Escape") closeBookingReview();
+
+// Advance to Step 2 on Enter key from subject input
+document.getElementById("reservation-subject")?.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+        e.preventDefault();
+        goToStep(2);
+    }
 });
-initSharedMobileMenu();
+
+// Initialize Stepper at Step 1
+updateStepper(1);
